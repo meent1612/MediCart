@@ -1,0 +1,116 @@
+@page
+@model MediCart.Web.Areas.Identity.Pages.Account.LoginModel
+@{
+    Layout = null;
+    ViewData["Title"] = "Log in · MediCart";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"]</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+    <link rel="stylesheet" href="~/css/login.css" asp-append-version="true" />
+</head>
+<body class="login-body">
+
+    <div class="login">
+
+        <!-- ============================================================
+             LEFT — brand panel
+             ============================================================ -->
+        <aside class="login__brand">
+            <div class="login__brand-noise" aria-hidden="true"></div>
+
+            <div class="login__capsules" aria-hidden="true">
+                <span class="login__capsule login__capsule--a"></span>
+                <span class="login__capsule login__capsule--b"></span>
+                <span class="login__capsule login__capsule--c"></span>
+            </div>
+
+            <a href="~/" class="login__logo">
+                <svg class="login__logo-mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
+                    <path d="M12 5v14M5 12h14" />
+                </svg>
+                MediCart
+            </a>
+
+            <div class="login__brand-body">
+                <p class="login__eyebrow">Welcome back</p>
+                <h1 class="login__headline">Good to see <em>you</em> again.</h1>
+                <p class="login__subcopy">
+                    Sign in to pick up where you left off — saved addresses, order history,
+                    and any notes your pharmacist has added to your file.
+                </p>
+            </div>
+
+            <div class="login__stat">
+                <span class="login__stat-number">12,000+</span>
+                <span class="login__stat-label">HOUSEHOLDS ALREADY ORDER THROUGH MEDICART</span>
+            </div>
+        </aside>
+
+        <!-- ============================================================
+             RIGHT — form panel
+             ============================================================ -->
+        <main class="login__form-panel">
+            <div class="login__card">
+
+                <div class="login__card-top">
+                    <a href="~/" class="login__back">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
+                        Back to home
+                    </a>
+                    <span class="login__register-pill">
+                        New here? <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl">Create an account</a>
+                    </span>
+                </div>
+
+                <h1>Log in</h1>
+                <p class="login__card-sub">Enter your details to access your MediCart account.</p>
+
+                <div asp-validation-summary="ModelOnly" class="login__summary" role="alert"></div>
+
+                <form id="loginForm" method="post" asp-route-returnUrl="@Model.ReturnUrl" novalidate>
+
+                    <div class="field" id="wrap-Email">
+                        <input asp-for="Input.Email" id="field-Email" class="field__control" placeholder=" " autocomplete="email" inputmode="email" />
+                        <label asp-for="Input.Email" class="field__label">Email address</label>
+                        <span asp-validation-for="Input.Email"></span>
+                    </div>
+
+                    <div class="field field--password" id="wrap-Password">
+                        <input asp-for="Input.Password" id="field-Password" type="password" class="field__control" placeholder=" " autocomplete="current-password" />
+                        <label asp-for="Input.Password" class="field__label">Password</label>
+                        <button type="button" class="field__toggle" aria-pressed="false" aria-label="Show password">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12Z" /><circle cx="12" cy="12" r="3" /></svg>
+                        </button>
+                        <span asp-validation-for="Input.Password"></span>
+                    </div>
+
+                    <div class="login__row">
+                        <label class="login__remember">
+                            <input asp-for="Input.RememberMe" type="checkbox" />
+                            Remember me
+                        </label>
+                        <a class="login__forgot" asp-page="./ForgotPassword">Forgot password?</a>
+                    </div>
+
+                    <button type="submit" id="loginSubmit" class="login__submit">
+                        <span class="login__spinner" aria-hidden="true"></span>
+                        <span class="login__submit-text">Log in</span>
+                    </button>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <script src="~/js/login.js" asp-append-version="true"></script>
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+</body>
+</html>
