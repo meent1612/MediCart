@@ -1,0 +1,193 @@
+@page
+@model MediCart.Web.Areas.Identity.Pages.Account.RegisterModel
+@{
+    Layout = null;
+    ViewData["Title"] = "Create your account · MediCart";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"]</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+    <link rel="stylesheet" href="~/css/register.css" asp-append-version="true" />
+</head>
+<body class="register-body">
+
+    <div class="register">
+
+        <!-- ============================================================
+             LEFT — brand / reassurance panel
+             ============================================================ -->
+        <aside class="register__brand">
+            <div class="register__brand-noise" aria-hidden="true"></div>
+
+            <div class="register__capsules" aria-hidden="true">
+                <span class="register__capsule register__capsule--a"></span>
+                <span class="register__capsule register__capsule--b"></span>
+                <span class="register__capsule register__capsule--c"></span>
+            </div>
+
+            <a href="~/" class="register__logo">
+                <svg class="register__logo-mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
+                    <path d="M12 5v14M5 12h14" />
+                </svg>
+                MediCart
+            </a>
+
+            <div class="register__brand-body">
+                <p class="register__eyebrow">Why register</p>
+                <h1 class="register__headline">Care that <em>remembers</em> you back.</h1>
+                <p class="register__subcopy">
+                    Save delivery addresses, track every order in real time, and let your
+                    pharmacist attach notes to your file — all from one account.
+                </p>
+
+                <ul class="register__features">
+                    <li class="register__feature">
+                        <span class="register__feature-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5" /></svg>
+                        </span>
+                        <span class="register__feature-text">
+                            <strong>Two-tap checkout</strong>
+                            <span>Saved addresses and payment details, ready next time.</span>
+                        </span>
+                    </li>
+                    <li class="register__feature">
+                        <span class="register__feature-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3" /><circle cx="12" cy="12" r="9" /></svg>
+                        </span>
+                        <span class="register__feature-text">
+                            <strong>Live order tracking</strong>
+                            <span>Know the moment it's reviewed, packed, and shipped.</span>
+                        </span>
+                    </li>
+                    <li class="register__feature">
+                        <span class="register__feature-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12h6M9 16h6M9 8h6" /><rect x="5" y="4" width="14" height="16" rx="2" /></svg>
+                        </span>
+                        <span class="register__feature-text">
+                            <strong>Pharmacist notes</strong>
+                            <span>Flagged items get explained on your account, not just blocked.</span>
+                        </span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="register__stat">
+                <span class="register__stat-number">12,000+</span>
+                <span class="register__stat-label">HOUSEHOLDS ALREADY ORDER THROUGH MEDICART</span>
+            </div>
+        </aside>
+
+        <!-- ============================================================
+             RIGHT — form panel
+             ============================================================ -->
+        <main class="register__form-panel">
+            <div class="register__card">
+
+                <div class="register__card-top">
+                    <a href="~/" class="register__back">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
+                        Back to home
+                    </a>
+                    <span class="register__login-pill">
+                        Have an account? <a asp-page="./Login" asp-route-returnUrl="@Model.ReturnUrl">Log in</a>
+                    </span>
+                </div>
+
+                <h1>Create your account</h1>
+                <p class="register__card-sub">Takes about a minute. No prescription needed to sign up.</p>
+
+                <div asp-validation-summary="ModelOnly" class="register__summary" role="alert"></div>
+
+                <form id="registerForm" method="post" asp-route-returnUrl="@Model.ReturnUrl" novalidate>
+
+                    <div class="register__row">
+                        <div class="field" id="wrap-FullName">
+                            <input asp-for="Input.FullName" id="field-FullName" class="field__control" placeholder=" " autocomplete="name" />
+                            <label asp-for="Input.FullName" class="field__label">Full name</label>
+                            <div class="field__hint" aria-live="polite"></div>
+                            <span asp-validation-for="Input.FullName"></span>
+                        </div>
+
+                        <div class="field" id="wrap-Phone">
+                            <input asp-for="Input.Phone" id="field-Phone" class="field__control" placeholder=" " autocomplete="tel" inputmode="tel" />
+                            <label asp-for="Input.Phone" class="field__label">Phone number</label>
+                            <div class="field__hint" aria-live="polite"></div>
+                            <span asp-validation-for="Input.Phone"></span>
+                        </div>
+                    </div>
+
+                    <div class="field" id="wrap-Email">
+                        <input asp-for="Input.Email" id="field-Email" class="field__control" placeholder=" " autocomplete="email" inputmode="email" />
+                        <label asp-for="Input.Email" class="field__label">Email address</label>
+                        <div class="field__hint" aria-live="polite"></div>
+                        <span asp-validation-for="Input.Email"></span>
+                    </div>
+
+                    <div class="field field--password" id="wrap-Password">
+                        <input asp-for="Input.Password" id="field-Password" type="password" class="field__control" placeholder=" " autocomplete="new-password" />
+                        <label asp-for="Input.Password" class="field__label">Password</label>
+                        <button type="button" class="field__toggle" data-target="field-Password" aria-pressed="false" aria-label="Show password">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12Z" /><circle cx="12" cy="12" r="3" /></svg>
+                        </button>
+                        <div class="strength" id="passwordStrength" data-level="0">
+                            <div class="strength__vial" aria-hidden="true">
+                                <span class="strength__segment"></span>
+                                <span class="strength__segment"></span>
+                                <span class="strength__segment"></span>
+                            </div>
+                            <span class="strength__label"></span>
+                        </div>
+                        <span asp-validation-for="Input.Password"></span>
+                    </div>
+
+                    <div class="field field--password" id="wrap-ConfirmPassword">
+                        <input asp-for="Input.ConfirmPassword" id="field-ConfirmPassword" type="password" class="field__control" placeholder=" " autocomplete="new-password" />
+                        <label asp-for="Input.ConfirmPassword" class="field__label">Confirm password</label>
+                        <button type="button" class="field__toggle" data-target="field-ConfirmPassword" aria-pressed="false" aria-label="Show password">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12Z" /><circle cx="12" cy="12" r="3" /></svg>
+                        </button>
+                        <div class="field__hint" aria-live="polite"></div>
+                        <span asp-validation-for="Input.ConfirmPassword"></span>
+                    </div>
+
+                    <div class="register__terms">
+                        <input asp-for="Input.AgreeToTerms" id="field-Terms" type="checkbox" />
+                        <label asp-for="Input.AgreeToTerms">
+                            I agree to MediCart's <a asp-controller="Home" asp-action="Terms">Terms of Service</a>
+                            and <a asp-controller="Home" asp-action="Privacy">Privacy Policy</a>.
+                        </label>
+                        <span asp-validation-for="Input.AgreeToTerms"></span>
+                    </div>
+
+                    <button type="submit" id="registerSubmit" class="register__submit">
+                        <span class="register__spinner" aria-hidden="true"></span>
+                        <span class="register__submit-text">Create account</span>
+                    </button>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <!-- Success stamp shown briefly on a valid client-side submit -->
+    <div class="register__stamp" id="registerStamp" data-visible="false">
+        <div class="register__stamp-card">
+            <div class="register__stamp-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6 9 17l-5-5" /></svg>
+            </div>
+            <h2>Account created</h2>
+            <p>Redirecting you to MediCart…</p>
+        </div>
+    </div>
+
+    <script src="~/js/register.js" asp-append-version="true"></script>
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+</body>
+</html>

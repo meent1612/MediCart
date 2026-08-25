@@ -1,0 +1,735 @@
+/* ==========================================================================
+   MediCart — Register Page
+   Design system: apothecary calm. A dispensary, not a dashboard.
+   ========================================================================== */
+
+:root {
+  /* Brand palette (from the shared "for therapists" palette, repurposed) */
+  --slate: #384e41;      /* deep, grounded — headings, primary CTA, dark panel */
+  --misty: #8aa27f;      /* mid green — accents, active states, links */
+  --sage: #cad6c8;       /* soft green — borders, dividers, quiet fills */
+  --beige: #fdf0d7;      /* warm paper — page background, badges */
+  --cream: #fffdf9;      /* near-white — cards, inputs */
+  --ink: #253027;        /* body text, derived from slate for legibility */
+  --ink-soft: #5b6a5f;   /* secondary text */
+
+  /* Semantic (kept outside the brand family on purpose — errors need to
+     read as errors, not as another shade of green) */
+  --error: #a3453a;
+  --error-bg: #f8e9e6;
+
+  /* Type */
+  --font-display: "Fraunces", "Iowan Old Style", serif;
+  --font-body: "Inter", "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  /* Rhythm */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 28px;
+  --shadow-card: 0 24px 60px -24px rgba(56, 78, 65, 0.35);
+  --shadow-soft: 0 2px 10px rgba(56, 78, 65, 0.08);
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body.register-body {
+  margin: 0;
+  font-family: var(--font-body);
+  color: var(--ink);
+  background: var(--beige);
+  -webkit-font-smoothing: antialiased;
+}
+
+.register {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+}
+
+/* --------------------------------------------------------------------------
+   Left — brand / reassurance panel
+   -------------------------------------------------------------------------- */
+
+.register__brand {
+  position: relative;
+  background: var(--slate);
+  color: var(--cream);
+  padding: clamp(2rem, 4vw, 4.5rem);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+}
+
+.register__brand-noise {
+  position: absolute;
+  inset: 0;
+  opacity: 0.5;
+  background-image: radial-gradient(circle at 18% 20%, rgba(202, 214, 200, 0.14), transparent 40%),
+    radial-gradient(circle at 85% 75%, rgba(202, 214, 200, 0.12), transparent 45%);
+  pointer-events: none;
+}
+
+.register__logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--cream);
+  text-decoration: none;
+  z-index: 1;
+  width: fit-content;
+}
+
+.register__logo-mark {
+  width: 26px;
+  height: 26px;
+  color: var(--sage);
+}
+
+.register__brand-body {
+  z-index: 1;
+  max-width: 30rem;
+}
+
+.register__eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--sage);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 1.1rem;
+}
+
+.register__eyebrow::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--misty);
+  display: inline-block;
+}
+
+.register__headline {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(2rem, 3.4vw, 2.85rem);
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+  margin: 0 0 1rem;
+}
+
+.register__headline em {
+  font-style: italic;
+  color: var(--sage);
+}
+
+.register__subcopy {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: rgba(253, 240, 215, 0.78);
+  margin: 0 0 2.25rem;
+}
+
+.register__features {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.register__feature {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+}
+
+.register__feature-icon {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: rgba(202, 214, 200, 0.14);
+  border: 1px solid rgba(202, 214, 200, 0.28);
+  display: grid;
+  place-items: center;
+  color: var(--sage);
+}
+
+.register__feature-icon svg {
+  width: 17px;
+  height: 17px;
+}
+
+.register__feature-text strong {
+  display: block;
+  font-size: 0.94rem;
+  font-weight: 600;
+  color: var(--cream);
+  margin-bottom: 0.15rem;
+}
+
+.register__feature-text span {
+  font-size: 0.86rem;
+  color: rgba(253, 240, 215, 0.68);
+  line-height: 1.45;
+}
+
+/* floating capsule motif — quiet ambient motion */
+.register__capsules {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.register__capsule {
+  position: absolute;
+  border-radius: 999px;
+  border: 1px solid rgba(202, 214, 200, 0.22);
+  animation: drift 16s var(--ease) infinite;
+}
+
+.register__capsule--a {
+  width: 120px;
+  height: 46px;
+  right: -20px;
+  top: 12%;
+  animation-duration: 19s;
+}
+
+.register__capsule--b {
+  width: 70px;
+  height: 28px;
+  right: 18%;
+  bottom: 18%;
+  animation-duration: 14s;
+  animation-delay: -4s;
+}
+
+.register__capsule--c {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  left: 8%;
+  bottom: 30%;
+  animation-duration: 22s;
+  animation-delay: -9s;
+}
+
+@keyframes drift {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  50% { transform: translate(-10px, 16px) rotate(6deg); }
+}
+
+.register__stat {
+  z-index: 1;
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  padding-top: 2rem;
+  margin-top: 2rem;
+  border-top: 1px solid rgba(202, 214, 200, 0.2);
+}
+
+.register__stat-number {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  color: var(--sage);
+}
+
+.register__stat-label {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: rgba(253, 240, 215, 0.65);
+  letter-spacing: 0.02em;
+}
+
+/* --------------------------------------------------------------------------
+   Right — form panel
+   -------------------------------------------------------------------------- */
+
+.register__form-panel {
+  background: var(--beige);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(1.5rem, 4vw, 3.5rem);
+}
+
+.register__card {
+  width: 100%;
+  max-width: 30rem;
+  background: var(--cream);
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(56, 78, 65, 0.08);
+  box-shadow: var(--shadow-card);
+  padding: clamp(1.75rem, 4vw, 3rem);
+}
+
+.register__card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.75rem;
+}
+
+.register__back {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: color 0.2s var(--ease);
+}
+
+.register__back:hover {
+  color: var(--slate);
+}
+
+.register__login-pill {
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+}
+
+.register__login-pill a {
+  color: var(--slate);
+  font-weight: 600;
+  text-decoration: none;
+  border-bottom: 1px solid var(--misty);
+}
+
+.register__card h1 {
+  font-family: var(--font-display);
+  font-size: 1.9rem;
+  font-weight: 600;
+  color: var(--slate);
+  margin: 0 0 0.4rem;
+}
+
+.register__card-sub {
+  font-size: 0.92rem;
+  color: var(--ink-soft);
+  margin: 0 0 1.85rem;
+  line-height: 1.5;
+}
+
+/* Summary / server-side validation banner */
+.register__summary {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+  background: var(--error-bg);
+  border: 1px solid rgba(163, 69, 58, 0.25);
+  color: var(--error);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 0.9rem;
+  font-size: 0.85rem;
+  margin-bottom: 1.25rem;
+}
+
+.register__summary:empty,
+.register__summary ul:empty {
+  display: none;
+}
+
+.register__summary ul {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+/* Field grid */
+.register__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.9rem;
+}
+
+.field {
+  position: relative;
+  margin-bottom: 1.05rem;
+}
+
+.field__control {
+  width: 100%;
+  padding: 1.15rem 0.9rem 0.5rem;
+  font-family: var(--font-body);
+  font-size: 0.96rem;
+  color: var(--ink);
+  background: var(--cream);
+  border: 1.5px solid var(--sage);
+  border-radius: var(--radius-sm);
+  outline: none;
+  transition: border-color 0.18s var(--ease), box-shadow 0.18s var(--ease);
+}
+
+.field__control::placeholder {
+  color: transparent;
+}
+
+.field__label {
+  position: absolute;
+  left: 0.9rem;
+  top: 0.85rem;
+  font-size: 0.96rem;
+  color: var(--ink-soft);
+  pointer-events: none;
+  transform-origin: left top;
+  transition: transform 0.16s var(--ease), color 0.16s var(--ease), top 0.16s var(--ease);
+}
+
+.field__control:focus {
+  border-color: var(--misty);
+  box-shadow: 0 0 0 4px rgba(138, 162, 127, 0.16);
+}
+
+.field__control:focus + .field__label,
+.field__control:not(:placeholder-shown) + .field__label {
+  top: 0.45rem;
+  transform: scale(0.76);
+  color: var(--slate);
+  font-weight: 600;
+}
+
+.field__hint {
+  margin-top: 0.35rem;
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  min-height: 1.1em;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.field--valid .field__control {
+  border-color: var(--misty);
+}
+
+.field--invalid .field__control {
+  border-color: var(--error);
+}
+
+.field--invalid .field__control:focus {
+  box-shadow: 0 0 0 4px rgba(163, 69, 58, 0.13);
+}
+
+.field--invalid .field__hint {
+  color: var(--error);
+}
+
+.field--valid .field__hint {
+  color: var(--misty);
+}
+
+.field-validation-error {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--error);
+  margin-top: 0.35rem;
+}
+
+/* Password field: eye toggle */
+.field--password .field__control {
+  padding-right: 2.6rem;
+}
+
+.field__toggle {
+  position: absolute;
+  right: 0.7rem;
+  top: 0.75rem;
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  background: transparent;
+  color: var(--ink-soft);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  transition: color 0.16s var(--ease), background 0.16s var(--ease);
+}
+
+.field__toggle:hover {
+  color: var(--slate);
+  background: var(--sage);
+}
+
+.field__toggle svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Dosage-style strength meter (signature element) */
+.strength {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.5rem;
+}
+
+.strength__vial {
+  display: flex;
+  gap: 3px;
+  width: 84px;
+}
+
+.strength__segment {
+  height: 6px;
+  flex: 1;
+  border-radius: 999px;
+  background: var(--sage);
+  transition: background 0.25s var(--ease);
+}
+
+.strength__label {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.strength[data-level="1"] .strength__segment:nth-child(1) { background: var(--sage); }
+.strength[data-level="2"] .strength__segment:nth-child(-n+2) { background: var(--misty); }
+.strength[data-level="3"] .strength__segment:nth-child(-n+3) { background: var(--slate); }
+
+.strength[data-level="1"] .strength__label { color: var(--ink-soft); }
+.strength[data-level="2"] .strength__label { color: var(--misty); }
+.strength[data-level="3"] .strength__label { color: var(--slate); font-weight: 600; }
+
+/* Terms checkbox */
+.register__terms {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  margin: 0.3rem 0 1.4rem;
+}
+
+.register__terms input {
+  margin-top: 0.2rem;
+  width: 16px;
+  height: 16px;
+  accent-color: var(--slate);
+  flex: none;
+}
+
+.register__terms label {
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+
+.register__terms a {
+  color: var(--slate);
+  font-weight: 600;
+  text-decoration: none;
+  border-bottom: 1px solid var(--misty);
+}
+
+/* Submit button */
+.register__submit {
+  width: 100%;
+  padding: 0.95rem 1rem;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: var(--slate);
+  color: var(--cream);
+  font-size: 0.98rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  transition: background 0.18s var(--ease), transform 0.12s var(--ease);
+}
+
+.register__submit:hover {
+  background: #2c3f34;
+}
+
+.register__submit:active {
+  transform: scale(0.99);
+}
+
+.register__submit:disabled {
+  opacity: 0.75;
+  cursor: progress;
+}
+
+.register__spinner {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: var(--cream);
+  animation: spin 0.7s linear infinite;
+  display: none;
+}
+
+.register__submit[data-loading="true"] .register__spinner {
+  display: inline-block;
+}
+
+.register__submit[data-loading="true"] .register__submit-text::after {
+  content: "Creating…";
+}
+
+.register__submit[data-loading="true"] .register__submit-text {
+  font-size: 0;
+}
+
+.register__submit[data-loading="true"] .register__submit-text::after {
+  font-size: 0.98rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Success stamp overlay, shown after client validation passes on submit */
+.register__stamp {
+  position: fixed;
+  inset: 0;
+  background: rgba(56, 78, 65, 0.55);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.register__stamp[data-visible="true"] {
+  display: flex;
+}
+
+.register__stamp-card {
+  background: var(--cream);
+  border-radius: var(--radius-lg);
+  padding: 2.5rem;
+  text-align: center;
+  max-width: 22rem;
+  box-shadow: var(--shadow-card);
+  animation: pop-in 0.35s var(--ease);
+}
+
+.register__stamp-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--sage);
+  color: var(--slate);
+  display: grid;
+  place-items: center;
+  margin: 0 auto 1rem;
+}
+
+.register__stamp-icon svg {
+  width: 28px;
+  height: 28px;
+}
+
+.register__stamp-card h2 {
+  font-family: var(--font-display);
+  color: var(--slate);
+  margin: 0 0 0.4rem;
+}
+
+.register__stamp-card p {
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+@keyframes pop-in {
+  from { opacity: 0; transform: scale(0.92) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Field-level shake for invalid submit attempts */
+@keyframes shake {
+  10%, 90% { transform: translateX(-1px); }
+  20%, 80% { transform: translateX(2px); }
+  30%, 50%, 70% { transform: translateX(-4px); }
+  40%, 60% { transform: translateX(4px); }
+}
+
+.field--shake {
+  animation: shake 0.4s ease-in-out;
+}
+
+/* --------------------------------------------------------------------------
+   Responsive
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 960px) {
+  .register {
+    grid-template-columns: 1fr;
+  }
+
+  .register__brand {
+    padding: 2.5rem 1.75rem;
+  }
+
+  .register__features {
+    display: none;
+  }
+
+  .register__stat {
+    margin-top: 1.25rem;
+    padding-top: 1.25rem;
+  }
+}
+
+@media (max-width: 560px) {
+  .register__row {
+    grid-template-columns: 1fr;
+  }
+
+  .register__card {
+    border-radius: var(--radius-md);
+  }
+
+  .register__brand-body .register__headline {
+    font-size: 1.7rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Accessibility
+   -------------------------------------------------------------------------- */
+
+.field__control:focus-visible,
+.register__submit:focus-visible,
+.field__toggle:focus-visible,
+.register__back:focus-visible {
+  outline: 2px solid var(--slate);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .register__capsule,
+  .register__stamp-card,
+  .register__spinner,
+  .field--shake {
+    animation: none !important;
+  }
+
+  .field__control,
+  .field__label,
+  .register__submit {
+    transition: none !important;
+  }
+}

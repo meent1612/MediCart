@@ -1,0 +1,48 @@
+## .NET / Visual Studio / VS Code
+
+# Build results
+bin/
+obj/
+out/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# VS Code
+.vscode/
+
+# Rider
+.idea/
+
+# NuGet
+*.nupkg
+**/packages/*
+!**/packages/build/
+
+# Publish output
+**/Properties/PublishProfiles/*.pubxml.user
+publish/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# EF Core
+*.mdf
+*.ldf
+
+# User-specific files
+*.rsuser
+*.suo
+*.userosscache
+*.sln.docstates
+
+# dotnet
+project.lock.json
+project.fragment.lock.json
+artifacts/
