@@ -67,7 +67,7 @@
                         Back to home
                     </a>
                     <span class="login__register-pill">
-                        New here? <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl">Create an account</a>
+                        New here? <a asp-area="Identity" asp-page="/Account/Register" asp-route-returnUrl="@Model.ReturnUrl">Create an account</a>
                     </span>
                 </div>
 
