@@ -97,7 +97,7 @@
                         Back to home
                     </a>
                     <span class="register__login-pill">
-                        Have an account? <a asp-page="./Login" asp-route-returnUrl="@Model.ReturnUrl">Log in</a>
+                        Have an account? <a asp-area="Identity" asp-page="/Account/Login" asp-route-returnUrl="@Model.ReturnUrl">Log in</a>
                     </span>
                 </div>
 
