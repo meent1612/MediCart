@@ -321,11 +321,11 @@
 }
 
 .btn-add.added {
-    background: var(--amber);
-    animation: btn-add-spin 0.4s ease;
+    background: var(--amber) !important;
+    animation: btn-add-spin 0.4s ease !important;
 }
 
-@@keyframes btn-add-spin {
+@keyframes btn-add-spin {
     from { transform: rotate(0deg); }
     to { transform: rotate(180deg); }
 }
@@ -364,7 +364,7 @@
     animation: modal-in 0.18s ease;
 }
 
-@@keyframes modal-in {
+@keyframes modal-in {
     from { opacity: 0; transform: translateY(10px) scale(0.98); }
     to { opacity: 1; transform: translateY(0) scale(1); }
 }
@@ -550,7 +550,7 @@
 }
 
 /* ----- Responsive ----- */
-@@media (max-width: 900px) {
+@media (max-width: 900px) {
     .browse__layout {
         grid-template-columns: 1fr;
     }
@@ -564,7 +564,7 @@
     }
 }
 
-@@media (max-width: 560px) {
+@media (max-width: 560px) {
     .product-grid {
         grid-template-columns: 1fr;
     }
