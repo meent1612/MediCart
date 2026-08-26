@@ -1,0 +1,241 @@
+@{
+    ViewData["Title"] = "Admin profile";
+    Layout = "_AdminLayout";
+}
+
+<div class="profile-grid">
+
+    <!-- Left: identity card -->
+    <section class="profile-card reveal in-view">
+        <div class="profile-card__cover"></div>
+
+        <div class="profile-card__avatar-wrap">
+            <div class="admin-avatar admin-avatar--lg" id="avatarPreview">MK</div>
+            <button type="button" class="profile-card__avatar-edit" id="avatarEditBtn" aria-label="Change photo">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+            </button>
+            <input type="file" id="avatarInput" accept="image/png, image/jpeg" class="visually-hidden" />
+        </div>
+
+        <h2 class="profile-card__name">Md. Kayes</h2>
+        <span class="profile-card__role">Administrator</span>
+
+        <span class="status-pill status-pill--online">
+            <span class="status-pill__dot"></span> Active now
+        </span>
+
+        <dl class="profile-card__meta">
+            <div>
+                <dt>Email</dt>
+                <dd>kayes.admin@medicart.com</dd>
+            </div>
+            <div>
+                <dt>Phone</dt>
+                <dd>+880 1898-XXXXXX</dd>
+            </div>
+            <div>
+                <dt>Joined</dt>
+                <dd>03 Feb 2026</dd>
+            </div>
+            <div>
+                <dt>Last login</dt>
+                <dd>Today, 11:52 AM</dd>
+            </div>
+        </dl>
+
+        <div class="profile-card__stats">
+            <div>
+                <strong>142</strong>
+                <span>Orders reviewed</span>
+            </div>
+            <div>
+                <strong>36</strong>
+                <span>Medicines added</span>
+            </div>
+            <div>
+                <strong>9</strong>
+                <span>Flags resolved</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Right: tabbed settings -->
+    <section class="profile-panel reveal in-view">
+
+        <div class="tabs" role="tablist" aria-label="Profile settings">
+            <button class="tabs__btn is-active" role="tab" aria-selected="true" data-tab="info">Profile info</button>
+            <button class="tabs__btn" role="tab" aria-selected="false" data-tab="security">Security</button>
+            <button class="tabs__btn" role="tab" aria-selected="false" data-tab="notifications">Notifications</button>
+            <button class="tabs__btn" role="tab" aria-selected="false" data-tab="activity">Recent activity</button>
+        </div>
+
+        <!-- Profile info -->
+        <div class="tabs__panel is-active" data-panel="info" role="tabpanel">
+            <form id="profileForm" class="admin-form" novalidate>
+                <div class="admin-form__row">
+                    <div class="admin-form__field">
+                        <label for="fullName">Full name</label>
+                        <input type="text" id="fullName" value="Md. Kayes" required />
+                    </div>
+                    <div class="admin-form__field">
+                        <label for="role">Role</label>
+                        <select id="role">
+                            <option selected>Administrator</option>
+                            <option>Pharmacist admin</option>
+                            <option>Inventory manager</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="admin-form__row">
+                    <div class="admin-form__field">
+                        <label for="email">Email address</label>
+                        <input type="email" id="email" value="kayes.admin@medicart.com" required />
+                    </div>
+                    <div class="admin-form__field">
+                        <label for="phone">Phone number</label>
+                        <input type="tel" id="phone" value="+880 1898-XXXXXX" />
+                    </div>
+                </div>
+
+                <div class="admin-form__field">
+                    <label for="bio">Short bio</label>
+                    <textarea id="bio" rows="3" placeholder="A line about your role on the team...">Handles order review and catalogue upkeep for MediCart.</textarea>
+                </div>
+
+                <div class="admin-form__actions">
+                    <button type="button" class="btn btn--outline" id="discardProfile">Discard</button>
+                    <button type="submit" class="btn btn--pine">Save changes</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Security -->
+        <div class="tabs__panel" data-panel="security" role="tabpanel" hidden>
+            <form id="passwordForm" class="admin-form" novalidate>
+                <div class="admin-form__field">
+                    <label for="currentPassword">Current password</label>
+                    <div class="input-with-icon">
+                        <input type="password" id="currentPassword" placeholder="••••••••" required />
+                        <button type="button" class="input-with-icon__toggle" data-toggle-for="currentPassword" aria-label="Show password">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="admin-form__row">
+                    <div class="admin-form__field">
+                        <label for="newPassword">New password</label>
+                        <div class="input-with-icon">
+                            <input type="password" id="newPassword" placeholder="••••••••" required />
+                            <button type="button" class="input-with-icon__toggle" data-toggle-for="newPassword" aria-label="Show password">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                            </button>
+                        </div>
+                        <div class="pw-strength" id="pwStrength"><span></span></div>
+                        <small class="admin-form__hint" id="pwStrengthLabel">Use 8+ characters with a number and symbol</small>
+                    </div>
+                    <div class="admin-form__field">
+                        <label for="confirmPassword">Confirm new password</label>
+                        <input type="password" id="confirmPassword" placeholder="••••••••" required />
+                    </div>
+                </div>
+
+                <div class="admin-form__actions">
+                    <button type="submit" class="btn btn--pine">Update password</button>
+                </div>
+            </form>
+
+            <hr class="admin-divider" />
+
+            <div class="toggle-row">
+                <div>
+                    <strong>Two-factor authentication</strong>
+                    <p>Require a one-time code when logging in from a new device.</p>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="twoFaToggle" />
+                    <span class="switch__track"><span class="switch__thumb"></span></span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Notifications -->
+        <div class="tabs__panel" data-panel="notifications" role="tabpanel" hidden>
+            <div class="toggle-row">
+                <div>
+                    <strong>Flagged order alerts</strong>
+                    <p>Email me immediately when a high-sensitivity order is flagged.</p>
+                </div>
+                <label class="switch"><input type="checkbox" checked /><span class="switch__track"><span class="switch__thumb"></span></span></label>
+            </div>
+            <div class="toggle-row">
+                <div>
+                    <strong>Low stock digest</strong>
+                    <p>Daily summary of medicines nearing their stock threshold.</p>
+                </div>
+                <label class="switch"><input type="checkbox" checked /><span class="switch__track"><span class="switch__thumb"></span></span></label>
+            </div>
+            <div class="toggle-row">
+                <div>
+                    <strong>Expiry warnings</strong>
+                    <p>Notify 30 days before a batch's expiry date.</p>
+                </div>
+                <label class="switch"><input type="checkbox" /><span class="switch__track"><span class="switch__thumb"></span></span></label>
+            </div>
+            <div class="toggle-row">
+                <div>
+                    <strong>New contact messages</strong>
+                    <p>Notify when a customer submits the contact form.</p>
+                </div>
+                <label class="switch"><input type="checkbox" checked /><span class="switch__track"><span class="switch__thumb"></span></span></label>
+            </div>
+        </div>
+
+        <!-- Recent activity -->
+        <div class="tabs__panel" data-panel="activity" role="tabpanel" hidden>
+            <ul class="activity-list">
+                <li>
+                    <span class="activity-list__badge activity-list__badge--reject">order.reject</span>
+                    <div>
+                        <p>Rejected order <strong>MC-10501</strong> — prescription image was unreadable.</p>
+                        <small>Today, 11:52 AM</small>
+                    </div>
+                </li>
+                <li>
+                    <span class="activity-list__badge activity-list__badge--approve">order.approve</span>
+                    <div>
+                        <p>Approved standard order <strong>MC-10500</strong>, no flags raised.</p>
+                        <small>Today, 11:50 AM</small>
+                    </div>
+                </li>
+                <li>
+                    <span class="activity-list__badge activity-list__badge--update">stock.update</span>
+                    <div>
+                        <p>Updated stock for <strong>Seclo 20</strong> from 8 &rarr; 50 units after restock.</p>
+                        <small>Today, 10:40 AM</small>
+                    </div>
+                </li>
+                <li>
+                    <span class="activity-list__badge activity-list__badge--reject">order.reject</span>
+                    <div>
+                        <p>Rejected flagged order <strong>MC-10476</strong> — unable to reach customer to confirm.</p>
+                        <small>Yesterday, 6:20 PM</small>
+                    </div>
+                </li>
+                <li>
+                    <span class="activity-list__badge activity-list__badge--update">medicine.update</span>
+                    <div>
+                        <p>Sensitivity tier for <strong>Fasidol IV</strong> changed from Mid &rarr; High.</p>
+                        <small>Yesterday, 4:05 PM</small>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+    </section>
+</div>
+
+@section Scripts {
+    <script src="~/js/admin-profile.js" asp-append-version="true"></script>
+}
