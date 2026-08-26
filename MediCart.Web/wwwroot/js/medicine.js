@@ -81,16 +81,24 @@
 
     /* ----- Add to cart from card ----- */
     var cartCount = 0;
-    var cartBadge = document.querySelector(".cart-button__badge");
 
     function bumpCart(qty) {
         cartCount += qty;
+        var cartButton = document.querySelector(".cart-button");
+        var cartBadge = document.querySelector(".cart-button__badge");
+
         if (cartBadge) {
             cartBadge.textContent = cartCount;
-            cartBadge.style.display = "flex";
-            cartBadge.style.visibility = "visible";
-            cartBadge.style.opacity = "1";
+            cartBadge.classList.add("is-visible");
         }
+
+        if (cartButton) {
+            cartButton.classList.remove("is-bumped");
+            // force reflow so the animation can restart on repeated clicks
+            void cartButton.offsetWidth;
+            cartButton.classList.add("is-bumped");
+        }
+
         showToast(qty === 1 ? "Added to cart" : qty + " items added to cart");
     }
 
@@ -98,9 +106,9 @@
         var toast = document.getElementById("toast");
         if (!toast) return;
         toast.querySelector(".toast__text").textContent = message;
-        toast.classList.add("toast--visible");
+        toast.classList.add("is-visible");
         clearTimeout(showToast._t);
-        showToast._t = setTimeout(function () { toast.classList.remove("toast--visible"); }, 2200);
+        showToast._t = setTimeout(function () { toast.classList.remove("is-visible"); }, 2200);
     }
 
     grid.addEventListener("click", function (e) {
