@@ -67,7 +67,7 @@
                         Back to home
                     </a>
                     <span class="login__register-pill">
-                        New here? <a asp-area="Identity" asp-page="/Account/Register" asp-route-returnUrl="@Model.ReturnUrl">Create an account</a>
+                        New here? <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl">Create an account</a>
                     </span>
                 </div>
 
@@ -98,12 +98,11 @@
                             <input asp-for="Input.RememberMe" type="checkbox" />
                             Remember me
                         </label>
-                        <a class="login__forgot" asp-page="./ForgotPassword">Forgot password?</a>
                     </div>
 
                     <button type="submit" id="loginSubmit" class="login__submit">
                         <span class="login__spinner" aria-hidden="true"></span>
-                        <span class="login__submit-text">Log in</span>
+                        <span class="login__submit-text" data-loading-text="Signing in…">Log in</span>
                     </button>
                 </form>
             </div>
