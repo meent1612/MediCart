@@ -3,175 +3,237 @@
     ViewData["Title"] = "Browse medicines";
 }
 
-<link rel="stylesheet" href="~/css/medicine.css" asp-append-version="true" />
+@section Styles {
+    <link rel="stylesheet" href="~/css/medicine.css" asp-append-version="true" />
+}
 
-<div class="browse-page">
+<div class="container browse">
 
-    <nav class="breadcrumb">
-        <a asp-controller="Home" asp-action="Index">Home</a>
-        <span>/</span>
-        <span class="current">Browse medicines</span>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="~/">Home</a> <span>/</span> <span>Browse medicines</span>
     </nav>
 
-    <div class="browse-layout">
+    <div class="browse__layout">
 
-        <!-- ===================== FILTER SIDEBAR ===================== -->
-        <aside class="filters" id="filters">
-            <div class="filters-head">
-                <h3>Filters</h3>
-                <button type="button" class="clear-btn" id="clearFilters">Clear all</button>
+        <aside class="filters" aria-label="Filters">
+            <div class="filters__header">
+                <h2>Filters</h2>
+                <button type="button" class="filters__clear" id="clearFilters">Clear all</button>
             </div>
 
             <div class="filter-group">
-                <h4>Product type</h4>
-                @foreach (var type in Model.Select(m => m.ProductType).Distinct().OrderBy(t => t))
-                {
-                    <label class="checkbox-row">
-                        <input type="checkbox" class="filter-input" data-filter="type" value="@type" />
-                        <span>@type</span>
-                    </label>
-                }
+                <h3>Product type</h3>
+                <div class="filter-options" data-filter-group="productType">
+                    @foreach (var type in Model.Select(m => m.ProductType).Distinct().OrderBy(t => t))
+                    {
+                        <label class="filter-check">
+                            <input type="checkbox" value="@type" />
+                            <span>@type</span>
+                        </label>
+                    }
+                </div>
             </div>
 
             <div class="filter-group">
-                <h4>Category</h4>
-                @foreach (var cat in Model.Select(m => m.Category).Distinct().OrderBy(c => c))
-                {
-                    <label class="checkbox-row">
-                        <input type="checkbox" class="filter-input" data-filter="category" value="@cat" />
-                        <span>@cat</span>
-                    </label>
-                }
+                <h3>Category</h3>
+                <div class="filter-options" data-filter-group="category">
+                    @foreach (var cat in Model.Select(m => m.Category).Distinct().OrderBy(c => c))
+                    {
+                        <label class="filter-check">
+                            <input type="checkbox" value="@cat" />
+                            <span>@cat</span>
+                        </label>
+                    }
+                </div>
             </div>
 
             <div class="filter-group">
-                <h4>Use tag</h4>
-                @foreach (var tag in Model.SelectMany(m => m.UseTags).Distinct().OrderBy(t => t))
-                {
-                    <label class="checkbox-row">
-                        <input type="checkbox" class="filter-input" data-filter="tag" value="@tag" />
-                        <span>@tag</span>
-                    </label>
-                }
+                <h3>Use tag</h3>
+                <div class="filter-options" data-filter-group="useTag">
+                    @foreach (var tag in Model.SelectMany(m => m.UseTags).Distinct().OrderBy(t => t))
+                    {
+                        <label class="filter-check">
+                            <input type="checkbox" value="@tag" />
+                            <span>@tag</span>
+                        </label>
+                    }
+                </div>
             </div>
 
             <div class="filter-group">
-                <h4>Price range</h4>
-                <input type="range" id="priceRange" min="0" max="500" step="5" value="500" class="price-slider" />
-                <div class="price-range-labels">
+                <h3>Price range</h3>
+                <input type="range" id="priceRange" min="0" max="500" step="5" value="500" />
+                <div class="filter-price-labels">
                     <span>৳0</span>
                     <span id="priceRangeValue">৳500</span>
                 </div>
             </div>
         </aside>
 
-        <!-- ===================== RESULTS ===================== -->
-        <section class="results">
-            <div class="results-head">
-                <h2 id="resultsTitle">Browse medicines <span id="resultsCount">(@Model.Count results)</span></h2>
-
-                <div class="sort-wrap">
-                    <label for="sortSelect">Sort:</label>
+        <section class="results" aria-live="polite">
+            <div class="results__toolbar">
+                <div>
+                    <h1 id="resultsHeading">All medicines</h1>
+                    <span class="results__count" id="resultsCount">@Model.Count results</span>
+                </div>
+                <label class="sort">
+                    Sort:
                     <select id="sortSelect">
                         <option value="popular">Most popular</option>
                         <option value="price-asc">Price: low to high</option>
                         <option value="price-desc">Price: high to low</option>
-                        <option value="name-asc">Name: A–Z</option>
+                        <option value="name-asc">Name: A to Z</option>
                     </select>
-                </div>
+                </label>
             </div>
 
-            <div class="medicine-grid" id="medicineGrid">
+            <div class="product-grid" id="productGrid">
                 @foreach (var med in Model)
                 {
-                    <article class="medicine-card"
+                    <article class="product-card"
                              data-id="@med.Id"
-                             data-type="@med.ProductType"
+                             data-name="@med.Name.ToLower()"
+                             data-product-type="@med.ProductType"
                              data-category="@med.Category"
-                             data-tags="@string.Join(",", med.UseTags)"
+                             data-use-tags="@string.Join(",", med.UseTags)"
                              data-price="@med.Price"
-                             data-name="@med.Name"
-                             tabindex="0" role="button" aria-haspopup="dialog">
-                        <div class="card-thumb">
-                            <span class="pill-icon">@med.IconGlyph</span>
-                            <button type="button" class="fav-btn" aria-label="Save to favourites" onclick="event.stopPropagation(); this.classList.toggle('active')">♥</button>
+                             data-popularity="@med.Popularity"
+                             data-stock="@med.Stock">
+
+                        <div class="product-card__image" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3.5" y="8.5" width="17" height="7" rx="3.5" transform="rotate(-45 12 12)" />
+                                <line x1="9.2" y1="14.8" x2="14.8" y2="9.2" />
+                            </svg>
                         </div>
 
-                        <div class="card-body">
+                        <div class="product-card__body">
                             <h3>@med.Name</h3>
-                            <p class="generic-line">@med.GenericName &middot; @med.Manufacturer</p>
+                            <p class="product-card__sub">@med.Composition &middot; @med.Manufacturer</p>
 
-                            <div class="badge-row">
-                                @if (med.RequiresPrescription)
+                            <div class="product-card__badges">
+                                @if (med.RequiresRx)
                                 {
-                                    <span class="badge badge-rx">Rx required</span>
+                                    <span class="badge badge--rx">Rx required</span>
                                 }
                                 else
                                 {
-                                    <span class="badge @med.StockCss">@med.StockLabel</span>
+                                    <span class="badge badge--stock-@med.StockCssClass">@med.StockStatus</span>
                                 }
-                                <span class="badge badge-intensity">@med.Intensity</span>
+                                <span class="badge badge--potency">@med.Potency</span>
                             </div>
 
-                            <div class="card-footer">
-                                <span class="price">৳ @med.Price.ToString("0")</span>
-                                <button type="button" class="add-btn" data-id="@med.Id" aria-label="Add @med.Name to cart" onclick="event.stopPropagation()">+</button>
+                            <div class="product-card__footer">
+                                <span class="price">৳@med.Price.ToString("0")</span>
+
+                                <div class="product-card__actions">
+                                    <button type="button" class="btn-link view-details-btn" data-id="@med.Id">View details</button>
+                                    <button type="button" class="btn-add" data-id="@med.Id" aria-label="Add @med.Name to cart"
+                                            @(med.Stock <= 0 ? "disabled" : "")>+</button>
+                                </div>
                             </div>
                         </div>
                     </article>
                 }
             </div>
 
-            <p class="empty-state" id="emptyState" hidden>No medicines match these filters. Try clearing a few.</p>
+            <p class="no-results" id="noResults" hidden>No medicines match the selected filters.</p>
         </section>
     </div>
 </div>
 
-<!-- ===================== QUICK VIEW MODAL ===================== -->
-<div class="modal-backdrop" id="modalBackdrop" hidden>
-    <div class="modal" id="medicineModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-        <button type="button" class="modal-close" id="modalClose" aria-label="Close">&times;</button>
+<!-- Detail modal -->
+<div class="modal-overlay" id="modalOverlay" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <button type="button" class="modal__close" id="modalClose" aria-label="Close">&times;</button>
 
-        <div class="modal-thumb">
-            <span class="pill-icon large" id="modalIcon">💊</span>
+        <div class="modal__head">
+            <div class="modal__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3.5" y="8.5" width="17" height="7" rx="3.5" transform="rotate(-45 12 12)" />
+                    <line x1="9.2" y1="14.8" x2="14.8" y2="9.2" />
+                </svg>
+            </div>
+            <div>
+                <h2 id="modalTitle">Medicine name</h2>
+                <p id="modalComposition" class="modal__composition">Composition</p>
+            </div>
+            <span class="badge badge--rx" id="modalRxBadge" hidden>Rx</span>
         </div>
 
-        <div class="modal-content">
-            <div class="badge-row" id="modalBadges"></div>
-            <h2 id="modalTitle"></h2>
-            <p class="generic-line" id="modalGeneric"></p>
-
-            <p class="modal-desc" id="modalDesc"></p>
-
-            <div class="modal-section">
-                <h4>Dosage</h4>
-                <p id="modalDosage"></p>
+        <div class="modal__grid">
+            <div>
+                <span class="modal__label">Manufacturer</span>
+                <span class="modal__value" id="modalManufacturer"></span>
             </div>
-
-            <div class="modal-section">
-                <h4>Possible side effects</h4>
-                <ul id="modalSideEffects" class="side-effects-list"></ul>
-                <p class="disclaimer">This list isn't exhaustive. Stop use and consult a pharmacist or doctor if you notice anything unusual.</p>
+            <div>
+                <span class="modal__label">Strength</span>
+                <span class="modal__value" id="modalStrength"></span>
             </div>
-
-            <div class="modal-footer">
-                <div class="qty-stepper">
-                    <button type="button" id="qtyMinus" aria-label="Decrease quantity">−</button>
-                    <span id="qtyValue">1</span>
-                    <button type="button" id="qtyPlus" aria-label="Increase quantity">+</button>
-                </div>
-                <span class="modal-price" id="modalPrice"></span>
-                <button type="button" class="add-btn-lg" id="modalAddBtn">Add to cart</button>
+            <div>
+                <span class="modal__label">Form</span>
+                <span class="modal__value" id="modalForm"></span>
             </div>
+            <div>
+                <span class="modal__label">Category</span>
+                <span class="modal__value" id="modalCategory"></span>
+            </div>
+            <div>
+                <span class="modal__label">In stock</span>
+                <span class="modal__value" id="modalStock"></span>
+            </div>
+            <div>
+                <span class="modal__label">Price</span>
+                <span class="modal__value" id="modalPrice"></span>
+            </div>
+        </div>
+
+        <div class="modal__section">
+            <h4>About</h4>
+            <p id="modalAbout"></p>
+        </div>
+
+        <div class="modal__section">
+            <h4>Dosage</h4>
+            <p id="modalDosage"></p>
+        </div>
+
+        <div class="modal__section">
+            <h4>Possible side effects</h4>
+            <div class="modal__tags" id="modalSideEffects"></div>
+        </div>
+
+        <div class="modal__cart">
+            <div class="qty-stepper">
+                <button type="button" id="modalQtyMinus" aria-label="Decrease quantity">&minus;</button>
+                <input type="number" id="modalQtyInput" value="1" min="1" max="99" aria-label="Quantity" />
+                <button type="button" id="modalQtyPlus" aria-label="Increase quantity">+</button>
+            </div>
+            <button type="button" class="btn-add-cart" id="modalAddToCart">Add to cart</button>
         </div>
     </div>
 </div>
 
-<div class="toast" id="cartToast" hidden></div>
-
-<!-- Data island: teammates can replace this with a fetch("/api/medicines") call later -->
-<script id="medicines-data" type="application/json">
-    @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model))
+<script type="application/json" id="medicineData">
+    @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Select(m => new
+    {
+        m.Id,
+        m.Name,
+        m.Composition,
+        m.Strength,
+        m.Manufacturer,
+        m.ProductType,
+        m.Category,
+        m.Price,
+        m.Stock,
+        m.RequiresRx,
+        StockStatus = m.StockStatus,
+        m.About,
+        m.Dosage,
+        m.SideEffects
+    })))
 </script>
 
-<script src="~/js/medicine.js" asp-append-version="true"></script>
+@section Scripts {
+    <script src="~/js/medicine.js" asp-append-version="true"></script>
+}

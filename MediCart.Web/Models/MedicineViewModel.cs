@@ -2,43 +2,29 @@ using System.Collections.Generic;
 
 namespace MediCart.Web.Models
 {
-    public enum StockStatus
-    {
-        InStock,
-        LowStock,
-        OutOfStock
-    }
-
     public class MedicineViewModel
     {
         public int Id { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public string GenericName { get; set; } = string.Empty;   // e.g. "Omeprazole 20mg"
-        public string Manufacturer { get; set; } = string.Empty;  // e.g. "Square Pharma"
-        public string ProductType { get; set; } = string.Empty;   // Tablet, Syrup, Injection, Ointment, Drops
-        public string Category { get; set; } = string.Empty;      // Pain relief, Gastric, Fever & cold, Allergy, Vitamins
-        public List<string> UseTags { get; set; } = new();        // Fever, Acidity, Headache, Cough
-        public decimal Price { get; set; }                        // in BDT (Taka)
-        public StockStatus Stock { get; set; }
-        public string Intensity { get; set; } = "Mild";           // Mild, Moderate, Strong
-        public bool RequiresPrescription { get; set; }
-        public string Description { get; set; } = string.Empty;
-        public string DosageInstructions { get; set; } = string.Empty;
+        public string Name { get; set; } = "";
+        public string Composition { get; set; } = "";
+        public string Strength { get; set; } = "";
+        public string Manufacturer { get; set; } = "";
+        public string ProductType { get; set; } = "";   // Tablet, Syrup, Injection, Ointment, Drops
+        public string Category { get; set; } = "";      // Pain relief, Gastric, Fever & cold, Allergy, Vitamins
+        public List<string> UseTags { get; set; } = new(); // Fever, Acidity, Headache, Cough
+        public decimal Price { get; set; }
+        public int Stock { get; set; }
+        public bool RequiresRx { get; set; }
+        public string Potency { get; set; } = "Mild";   // Mild, Strong
+        public int Popularity { get; set; }
+        public string About { get; set; } = "";
+        public string Dosage { get; set; } = "";
         public List<string> SideEffects { get; set; } = new();
-        public string IconGlyph { get; set; } = "💊";              // swap for a real image path later
 
-        public string StockLabel => Stock switch
-        {
-            StockStatus.InStock => "In stock",
-            StockStatus.LowStock => "Low stock",
-            _ => "Out of stock"
-        };
+        public string StockStatus =>
+            Stock <= 0 ? "Out of stock" : Stock <= 30 ? "Low stock" : "In stock";
 
-        public string StockCss => Stock switch
-        {
-            StockStatus.InStock => "badge-instock",
-            StockStatus.LowStock => "badge-lowstock",
-            _ => "badge-outstock"
-        };
+        public string StockCssClass =>
+            Stock <= 0 ? "out" : Stock <= 30 ? "low" : "in";
     }
 }
