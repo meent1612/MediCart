@@ -1,4 +1,4 @@
-@{
+﻿@{
     var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
     var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
 
@@ -52,7 +52,7 @@
 
                 <a asp-area="Identity" asp-page="/Account/Login" class="btn btn--outline btn--sm">Log in</a>
                 <a asp-area="Identity" asp-page="/Account/Register" class="btn btn--pine btn--sm">Register</a>
-
+                
                 <button type="button" class="navbar__toggle" aria-label="Open menu" aria-expanded="false">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18" /></svg>
                 </button>
