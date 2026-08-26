@@ -409,14 +409,6 @@ body.login-body {
   accent-color: var(--slate);
 }
 
-.login__forgot {
-  font-size: 0.85rem;
-  color: var(--slate);
-  font-weight: 600;
-  text-decoration: none;
-  border-bottom: 1px solid var(--misty);
-}
-
 .login__submit {
   width: 100%;
   padding: 0.95rem 1rem;
