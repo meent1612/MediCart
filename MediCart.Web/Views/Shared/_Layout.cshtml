@@ -1,50 +1,140 @@
-﻿<!DOCTYPE html>
+@{
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
+
+    bool IsCurrent(string controller, string action) =>
+        string.Equals(currentController, controller, StringComparison.OrdinalIgnoreCase) &&
+        string.Equals(currentAction, action, StringComparison.OrdinalIgnoreCase);
+}
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - MediCart.Web</title>
-    <script type="importmap"></script>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] - MediCart</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/MediCart.Web.styles.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">MediCart.Web</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
-                    <partial name="_LoginPartial" />
-                </div>
-            </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - MediCart.Web - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <header class="site-header">
+        <div class="container navbar">
+            <a href="~/" class="navbar__logo">
+                <svg class="navbar__logo-mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
+                    <path d="M12 5v14M5 12h14" />
+                </svg>
+                MediCart
+            </a>
+
+            <nav aria-label="Primary">
+                <ul class="navbar__links">
+                    <li><a href="~/" aria-current="@(IsCurrent("Home", "Index") ? "page" : null)">Home</a></li>
+                    <li><a href="~/Medicines" aria-current="@(IsCurrent("Medicines", "Index") ? "page" : null)">Browse medicines</a></li>
+                    <li><a href="~/Medicines/Categories">Categories</a></li>
+                    <li><a href="~/Home/About" aria-current="@(IsCurrent("Home", "About") ? "page" : null)">About us</a></li>
+                    <li><a href="~/Home/Contact" aria-current="@(IsCurrent("Home", "Contact") ? "page" : null)">Contact</a></li>
+                </ul>
+            </nav>
+
+            <div class="navbar__actions">
+                <button type="button" class="cart-button" aria-label="View cart">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" />
+                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                    </svg>
+                    <span class="cart-button__badge">0</span>
+                </button>
+
+                <a asp-area="Identity" asp-page="/Account/Login" class="btn btn--outline btn--sm">Log in</a>
+                <a asp-area="Identity" asp-page="/Account/Register" class="btn btn--pine btn--sm">Register</a>
+
+                <button type="button" class="navbar__toggle" aria-label="Open menu" aria-expanded="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18" /></svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Mobile drawer -->
+    <nav class="mobile-nav" aria-hidden="true" aria-label="Mobile">
+        <div class="mobile-nav__top">
+            <span class="navbar__logo" style="color:#fff;">MediCart</span>
+            <button type="button" class="mobile-nav__close" aria-label="Close menu">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
+            </button>
+        </div>
+        <ul class="mobile-nav__links">
+            <li><a href="~/">Home</a></li>
+            <li><a href="~/Medicines">Browse medicines</a></li>
+            <li><a href="~/Medicines/Categories">Categories</a></li>
+            <li><a href="~/Home/About">About us</a></li>
+            <li><a href="~/Home/Contact">Contact</a></li>
+        </ul>
+        <div class="mobile-nav__actions">
+            <a asp-area="Identity" asp-page="/Account/Login" class="btn btn--outline-light">Log in</a>
+            <a asp-area="Identity" asp-page="/Account/Register" class="btn btn--amber">Register</a>
+        </div>
+    </nav>
+
+    <main>
+        @RenderBody()
+    </main>
+
+    <footer class="site-footer">
+        <div class="container site-footer__top">
+            <div>
+                <div class="site-footer__brand">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14" /></svg>
+                    MediCart
+                </div>
+                <p class="site-footer__blurb">
+                    An admin-verified online pharmacy — every order reviewed by a
+                    pharmacist before it ships, not just the prescription-only ones.
+                </p>
+            </div>
+            <div>
+                <h4>Shop</h4>
+                <ul>
+                    <li><a href="~/Medicines">Browse medicines</a></li>
+                    <li><a href="~/Medicines/Categories">Categories</a></li>
+                    <li><a asp-area="Identity" asp-page="/Account/Register">Create an account</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4>Support</h4>
+                <ul>
+                    <li><a href="~/Home/Contact">Contact us</a></li>
+                    <li><a asp-area="Identity" asp-page="/Account/Login">Log in</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4>Company</h4>
+                <ul>
+                    <li><a href="~/Home/About">About us</a></li>
+                    <li><a href="~/Home/Privacy">Privacy policy</a></li>
+                    <li><a href="~/Home/Terms">Terms of service</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="container site-footer__bottom">
+            <span>&copy; @DateTime.Now.Year MediCart &middot; Department of CSE, AUST</span>
+            <span>
+                <a href="~/Home/About">About us</a> &middot;
+                <a href="~/Home/Contact">Contact us</a>
+            </span>
         </div>
     </footer>
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+    <div class="toast" id="toast" role="status" aria-live="polite">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+        <span class="toast__text"></span>
+    </div>
+
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
