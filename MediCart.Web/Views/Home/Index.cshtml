@@ -1,8 +1,380 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@{
+    ViewData["Title"] = "Home";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+@section Styles {
+    <link rel="stylesheet" href="~/css/home.css" asp-append-version="true" />
+}
+
+<div class="container">
+
+    <!-- ============================================================
+         HERO
+         ============================================================ -->
+    <section class="hero">
+        <div class="hero__noise" aria-hidden="true"></div>
+        <span class="hero__capsule hero__capsule--a" aria-hidden="true"></span>
+        <span class="hero__capsule hero__capsule--b" aria-hidden="true"></span>
+
+        <div class="hero__grid">
+            <div>
+                <p class="eyebrow">Admin-verified ordering</p>
+                <h1 class="hero__headline">Every order is checked <em>before it ships</em>.</h1>
+                <p class="hero__subcopy">
+                    Browse a full pharmacy catalogue and order online — with a pharmacist
+                    reviewing every order, not just the ones tagged prescription-only.
+                </p>
+
+                <form id="heroSearchForm" class="hero__search" method="get" action="~/Medicines" role="search">
+                    <label for="heroSearchInput" class="visually-hidden">Search for a medicine</label>
+                    <input type="search" id="heroSearchInput" name="search" class="hero__search-input" placeholder="Search for a medicine" autocomplete="off" />
+                    <button type="submit" class="btn btn--amber">Search</button>
+                </form>
+
+                <div class="hero__chips" aria-label="Popular searches">
+                    <span class="hero__chips-label">Popular:</span>
+                    <a href="~/Medicines?search=Napa+Extra" class="hero__chip">Napa Extra</a>
+                    <a href="~/Medicines?search=Seclo" class="hero__chip">Seclo</a>
+                    <a href="~/Medicines?type=Syrup" class="hero__chip">Cough syrup</a>
+                    <a href="~/Medicines?search=Vitamin" class="hero__chip">Vitamins</a>
+                </div>
+
+                <div class="hero__actions">
+                    <a href="~/Medicines" class="btn btn--outline-light">Browse full catalogue &rarr;</a>
+                </div>
+            </div>
+
+            <div>
+                <div class="review-card">
+                    <span class="review-card__label">Order #MC-1042</span>
+                    <p class="review-card__order">Napa Extra &times; 2, Seclo 20mg &times; 1</p>
+
+                    <div class="review-card__reviewer">
+                        <span class="review-card__avatar">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21a8 8 0 1 0-16 0" /><circle cx="12" cy="7" r="4" /></svg>
+                        </span>
+                        <div>
+                            <span class="review-card__label">Reviewed by</span>
+                            <span style="font-weight:600; font-size:14px; color:var(--ink-900);">Pharmacist on duty</span>
+                        </div>
+                    </div>
+
+                    <span class="review-card__badge">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+                        Approved for dispatch
+                    </span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================
+         STATS STRIP
+         ============================================================ -->
+    <section class="stats-strip reveal" aria-label="MediCart at a glance">
+        <div class="stats-strip__item">
+            <span class="stats-strip__number" data-count-to="1200" data-suffix="+">0</span>
+            <span class="stats-strip__label">Medicines listed</span>
+        </div>
+        <div class="stats-strip__item">
+            <span class="stats-strip__number" data-count-to="15000" data-suffix="+">0</span>
+            <span class="stats-strip__label">Orders fulfilled</span>
+        </div>
+        <div class="stats-strip__item">
+            <span class="stats-strip__number" data-count-to="100" data-suffix="%">0</span>
+            <span class="stats-strip__label">Orders pharmacist-reviewed</span>
+        </div>
+        <div class="stats-strip__item">
+            <span class="stats-strip__number" data-count-to="24" data-suffix="/7">0</span>
+            <span class="stats-strip__label">Order tracking</span>
+        </div>
+    </section>
+
+    <!-- ============================================================
+         SHOP BY TYPE
+         ============================================================ -->
+    <section class="section reveal">
+        <div class="section__head">
+            <p class="eyebrow">Shop by type</p>
+            <h2>Browse by product type</h2>
+            <p>Every medicine on MediCart is organised by type, category and use — same as it would be behind the pharmacy counter.</p>
+        </div>
+
+        <div class="category-grid">
+            <a href="~/Medicines?type=Tablet" class="category-card">
+                <span class="category-card__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="9" width="18" height="6" rx="3" transform="rotate(-45 12 12)" /><path d="M9.5 14.5 14.5 9.5" /></svg>
+                </span>
+                <span class="category-card__label">Tablet</span>
+            </a>
+            <a href="~/Medicines?type=Syrup" class="category-card">
+                <span class="category-card__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2h6M10 2v6.34a2 2 0 0 1-.4 1.2L6.3 15a4 4 0 0 0-.8 2.4V20a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2v-2.6a4 4 0 0 0-.8-2.4l-3.3-5.46a2 2 0 0 1-.4-1.2V2" /></svg>
+                </span>
+                <span class="category-card__label">Syrup</span>
+            </a>
+            <a href="~/Medicines?type=Injection" class="category-card">
+                <span class="category-card__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m18 2 4 4M17 7l-9 9-4 4-1-1 4-4 9-9zM12 6l6 6M9 9l6 6" /></svg>
+                </span>
+                <span class="category-card__label">Injection</span>
+            </a>
+            <a href="~/Medicines?type=Ointment" class="category-card">
+                <span class="category-card__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="8" width="12" height="13" rx="2" /><path d="M9 8V5a3 3 0 0 1 6 0v3" /></svg>
+                </span>
+                <span class="category-card__label">Ointment</span>
+            </a>
+            <a href="~/Medicines?type=Drops" class="category-card">
+                <span class="category-card__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11Z" /></svg>
+                </span>
+                <span class="category-card__label">Drops</span>
+            </a>
+        </div>
+    </section>
+
+    <!-- ============================================================
+         HOW IT WORKS
+         ============================================================ -->
+    <section class="section section--alt reveal">
+        <div class="section__head">
+            <p class="eyebrow">How it works</p>
+            <h2>From cart to doorstep, reviewed at every step</h2>
+            <p>Ordering medicine online shouldn't feel risky. Here's what happens behind the scenes with every MediCart order.</p>
+        </div>
+
+        <div class="steps">
+
+            <div class="step">
+                <span class="step__number">1</span>
+                <span class="step__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" /><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" /></svg>
+                </span>
+                <h3>Search &amp; add to cart</h3>
+                <p>Find what you need by name, type or category, and add it to your cart in a couple of taps.</p>
+            </div>
+
+            <div class="step">
+                <span class="step__number">2</span>
+                <span class="step__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M20 21a8 8 0 1 0-16 0" /><circle cx="12" cy="7" r="4" /></svg>
+                </span>
+                <h3>Pharmacist reviews it</h3>
+                <p>Every order — not only prescription items — is checked by a pharmacist before it's approved.</p>
+            </div>
+
+            <div class="step">
+                <span class="step__number">3</span>
+                <span class="step__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="7" width="15" height="13" rx="2" /><path d="M16 10h3.5a1 1 0 0 1 .9.55L23 14v6h-7" /><circle cx="6" cy="20" r="1.6" /><circle cx="17.5" cy="20" r="1.6" /></svg>
+                </span>
+                <h3>Delivered to your door</h3>
+                <p>Once approved, your order ships and you can track it right from your account.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================
+         FEATURED / FREQUENTLY ORDERED
+         ============================================================ -->
+    <section class="section reveal">
+        <div class="section__head">
+            <p class="eyebrow">Featured</p>
+            <h2>Frequently ordered</h2>
+            <p>Popular, in-stock medicines this week.</p>
+        </div>
+
+        <div class="product-grid">
+
+            <article class="product-card">
+                <div class="product-card__media">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="3" y="9" width="18" height="6" rx="3" transform="rotate(-45 12 12)" /><path d="M9.5 14.5 14.5 9.5" /></svg>
+                </div>
+                <div class="product-card__body">
+                    <span class="product-card__name">Napa Extra</span>
+                    <span class="product-card__meta">Paracetamol 500mg + Caffeine &middot; Tablet</span>
+                    <div class="product-card__tags">
+                        <span class="tag tag--stock">In stock</span>
+                        <span class="tag tag--mild">Mild severity</span>
+                    </div>
+                    <div class="product-card__footer">
+                        <span class="product-card__price">&#2547; 30</span>
+                        <button type="button" class="add-btn" aria-label="Add Napa Extra to cart">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14" /></svg>
+                        </button>
+                    </div>
+                </div>
+            </article>
+
+            <article class="product-card">
+                <div class="product-card__media">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2h6M10 2v6.34a2 2 0 0 1-.4 1.2L6.3 15a4 4 0 0 0-.8 2.4V20a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2v-2.6a4 4 0 0 0-.8-2.4l-3.3-5.46a2 2 0 0 1-.4-1.2V2" /></svg>
+                </div>
+                <div class="product-card__body">
+                    <span class="product-card__name">Ambrox Syrup</span>
+                    <span class="product-card__meta">Ambroxol 15mg/5ml &middot; Syrup</span>
+                    <div class="product-card__tags">
+                        <span class="tag tag--stock">In stock</span>
+                        <span class="tag tag--mild">Mild severity</span>
+                    </div>
+                    <div class="product-card__footer">
+                        <span class="product-card__price">&#2547; 85</span>
+                        <button type="button" class="add-btn" aria-label="Add Ambrox Syrup to cart">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14" /></svg>
+                        </button>
+                    </div>
+                </div>
+            </article>
+
+            <article class="product-card">
+                <div class="product-card__media">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="3" y="9" width="18" height="6" rx="3" transform="rotate(-45 12 12)" /><path d="M9.5 14.5 14.5 9.5" /></svg>
+                </div>
+                <div class="product-card__body">
+                    <span class="product-card__name">Seclo 20</span>
+                    <span class="product-card__meta">Omeprazole 20mg &middot; Tablet</span>
+                    <div class="product-card__tags">
+                        <span class="tag tag--rx">Rx required</span>
+                        <span class="tag tag--mild">Mild severity</span>
+                    </div>
+                    <div class="product-card__footer">
+                        <span class="product-card__price">&#2547; 60</span>
+                        <button type="button" class="add-btn" aria-label="Add Seclo 20 to cart">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14" /></svg>
+                        </button>
+                    </div>
+                </div>
+            </article>
+
+            <article class="product-card">
+                <div class="product-card__media">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m18 2 4 4M17 7l-9 9-4 4-1-1 4-4 9-9zM12 6l6 6M9 9l6 6" /></svg>
+                </div>
+                <div class="product-card__body">
+                    <span class="product-card__name">Fasidol IV</span>
+                    <span class="product-card__meta">Paracetamol 1g/100ml &middot; Injection</span>
+                    <div class="product-card__tags">
+                        <span class="tag tag--high">High sensitivity</span>
+                        <span class="tag tag--rx">Rx required</span>
+                    </div>
+                    <div class="product-card__footer">
+                        <span class="product-card__price">&#2547; 140</span>
+                        <button type="button" class="add-btn" aria-label="Add Fasidol IV to cart">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14" /></svg>
+                        </button>
+                    </div>
+                </div>
+            </article>
+
+        </div>
+    </section>
+
+    <!-- ============================================================
+         TRUST STRIP
+         ============================================================ -->
+    <section class="section section--alt reveal">
+        <div class="container" style="padding-inline:40px;">
+            <div class="trust-grid">
+                <div class="trust-card">
+                    <span class="trust-card__icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" /></svg>
+                    </span>
+                    <h3>Reviewed, always</h3>
+                    <p>Every order — not only prescription items — is queued for admin approval before it ships.</p>
+                </div>
+                <div class="trust-card">
+                    <span class="trust-card__icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" /><path d="M4 22V15" /></svg>
+                    </span>
+                    <h3>Sensitivity flagging</h3>
+                    <p>Unusually large orders of sensitive medicines are flagged automatically for a closer look.</p>
+                </div>
+                <div class="trust-card">
+                    <span class="trust-card__icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3.5 3.5" /></svg>
+                    </span>
+                    <h3>Expiry-aware stock</h3>
+                    <p>Two-tier expiry alerts mean what reaches you is checked, in-date stock.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================
+         TESTIMONIALS
+         ============================================================ -->
+    <section class="section reveal">
+        <div class="section__head">
+            <p class="eyebrow">What customers say</p>
+            <h2>Trusted by people who need it to be right</h2>
+        </div>
+
+        <div class="testimonial" role="region" aria-roledby="testimonialHeading" aria-label="Customer testimonials">
+            <button type="button" class="testimonial__arrow testimonial__arrow--prev" aria-label="Previous testimonial">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
+            </button>
+
+            <div class="testimonial__track">
+                <blockquote class="testimonial__slide is-active">
+                    <p>&ldquo;I was nervous ordering blood-pressure medicine online, but knowing a pharmacist checks every order before it ships made the difference.&rdquo;</p>
+                    <footer>
+                        <span class="testimonial__avatar">RA</span>
+                        <div>
+                            <cite>Rahim A.</cite>
+                            <span>Dhaka</span>
+                        </div>
+                    </footer>
+                </blockquote>
+                <blockquote class="testimonial__slide">
+                    <p>&ldquo;The category search is quick and the site tells you clearly what's in stock. No surprises at checkout.&rdquo;</p>
+                    <footer>
+                        <span class="testimonial__avatar">SK</span>
+                        <div>
+                            <cite>Sadia K.</cite>
+                            <span>Narayanganj</span>
+                        </div>
+                    </footer>
+                </blockquote>
+                <blockquote class="testimonial__slide">
+                    <p>&ldquo;I order syrups for my kids every month. Delivery has been on time and the packaging is always intact.&rdquo;</p>
+                    <footer>
+                        <span class="testimonial__avatar">TH</span>
+                        <div>
+                            <cite>Tanvir H.</cite>
+                            <span>Chattogram</span>
+                        </div>
+                    </footer>
+                </blockquote>
+            </div>
+
+            <button type="button" class="testimonial__arrow testimonial__arrow--next" aria-label="Next testimonial">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6" /></svg>
+            </button>
+        </div>
+
+        <div class="testimonial__dots" role="tablist" aria-label="Choose testimonial">
+            <button type="button" class="testimonial__dot is-active" aria-label="Testimonial 1"></button>
+            <button type="button" class="testimonial__dot" aria-label="Testimonial 2"></button>
+            <button type="button" class="testimonial__dot" aria-label="Testimonial 3"></button>
+        </div>
+    </section>
+
+    <!-- ============================================================
+         CLOSING CTA
+         ============================================================ -->
+    <section class="cta-banner reveal">
+        <div class="cta-banner__noise" aria-hidden="true"></div>
+        <h2>Ready to order with confidence?</h2>
+        <p>Create a free account to track orders, save your details, and check out faster next time.</p>
+        <div class="cta-banner__actions">
+            <a asp-area="Identity" asp-page="/Account/Register" class="btn btn--amber">Create an account</a>
+            <a href="~/Medicines" class="btn btn--outline-light">Browse medicines</a>
+        </div>
+    </section>
+
 </div>
+
+@section Scripts {
+    <script src="~/js/home.js" asp-append-version="true"></script>
+}
