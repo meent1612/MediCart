@@ -1,0 +1,9 @@
+@{
+    ViewData["Title"] = ViewContext.RouteData.Values["action"]?.ToString();
+    Layout = "_AdminLayout";
+}
+
+<div style="text-align:center; padding: 80px 20px; color: var(--slate-500);">
+    <h2 style="margin-bottom:8px;">@ViewData["Title"] — coming soon</h2>
+    <p>This page isn't built yet. Swap this view out once the design + data are ready.</p>
+</div>
