@@ -25,4 +25,22 @@ public class HomeController : Controller
     {
        return View();
     }
+    [HttpGet]
+    public IActionResult Contact()
+    {
+       return View();
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult Contact(ContactViewModel model)
+    {
+      if (!ModelState.IsValid)
+    {
+        return View(model);
+    }
+
+    TempData["ContactSuccess"] = "Thanks — we've received your message and will get back to you within 24 hours.";
+    return RedirectToAction(nameof(Contact));
+   }
 }

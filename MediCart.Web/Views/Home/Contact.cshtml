@@ -1,0 +1,121 @@
+@model MediCart.Web.Models.ContactViewModel
+@{
+    ViewData["Title"] = "Contact us";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/contact.css" asp-append-version="true" />
+}
+
+<section class="contact-hero">
+    <div class="container">
+        <p class="eyebrow">Get in touch</p>
+        <h1>We're here to help</h1>
+        <p class="contact-hero__sub">Questions about an order, a medicine, or your account — reach out and a real person will reply.</p>
+    </div>
+</section>
+
+<section class="contact-body">
+    <div class="container contact-layout">
+
+        <!-- Contact form -->
+        <div class="contact-form-card">
+            <h2>Send us a message</h2>
+
+            @if (TempData["ContactSuccess"] != null)
+            {
+                <div class="contact-success">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5" /></svg>
+                    <span>@TempData["ContactSuccess"]</span>
+                </div>
+            }
+
+            <div asp-validation-summary="ModelOnly" class="contact-summary" role="alert"></div>
+
+            <form asp-action="Contact" method="post" novalidate>
+                <div class="form-grid">
+                    <div class="field">
+                        <label asp-for="FullName" class="field__label">Full name</label>
+                        <input asp-for="FullName" class="field__control" />
+                        <span asp-validation-for="FullName" class="field__error"></span>
+                    </div>
+                    <div class="field">
+                        <label asp-for="Email" class="field__label">Email address</label>
+                        <input asp-for="Email" class="field__control" />
+                        <span asp-validation-for="Email" class="field__error"></span>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label asp-for="Subject" class="field__label">Subject</label>
+                    <input asp-for="Subject" class="field__control" />
+                    <span asp-validation-for="Subject" class="field__error"></span>
+                </div>
+
+                <div class="field">
+                    <label asp-for="Message" class="field__label">Message</label>
+                    <textarea asp-for="Message" rows="6" class="field__control"></textarea>
+                    <span asp-validation-for="Message" class="field__error"></span>
+                </div>
+
+                <button type="submit" class="btn btn--pine">Send message</button>
+            </form>
+        </div>
+
+        <!-- Contact info -->
+        <aside class="contact-info">
+            <div class="contact-info__card">
+                <h3>Reach us directly</h3>
+                <ul>
+                    <li>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" /></svg>
+                        <div><strong>Phone</strong><span>+880 1XXX-XXXXXX</span></div>
+                    </li>
+                    <li>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z" /><path d="m22 6-10 7L2 6" /></svg>
+                        <div><strong>Email</strong><span>support@medicart.example</span></div>
+                    </li>
+                    <li>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
+                        <div><strong>Office</strong><span>Department of CSE, AUST, Dhaka</span></div>
+                    </li>
+                </ul>
+            </div>
+            <div class="contact-info__card contact-info__hours">
+                <h3>Support hours</h3>
+                <p>Sat–Thu: 9:00 AM – 9:00 PM<br />Friday: Closed</p>
+            </div>
+        </aside>
+    </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq-section">
+    <div class="container">
+        <p class="eyebrow">Frequently asked</p>
+        <h2>Common questions</h2>
+
+        <div class="faq-list">
+            <details class="faq-item" open>
+                <summary>How does order verification work?</summary>
+                <p>Every order — not just prescription items — is reviewed by a pharmacist on duty before it's approved for dispatch. You'll see the status update on your order tracking page.</p>
+            </details>
+            <details class="faq-item">
+                <summary>Do I need a prescription to order?</summary>
+                <p>Only for medicines marked "Rx" in the catalogue. You can upload your prescription during checkout — everything else can be ordered without one.</p>
+            </details>
+            <details class="faq-item">
+                <summary>How long does delivery take?</summary>
+                <p>Most orders are reviewed and dispatched within a few hours. Delivery time depends on your location, typically same-day to 2 business days.</p>
+            </details>
+            <details class="faq-item">
+                <summary>Can I track my order?</summary>
+                <p>Yes — once your order is placed, you'll get an order ID you can use to check live status, from review to delivery.</p>
+            </details>
+            <details class="faq-item">
+                <summary>What if my order gets flagged?</summary>
+                <p>If a pharmacist has a question about your order, we'll contact you directly with details before making any changes or cancellations.</p>
+            </details>
+        </div>
+    </div>
+</section>
