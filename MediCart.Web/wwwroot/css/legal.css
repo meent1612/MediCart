@@ -40,3 +40,21 @@
     color: var(--slate-500);
     margin: 0 0 28px;
 }
+.legal-content > p { font-size: 0.98rem; line-height: 1.7; color: var(--slate-700); margin: 0 0 20px; }
+.legal-content h2 {
+    font-size: 1.25rem;
+    margin: 36px 0 12px;
+    scroll-margin-top: 100px;
+}
+.legal-content a { color: var(--pine-800); text-decoration: underline; }
+
+@media (max-width: 860px) {
+    .legal-layout { grid-template-columns: 1fr; }
+    .legal-toc {
+        position: static;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 6px 16px;
+        margin-bottom: 24px;
+    }
+}
