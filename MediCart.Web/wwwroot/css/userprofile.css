@@ -1,0 +1,9 @@
+/* ===== User profile page (uses admin.css tokens, no sidebar) ===== */
+
+.userprofile-page {
+    padding: 40px 0 88px;
+}
+.userprofile-page__title {
+    font-size: 1.8rem;
+    margin-bottom: 24px;
+}
