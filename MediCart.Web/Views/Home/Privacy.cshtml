@@ -1,6 +1,58 @@
 ﻿@{
     ViewData["Title"] = "Privacy Policy";
 }
-<h1>@ViewData["Title"]</h1>
 
-<p>Use this page to detail your site's privacy policy.</p>
+@section Styles {
+    <link rel="stylesheet" href="~/css/legal.css" asp-append-version="true" />
+}
+
+<section class="legal-page">
+    <div class="container legal-layout">
+        <aside class="legal-toc">
+            <span class="legal-toc__label">On this page</span>
+            <a href="#collect">1. Information we collect</a>
+            <a href="#use">2. How we use it</a>
+            <a href="#sharing">3. Sharing of information</a>
+            <a href="#security">4. Data security</a>
+            <a href="#cookies">5. Cookies</a>
+            <a href="#rights">6. Your rights</a>
+            <a href="#changes">7. Changes to this policy</a>
+            <a href="#contact">8. Contact</a>
+        </aside>
+
+        <article class="legal-content">
+            <p class="eyebrow">Legal</p>
+            <h1>Privacy Policy</h1>
+            <p class="legal-updated">Last updated: August 2026</p>
+
+            <p>
+                This Privacy Policy explains how MediCart collects, uses, and protects
+                your personal information when you use our platform.
+            </p>
+
+            <h2 id="collect">1. Information we collect</h2>
+            <p>We collect information you provide directly, such as your name, email, phone number, delivery address, and any prescriptions you upload during checkout.</p>
+
+            <h2 id="use">2. How we use it</h2>
+            <p>Your information is used to process orders, verify prescriptions, communicate order status, and improve the MediCart platform.</p>
+
+            <h2 id="sharing">3. Sharing of information</h2>
+            <p>We do not sell your personal data. Information is only shared with the pharmacist reviewing your order and, where necessary, delivery partners fulfilling your order.</p>
+
+            <h2 id="security">4. Data security</h2>
+            <p>We take reasonable measures to protect your data, including password hashing and access controls. However, no online system can guarantee complete security.</p>
+
+            <h2 id="cookies">5. Cookies</h2>
+            <p>MediCart uses cookies to keep you signed in and remember your cart. You can disable cookies in your browser, though some features may not work correctly.</p>
+
+            <h2 id="rights">6. Your rights</h2>
+            <p>You may request access to, correction of, or deletion of your personal data at any time by contacting us.</p>
+
+            <h2 id="changes">7. Changes to this policy</h2>
+            <p>We may update this Privacy Policy periodically. Continued use of MediCart after changes constitutes acceptance of the revised policy.</p>
+
+            <h2 id="contact">8. Contact</h2>
+            <p>Questions about this policy can be sent via our <a href="~/Home/Contact">contact page</a>.</p>
+        </article>
+    </div>
+</section>
