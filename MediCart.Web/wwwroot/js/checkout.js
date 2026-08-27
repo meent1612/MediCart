@@ -57,52 +57,11 @@
 
     /* ----- Payment method ----- */
     var paymentOptions = document.getElementById("paymentOptions");
-    var bkashFields = document.getElementById("bkashFields");
-    var cardFields = document.getElementById("cardFields");
-    var selectedMethod = "Cash on delivery";
-
-    function showPaymentFields(method) {
-        bkashFields.hidden = method !== "bKash";
-        cardFields.hidden = method !== "Card";
-    }
-
     paymentOptions.addEventListener("click", function (e) {
         var btn = e.target.closest(".payment-option");
         if (!btn) return;
         paymentOptions.querySelectorAll(".payment-option").forEach(function (b) { b.classList.remove("is-selected"); });
         btn.classList.add("is-selected");
-        selectedMethod = btn.dataset.method;
-        showPaymentFields(selectedMethod);
-    });
-
-    /* ----- bKash field formatting ----- */
-    var bkashNumber = document.getElementById("bkashNumber");
-    var bkashTxnId = document.getElementById("bkashTxnId");
-    var bkashError = document.getElementById("bkashError");
-
-    bkashNumber.addEventListener("input", function () {
-        bkashNumber.value = bkashNumber.value.replace(/\D/g, "").slice(0, 11);
-    });
-
-    /* ----- Card field formatting ----- */
-    var cardName = document.getElementById("cardName");
-    var cardNumber = document.getElementById("cardNumber");
-    var cardExpiry = document.getElementById("cardExpiry");
-    var cardCvv = document.getElementById("cardCvv");
-    var cardError = document.getElementById("cardError");
-
-    cardNumber.addEventListener("input", function () {
-        var digits = cardNumber.value.replace(/\D/g, "").slice(0, 16);
-        cardNumber.value = digits.replace(/(.{4})/g, "$1 ").trim();
-    });
-
-    cardExpiry.addEventListener("input", function () {
-        var digits = cardExpiry.value.replace(/\D/g, "").slice(0, 4);
-        cardExpiry.value = digits.length > 2 ? digits.slice(0, 2) + "/" + digits.slice(2) : digits;
-    });
-
-    cardCvv.addEventListener("input", function () {
-        cardCvv.value = cardCvv.value.replace(/\D/g, "").slice(0, 4);
     });
 
     /* ----- Prescription upload ----- */
@@ -149,42 +108,15 @@
     var addressError = document.getElementById("addressError");
     var fullAddress = document.getElementById("fullAddress");
     var phoneNumber = document.getElementById("phoneNumber");
-    var phoneError = document.getElementById("phoneError");
-
-    phoneNumber.addEventListener("input", function () {
-        phoneNumber.value = phoneNumber.value.replace(/\D/g, "").slice(0, 11);
-        if (phoneNumber.value.length === 11) phoneError.hidden = true;
-    });
 
     placeOrderBtn.addEventListener("click", function () {
         var valid = true;
 
-        if (!fullAddress.value.trim()) {
+        if (!fullAddress.value.trim() || !phoneNumber.value.trim()) {
             addressError.hidden = false;
             valid = false;
         } else {
             addressError.hidden = true;
-        }
-
-        if (phoneNumber.value.length !== 11) {
-            phoneError.hidden = false;
-            valid = false;
-        } else {
-            phoneError.hidden = true;
-        }
-
-        if (selectedMethod === "bKash") {
-            var bkashOk = bkashNumber.value.length === 11 && bkashTxnId.value.trim().length > 0;
-            bkashError.hidden = bkashOk;
-            if (!bkashOk) valid = false;
-        }
-
-        if (selectedMethod === "Card") {
-            var digitsOnly = cardNumber.value.replace(/\D/g, "");
-            var expiryOk = /^\d{2}\/\d{2}$/.test(cardExpiry.value);
-            var cardOk = cardName.value.trim().length > 0 && digitsOnly.length === 16 && expiryOk && cardCvv.value.length >= 3;
-            cardError.hidden = cardOk;
-            if (!cardOk) valid = false;
         }
 
         if (data.requiresPrescription && prescriptionInput && !prescriptionInput.files.length) {
