@@ -1,0 +1,178 @@
+@model MediCart.Web.Models.CheckoutViewModel
+@{
+    ViewData["Title"] = "Checkout";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/checkout.css" asp-append-version="true" />
+}
+
+<div class="container checkout-page">
+
+    <ol class="step-tracker">
+        <li class="step-tracker__step step-tracker__step--done">
+            <span class="step-tracker__circle">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+            </span>
+            <span class="step-tracker__label">Cart</span>
+        </li>
+        <li class="step-tracker__step step-tracker__step--active">
+            <span class="step-tracker__circle">2</span>
+            <span class="step-tracker__label">Checkout</span>
+        </li>
+        <li class="step-tracker__step">
+            <span class="step-tracker__circle">3</span>
+            <span class="step-tracker__label">Confirmation</span>
+        </li>
+    </ol>
+
+    <div class="checkout-layout">
+
+        <div class="checkout-main">
+
+            <section class="checkout-card">
+                <h2><span class="checkout-card__num">1</span> Delivery address</h2>
+
+                <div class="form-grid">
+                    <label class="field">
+                        <span class="field__label">Division</span>
+                        <select id="division">
+                            <option>Dhaka</option>
+                            <option>Chattogram</option>
+                            <option>Khulna</option>
+                            <option>Rajshahi</option>
+                            <option>Barishal</option>
+                            <option>Sylhet</option>
+                            <option>Rangpur</option>
+                            <option>Mymensingh</option>
+                        </select>
+                    </label>
+                    <label class="field">
+                        <span class="field__label">City / Upazila</span>
+                        <select id="city"></select>
+                    </label>
+                </div>
+
+                <label class="field">
+                    <span class="field__label">Full address</span>
+                    <input type="text" id="fullAddress" placeholder="House, road, area" />
+                </label>
+
+                <label class="field">
+                    <span class="field__label">Phone number</span>
+                    <input type="tel" id="phoneNumber" placeholder="01XXXXXXXXX"
+                           inputmode="numeric" maxlength="11" minlength="11" pattern="[0-9]{11}" />
+                </label>
+                <p class="field__error" id="phoneError" hidden>Phone number must be exactly 11 digits.</p>
+
+                <p class="field__error" id="addressError" hidden>Please fill in your full address.</p>
+            </section>
+
+            <section class="checkout-card">
+                <h2><span class="checkout-card__num">2</span> Payment method</h2>
+
+                <div class="payment-options" id="paymentOptions">
+                    <button type="button" class="payment-option is-selected" data-method="Cash on delivery">Cash on delivery</button>
+                    <button type="button" class="payment-option" data-method="bKash">bKash</button>
+                    <button type="button" class="payment-option" data-method="Card">Card</button>
+                </div>
+
+                <div class="payment-fields" id="bkashFields" hidden>
+                    <div class="form-grid">
+                        <label class="field">
+                            <span class="field__label">bKash number</span>
+                            <input type="tel" id="bkashNumber" placeholder="01XXXXXXXXX" inputmode="numeric" maxlength="11" />
+                        </label>
+                        <label class="field">
+                            <span class="field__label">Transaction ID</span>
+                            <input type="text" id="bkashTxnId" placeholder="e.g. 8N7A6B5C4D" />
+                        </label>
+                    </div>
+                    <p class="field__error" id="bkashError" hidden>Please enter a valid 11-digit bKash number and transaction ID.</p>
+                </div>
+
+                <div class="payment-fields" id="cardFields" hidden>
+                    <label class="field">
+                        <span class="field__label">Name on card</span>
+                        <input type="text" id="cardName" placeholder="Full name as on card" />
+                    </label>
+                    <label class="field">
+                        <span class="field__label">Card number</span>
+                        <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" inputmode="numeric" maxlength="19" />
+                    </label>
+                    <div class="form-grid">
+                        <label class="field">
+                            <span class="field__label">Expiry date</span>
+                            <input type="text" id="cardExpiry" placeholder="MM/YY" inputmode="numeric" maxlength="5" />
+                        </label>
+                        <label class="field">
+                            <span class="field__label">CVV</span>
+                            <input type="password" id="cardCvv" placeholder="123" inputmode="numeric" maxlength="4" />
+                        </label>
+                    </div>
+                    <p class="field__error" id="cardError" hidden>Please fill in valid card details.</p>
+                </div>
+            </section>
+
+            @if (Model.RequiresPrescription)
+            {
+                <section class="checkout-card">
+                    <h2><span class="checkout-card__num">3</span> Upload prescription</h2>
+
+                    <p class="rx-warning">
+                        @Model.RxItemName in your cart requires a prescription. Your order will stay pending until an admin reviews it.
+                    </p>
+
+                    <label class="dropzone" id="dropzone" for="prescriptionInput">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 16V4M12 4 7 9M12 4l5 5" />
+                            <path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" />
+                        </svg>
+                        <span id="dropzoneText">Drop your prescription image here<br />or click to browse &middot; JPG, PNG or PDF, up to 5MB</span>
+                        <input type="file" id="prescriptionInput" accept=".jpg,.jpeg,.png,.pdf" hidden />
+                    </label>
+                    <p class="field__error" id="prescriptionError" hidden>Please attach your prescription before placing the order.</p>
+                </section>
+            }
+        </div>
+
+        <aside class="order-summary">
+            <h2>Order summary</h2>
+
+            <div class="order-summary__items">
+                @foreach (var item in Model.Items)
+                {
+                    <div class="order-summary__row">
+                        <span>@item.Name &times; @item.Quantity</span>
+                        <span>৳@item.LineTotal.ToString("0")</span>
+                    </div>
+                }
+            </div>
+
+            <div class="order-summary__divider"></div>
+
+            <div class="order-summary__row">
+                <span>Subtotal</span>
+                <span id="summarySubtotal">৳@Model.Subtotal.ToString("0")</span>
+            </div>
+            <div class="order-summary__row">
+                <span>Delivery (<span id="deliveryDivisionLabel">@Model.DefaultDivision</span>)</span>
+                <span id="summaryDelivery">৳0</span>
+            </div>
+            <div class="order-summary__row order-summary__row--total">
+                <span>Total</span>
+                <span id="summaryTotal">৳@Model.Subtotal.ToString("0")</span>
+            </div>
+
+            <button type="button" class="btn btn--pine order-summary__cta" id="placeOrderBtn">Place order</button>
+        </aside>
+    </div>
+</div>
+
+<script type="application/json" id="checkoutData">
+    @Html.Raw(System.Text.Json.JsonSerializer.Serialize(new { subtotal = Model.Subtotal, requiresPrescription = Model.RequiresPrescription }))
+</script>
+
+@section Scripts {
+    <script src="~/js/checkout.js" asp-append-version="true"></script>
+}
