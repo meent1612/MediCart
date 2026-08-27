@@ -1,0 +1,42 @@
+/* ===== Terms / Privacy — shared legal page layout ===== */
+
+.legal-page { padding: 48px 0 88px; }
+
+.legal-layout {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 48px;
+    align-items: start;
+}
+
+.legal-toc {
+    position: sticky;
+    top: 90px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.legal-toc__label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--slate-500);
+    margin-bottom: 4px;
+}
+.legal-toc a {
+    font-size: 0.86rem;
+    color: var(--slate-500);
+    padding: 4px 0;
+    transition: color .15s var(--ease);
+}
+.legal-toc a:hover { color: var(--pine-800); }
+
+.legal-content { max-width: 720px; }
+.legal-content h1 { font-size: 2.1rem; margin: 6px 0 8px; }
+.legal-updated {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--slate-500);
+    margin: 0 0 28px;
+}
