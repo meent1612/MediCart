@@ -1,0 +1,113 @@
+@{
+    ViewData["Title"] = "About us";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/about.css" asp-append-version="true" />
+}
+
+<!-- ===== Hero ===== -->
+<section class="about-hero">
+    <div class="container about-hero__inner">
+        <p class="eyebrow">Our story</p>
+        <h1 class="about-hero__headline">Built by people who got tired of guessing what's actually in stock.</h1>
+        <p class="about-hero__sub">
+            MediCart is an online pharmacy where every single order, not just
+            prescription items, gets checked by a pharmacist before it ships.
+        </p>
+    </div>
+</section>
+
+<!-- ===== Mission ===== -->
+<section class="about-mission">
+    <div class="container about-mission__grid">
+        <div>
+            <p class="eyebrow">Why we built this</p>
+            <h2>Every order checked, not just the risky-looking ones.</h2>
+            <p class="about-mission__text">
+                Most online pharmacies only flag prescription-only medicines for review.
+                We wanted every order — vitamins, cough syrup, anything — to pass through
+                a pharmacist first, because mistakes can happen with common medicines too.
+            </p>
+        </div>
+        <div class="about-mission__card">
+            <div class="about-mission__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5" /></svg>
+            </div>
+            <h3>Admin-verified ordering</h3>
+            <p>Every order — reviewed, approved, and tracked from checkout to delivery.</p>
+        </div>
+    </div>
+</section>
+
+<!-- ===== Values ===== -->
+<section class="about-values">
+    <div class="container">
+        <p class="eyebrow">What guides us</p>
+        <h2 class="about-values__heading">A few things we don't compromise on</h2>
+
+        <div class="about-values__grid">
+            <div class="value-card">
+                <div class="value-card__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" /></svg>
+                </div>
+                <h3>Safety first</h3>
+                <p>No order leaves the queue without a pharmacist's sign-off.</p>
+            </div>
+            <div class="value-card">
+                <div class="value-card__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3" /><circle cx="12" cy="12" r="9" /></svg>
+                </div>
+                <h3>Transparency</h3>
+                <p>Track your order status in real time — no black-box waiting.</p>
+            </div>
+            <div class="value-card">
+                <div class="value-card__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+                </div>
+                <h3>Community first</h3>
+                <p>Built to serve real households, not just move volume.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== Team ===== -->
+<section class="about-team">
+    <div class="container">
+        <p class="eyebrow">The people behind MediCart</p>
+        <h2 class="about-team__heading">Meet the admins</h2>
+
+        <div class="about-team__grid">
+            <div class="team-card">
+                <span class="team-card__avatar">RAM</span>
+                <h3>Rahnuma Azra Mahjabin</h3>
+                <span class="team-card__role">Admin</span>
+            </div>
+            <div class="team-card">
+                <span class="team-card__avatar">FM</span>
+                <h3>Farzana Mim</h3>
+                <span class="team-card__role">Admin</span>
+            </div>
+            <div class="team-card">
+                <span class="team-card__avatar">SS</span>
+                <h3>Shayma Sharmin</h3>
+                <span class="team-card__role">Admin</span>
+            </div>
+            <div class="team-card">
+                <span class="team-card__avatar">ZT</span>
+                <h3>Zumaina Tahsin</h3>
+                <span class="team-card__role">Admin</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== CTA ===== -->
+<section class="about-cta">
+    <div class="container about-cta__inner">
+        <h2>Have questions about how we work?</h2>
+        <p>We're happy to walk you through it.</p>
+        <a href="~/Home/Contact" class="btn btn--amber">Contact us</a>
+    </div>
+</section>
