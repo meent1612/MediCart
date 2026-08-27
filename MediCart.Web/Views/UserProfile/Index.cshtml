@@ -1,0 +1,83 @@
+@model MediCart.Web.Models.UserProfileViewModel
+@{
+    ViewData["Title"] = "My Profile";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/userprofile.css" asp-append-version="true" />
+}
+
+<section class="container userprofile-page">
+    <h1 class="userprofile-page__title">My Profile</h1>
+
+    <div class="profile-grid">
+
+        <!-- Identity card -->
+        <div class="profile-card">
+            <div class="profile-card__cover"></div>
+            <div class="profile-card__avatar-wrap">
+                <span class="admin-avatar admin-avatar--lg">
+                    @(string.IsNullOrEmpty(Model.FullName) ? "U" : Model.FullName.Substring(0, 1).ToUpper())
+                </span>
+            </div>
+            <h2 class="profile-card__name">@Model.FullName</h2>
+            <span class="profile-card__role">MediCart customer</span>
+
+            <dl class="profile-card__meta">
+                <div>
+                    <dt>Email</dt>
+                    <dd>@Model.Email</dd>
+                </div>
+                <div>
+                    <dt>Phone</dt>
+                    <dd>@(string.IsNullOrEmpty(Model.PhoneNumber) ? "—" : Model.PhoneNumber)</dd>
+                </div>
+            </dl>
+        </div>
+
+        <!-- Editable form -->
+        <div class="profile-panel">
+            <div class="tabs">
+                <button type="button" class="tabs__btn is-active">Account details</button>
+            </div>
+
+            <div class="tabs__panel">
+                @if (TempData["ProfileSuccess"] != null)
+                {
+                    <div class="contact-success" style="margin-bottom:18px;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5" /></svg>
+                        <span>@TempData["ProfileSuccess"]</span>
+                    </div>
+                }
+
+                <div asp-validation-summary="ModelOnly" style="color:var(--danger-700); font-size:0.85rem; margin-bottom:14px;"></div>
+
+                <form asp-action="Index" method="post" class="admin-form" novalidate>
+                    <div class="admin-form__row">
+                        <div class="admin-form__field">
+                            <label asp-for="FullName">Full name</label>
+                            <input asp-for="FullName" />
+                            <span asp-validation-for="FullName" class="field__error"></span>
+                        </div>
+                        <div class="admin-form__field">
+                            <label asp-for="PhoneNumber">Phone number</label>
+                            <input asp-for="PhoneNumber" />
+                            <span asp-validation-for="PhoneNumber" class="field__error"></span>
+                        </div>
+                    </div>
+
+                    <div class="admin-form__field">
+                        <label>Email address</label>
+                        <input value="@Model.Email" disabled />
+                        <span class="admin-form__hint">Email can't be changed here. Contact support if needed.</span>
+                    </div>
+
+                    <div class="admin-form__actions">
+                        <button type="submit" class="btn btn--pine">Save changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
