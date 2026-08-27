@@ -43,4 +43,6 @@ public class HomeController : Controller
     TempData["ContactSuccess"] = "Thanks — we've received your message and will get back to you within 24 hours.";
     return RedirectToAction(nameof(Contact));
    }
+
+   
 }
