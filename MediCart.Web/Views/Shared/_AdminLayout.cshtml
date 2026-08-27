@@ -21,13 +21,13 @@
 
     <div class="admin-shell">
         <aside class="admin-sidebar" id="adminSidebar">
-            <div class="admin-sidebar__brand">
+            <a href="~/" class="admin-sidebar__brand">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14" /></svg>
                 <div>
                     <span class="admin-sidebar__brand-name">MediCart</span>
                     <span class="admin-sidebar__brand-tag">Admin</span>
                 </div>
-            </div>
+            </a>
 
             <nav class="admin-nav" aria-label="Admin">
                 <a href="~/Admin/Dashboard" class="admin-nav__link @(IsAction("Dashboard") ? "is-active" : "")">

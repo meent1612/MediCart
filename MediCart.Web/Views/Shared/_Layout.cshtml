@@ -35,9 +35,9 @@
                 <ul class="navbar__links">
                     <li><a href="~/" aria-current="@(IsCurrent("Home", "Index") ? "page" : null)">Home</a></li>
                     <li><a href="~/Medicines" aria-current="@(IsCurrent("Medicines", "Index") ? "page" : null)">Browse medicines</a></li>
+                    
                     <li><a href="~/Home/About" aria-current="@(IsCurrent("Home", "About") ? "page" : null)">About us</a></li>
                     <li><a href="~/Home/Contact" aria-current="@(IsCurrent("Home", "Contact") ? "page" : null)">Contact</a></li>
-                    <li><a href="~/Admin/Profile" aria-current="@(IsCurrent("Admin", "Profile") ? "page" : null)">Admin Profile</a></li>
                 </ul>
             </nav>
 
@@ -52,6 +52,9 @@
 
                 <a asp-area="Identity" asp-page="/Account/Login" class="btn btn--outline btn--sm">Log in</a>
                 <a asp-area="Identity" asp-page="/Account/Register" class="btn btn--pine btn--sm">Register</a>
+
+                <!-- TEMP: dev-only link, remove once auth/db is wired up -->
+                <a href="~/Admin/Profile" class="btn btn--ghost btn--sm" style="border:1px dashed var(--amber-600);">Admin (temp)</a>
                 
                 <button type="button" class="navbar__toggle" aria-label="Open menu" aria-expanded="false">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18" /></svg>
