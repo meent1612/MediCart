@@ -1,0 +1,297 @@
+/* ===== Confirmation / order tracking page ===== */
+
+.confirmation-page {
+    padding: 40px 0 96px;
+}
+
+/* ----- Step tracker (shared pattern with cart.css / checkout.css) ----- */
+.step-tracker {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 28px;
+    list-style: none;
+    margin: 0 0 36px;
+    padding: 0;
+}
+
+.step-tracker__step {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--slate-500);
+    font-size: 14px;
+}
+
+.step-tracker__step:not(:last-child)::after {
+    content: "";
+    width: 40px;
+    height: 1px;
+    background: var(--line);
+    margin-left: 18px;
+}
+
+.step-tracker__circle {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 1px solid var(--slate-300);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--slate-500);
+    flex-shrink: 0;
+}
+
+.step-tracker__circle svg {
+    width: 13px;
+    height: 13px;
+}
+
+.step-tracker__step--active .step-tracker__circle,
+.step-tracker__step--done .step-tracker__circle {
+    background: var(--pine-800);
+    border-color: var(--pine-800);
+    color: var(--white);
+}
+
+.step-tracker__step--active .step-tracker__label {
+    color: var(--ink-900);
+    font-weight: 600;
+}
+
+/* ----- Tracking card ----- */
+.tracking-card {
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    padding: 28px 30px 32px;
+    margin-bottom: 24px;
+}
+
+.tracking-card__head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+}
+
+.tracking-card__head h1 {
+    font-size: 1.35rem;
+    margin: 0 0 6px;
+}
+
+.tracking-card__meta {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--slate-500);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+}
+
+.copy-order-btn {
+    background: none;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-pill);
+    color: var(--pine-800);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    padding: 2px 10px;
+    cursor: pointer;
+}
+
+.copy-order-btn:hover {
+    border-color: var(--pine-800);
+}
+
+.copy-order-btn.is-copied {
+    background: var(--sage-100);
+    border-color: var(--pine-800);
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: var(--sage-100);
+    color: var(--success-700);
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    padding: 6px 14px;
+    border-radius: var(--radius-pill);
+}
+
+.status-badge::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--success-700);
+}
+
+/* ----- Progress steps ----- */
+.tracking-progress {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    position: relative;
+}
+
+.tracking-progress::before {
+    content: "";
+    position: absolute;
+    top: 20px;
+    left: 12.5%;
+    right: 12.5%;
+    height: 2px;
+    background: var(--line);
+    z-index: 0;
+}
+
+.tracking-progress__step {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 8px;
+}
+
+.tracking-progress__circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--misty-100);
+    color: var(--slate-500);
+    border: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+}
+
+.tracking-progress__circle svg {
+    width: 17px;
+    height: 17px;
+}
+
+.tracking-progress__step.is-done .tracking-progress__circle {
+    background: var(--sage-100);
+    border-color: var(--pine-800);
+    color: var(--pine-800);
+}
+
+.tracking-progress__label {
+    font-weight: 600;
+    font-size: 0.88rem;
+    color: var(--ink-900);
+}
+
+.tracking-progress__time {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--slate-500);
+}
+
+/* ----- Info grid ----- */
+.confirmation-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    align-items: start;
+}
+
+.confirmation-col {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.info-card {
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    padding: 22px 24px;
+}
+
+.info-card h3 {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--slate-500);
+    margin: 0 0 12px;
+}
+
+.info-card p {
+    font-size: 0.92rem;
+    color: var(--slate-700);
+    margin: 0 0 4px;
+    line-height: 1.55;
+}
+
+.info-card__name {
+    font-weight: 700;
+    color: var(--ink-900);
+}
+
+.items-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.items-list__row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    color: var(--slate-700);
+}
+
+.items-list__row span:last-child {
+    font-family: var(--font-mono);
+}
+
+.items-list__row--total {
+    border-top: 1px solid var(--line);
+    margin-top: 4px;
+    padding-top: 12px;
+    font-weight: 700;
+    color: var(--ink-900);
+}
+
+/* ----- Responsive ----- */
+@@media (max-width: 780px) {
+    .confirmation-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .tracking-progress {
+        grid-template-columns: repeat(2, 1fr);
+        row-gap: 24px;
+    }
+
+    .tracking-progress::before {
+        display: none;
+    }
+}
+
+@@media (max-width: 520px) {
+    .step-tracker__label {
+        display: none;
+    }
+
+    .tracking-card {
+        padding: 22px 18px 26px;
+    }
+}
