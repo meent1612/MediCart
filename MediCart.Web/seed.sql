@@ -1,25 +1,25 @@
 -- ============================================================
 -- MediCart seed data
--- Run this in Neon SQL Editor after dotnet ef database update
+-- Run in Neon SQL Editor after dotnet ef database update
 -- ============================================================
 
 -- ============================================================
 -- 1. Divisions (8 official divisions of Bangladesh)
 -- ============================================================
 
-INSERT INTO "Divisions" ("Name") VALUES
-    ('Dhaka'),
-    ('Chattogram'),
-    ('Khulna'),
-    ('Rajshahi'),
-    ('Barishal'),
-    ('Sylhet'),
-    ('Rangpur'),
-    ('Mymensingh')
+INSERT INTO "Divisions" ("Name", "DeliveryCharge") VALUES
+    ('Dhaka',       60.00),
+    ('Chattogram',  100.00),
+    ('Khulna',      110.00),
+    ('Rajshahi',    120.00),
+    ('Barishal',    130.00),
+    ('Sylhet',      120.00),
+    ('Rangpur',     130.00),
+    ('Mymensingh',  110.00)
 ON CONFLICT DO NOTHING;
 
 -- ============================================================
--- 2. Cities (mapped to DivisionId by subquery)
+-- 2. Cities (mapped to DivisionId by name lookup)
 -- ============================================================
 
 INSERT INTO "Cities" ("DivisionId", "Name")
