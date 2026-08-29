@@ -38,19 +38,19 @@ namespace MediCart.Web.Data
                 .HasForeignKey(c => c.ParentCategoryId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Medicine — check constraints
+            // Medicine — decimal column + check constraint
             builder.Entity<Medicine>()
                 .Property(m => m.Price)
                 .HasColumnType("numeric(10,2)");
 
             builder.Entity<Medicine>()
-                .HasCheckConstraint("CK_Medicine_SensitivityLevel",
-                    "\"SensitivityLevel\" IN ('high','mid','low') OR \"SensitivityLevel\" IS NULL");
+                .ToTable(t => t.HasCheckConstraint("CK_Medicine_SensitivityLevel",
+                    "\"SensitivityLevel\" IN ('high','mid','low') OR \"SensitivityLevel\" IS NULL"));
 
             // SideEffect — check constraint on Severity
             builder.Entity<SideEffect>()
-                .HasCheckConstraint("CK_SideEffect_Severity",
-                    "\"Severity\" IN ('mild','moderate','severe')");
+                .ToTable(t => t.HasCheckConstraint("CK_SideEffect_Severity",
+                    "\"Severity\" IN ('mild','moderate','severe')"));
 
             // Stock — one-to-one with Medicine
             builder.Entity<Stock>()
@@ -64,7 +64,7 @@ namespace MediCart.Web.Data
                 .HasIndex(c => new { c.UserId, c.MedicineId })
                 .IsUnique();
 
-            // Order — decimal columns
+            // Order — decimal columns + check constraint
             builder.Entity<Order>()
                 .Property(o => o.TotalAmount)
                 .HasColumnType("numeric(10,2)");
@@ -74,10 +74,10 @@ namespace MediCart.Web.Data
                 .HasColumnType("numeric(10,2)");
 
             builder.Entity<Order>()
-                .HasCheckConstraint("CK_Order_Status",
-                    "\"Status\" IN ('Pending','Processing','Shipped','Delivered','Rejected')");
+                .ToTable(t => t.HasCheckConstraint("CK_Order_Status",
+                    "\"Status\" IN ('Pending','Processing','Shipped','Delivered','Rejected')"));
 
-            // Prescription — one-to-one with Order
+            // Prescription — one-to-one with Order + check constraint
             builder.Entity<Prescription>()
                 .HasOne(p => p.Order)
                 .WithOne(o => o.Prescription)
@@ -85,13 +85,13 @@ namespace MediCart.Web.Data
                 .OnDelete(DeleteBehavior.Cascade);
 
             builder.Entity<Prescription>()
-                .HasCheckConstraint("CK_Prescription_Status",
-                    "\"Status\" IN ('pending','verified','rejected')");
+                .ToTable(t => t.HasCheckConstraint("CK_Prescription_Status",
+                    "\"Status\" IN ('pending','verified','rejected')"));
 
             // ExpiryAlert — check constraint on AlertLevel
             builder.Entity<ExpiryAlert>()
-                .HasCheckConstraint("CK_ExpiryAlert_AlertLevel",
-                    "\"AlertLevel\" IN ('warning','critical')");
+                .ToTable(t => t.HasCheckConstraint("CK_ExpiryAlert_AlertLevel",
+                    "\"AlertLevel\" IN ('warning','critical')"));
 
             // AuditLog — AdminId is a string FK to AspNetUsers
             builder.Entity<AuditLog>()

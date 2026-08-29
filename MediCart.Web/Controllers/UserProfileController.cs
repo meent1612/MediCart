@@ -23,9 +23,10 @@ namespace MediCart.Web.Controllers
 
             var model = new UserProfileViewModel
             {
-                FullName = user.FullName,
-                Email = user.Email,
-                PhoneNumber = user.PhoneNumber
+                // AFTER — ?? string.Empty provides a safe fallback if Identity returns null
+                FullName = user.FullName ?? string.Empty,
+                Email = user.Email ?? string.Empty,
+                PhoneNumber = user.PhoneNumber ?? string.Empty
             };
 
             return View(model);
