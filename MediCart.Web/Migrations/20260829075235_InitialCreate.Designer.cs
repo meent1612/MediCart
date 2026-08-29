@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MediCart.Web.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260829072815_InitialCreate")]
+    [Migration("20260829075235_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
