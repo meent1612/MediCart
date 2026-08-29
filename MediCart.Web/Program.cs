@@ -25,7 +25,7 @@ builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
 
-// Seed roles on startup
+// Seed roles
 using (var scope = app.Services.CreateScope())
 {
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
@@ -35,6 +35,41 @@ using (var scope = app.Services.CreateScope())
         if (!await roleManager.RoleExistsAsync(role))
         {
             await roleManager.CreateAsync(new IdentityRole(role));
+        }
+    }
+}
+
+// Seed admin accounts
+using (var scope = app.Services.CreateScope())
+{
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+
+    var admins = new[]
+    {
+        new { FullName = "Rahnuma Azra Mahjabin", Email = "rahnuma@medicart.com" },
+        new { FullName = "Farzana Mim",           Email = "farzana@medicart.com" },
+        new { FullName = "Shayma Sharmeen",        Email = "shayma@medicart.com" },
+        new { FullName = "Zumaina Tahsin",         Email = "zumaina@medicart.com" },
+    };
+
+    foreach (var a in admins)
+    {
+        if (await userManager.FindByEmailAsync(a.Email) == null)
+        {
+            var user = new ApplicationUser
+            {
+                FullName = a.FullName,
+                UserName = a.Email,
+                Email = a.Email,
+                EmailConfirmed = true
+            };
+
+            var result = await userManager.CreateAsync(user, "Admin@1234");
+
+            if (result.Succeeded)
+            {
+                await userManager.AddToRoleAsync(user, "Admin");
+            }
         }
     }
 }
