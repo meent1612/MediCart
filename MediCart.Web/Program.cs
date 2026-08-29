@@ -74,6 +74,39 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
+// Seed normal customer accounts
+using (var scope = app.Services.CreateScope())
+{
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+
+    var customers = new[]
+    {
+        new { FullName = "Ashfia Newaz", PhoneNumber = "01554154449", Email = "ashfia@gmail.com" },
+    };
+
+    foreach (var c in customers)
+    {
+        if (await userManager.FindByEmailAsync(c.Email) == null)
+        {
+            var user = new ApplicationUser
+            {
+                FullName = c.FullName,
+                PhoneNumber = c.PhoneNumber,
+                UserName = c.Email,
+                Email = c.Email,
+                EmailConfirmed = true
+            };
+
+            var result = await userManager.CreateAsync(user, "User@1234");
+
+            if (result.Succeeded)
+            {
+                await userManager.AddToRoleAsync(user, "Customer");
+            }
+        }
+    }
+}
+
 // HTTP pipeline
 if (app.Environment.IsDevelopment())
 {
