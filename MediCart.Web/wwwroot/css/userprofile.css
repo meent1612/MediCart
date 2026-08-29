@@ -1,9 +1,266 @@
-/* ===== User profile page (uses admin.css tokens, no sidebar) ===== */
+/* ==========================================================================
+   User Profile page — sidebar + order history + details form
+   ========================================================================== */
 
-.userprofile-page {
-    padding: 40px 0 88px;
+.up-page {
+    background: var(--misty-100);
+    min-height: 70vh;
+    padding: 40px 0 80px;
 }
-.userprofile-page__title {
-    font-size: 1.8rem;
-    margin-bottom: 24px;
+
+.up-shell {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding-inline: 24px;
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 26px;
+    align-items: start;
+}
+
+/* ----- Sidebar ----- */
+.up-sidebar {
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 28px 22px;
+    text-align: center;
+}
+
+.up-sidebar__identity {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding-bottom: 22px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 18px;
+}
+
+.up-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--sage-100);
+    color: var(--pine-800);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-weight: 600;
+    font-size: 1.2rem;
+    margin-bottom: 8px;
+}
+
+.up-sidebar__identity strong {
+    font-size: 0.98rem;
+    color: var(--ink-900);
+}
+
+.up-sidebar__email {
+    font-size: 0.8rem;
+    color: var(--slate-500);
+}
+
+.up-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    text-align: left;
+}
+
+.up-nav__link {
+    padding: 11px 12px;
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--slate-700);
+    transition: background-color .15s var(--ease), color .15s var(--ease);
+}
+
+.up-nav__link:hover {
+    background: var(--misty-100);
+    color: var(--pine-800);
+}
+
+.up-nav__link.is-active {
+    background: var(--sage-100);
+    color: var(--pine-800);
+    font-weight: 600;
+}
+
+.up-nav__link--logout {
+    margin-top: 10px;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+    color: var(--danger-700);
+}
+.up-nav__link--logout:hover {
+    background: var(--danger-100);
+    color: var(--danger-700);
+}
+
+/* ----- Main content ----- */
+.up-main {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+.up-card {
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 28px 30px 30px;
+    scroll-margin-top: 90px;
+}
+
+.up-card h2 {
+    font-size: 1.25rem;
+    margin-bottom: 4px;
+}
+
+.up-card__sub {
+    font-size: 0.88rem;
+    color: var(--slate-500);
+    margin: 0 0 20px;
+}
+
+/* ----- Order table ----- */
+.up-table-wrap {
+    overflow-x: auto;
+}
+
+.up-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+}
+
+.up-table th {
+    text-align: left;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: var(--slate-500);
+    padding: 0 12px 10px;
+    border-bottom: 1px solid var(--line);
+}
+
+.up-table td {
+    padding: 14px 12px;
+    border-bottom: 1px solid var(--line);
+    color: var(--slate-700);
+}
+
+.up-table tr:last-child td {
+    border-bottom: none;
+}
+
+.up-table__mono {
+    font-family: var(--font-mono);
+}
+
+.up-table__view {
+    color: var(--pine-800);
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+.up-table__view:hover {
+    text-decoration: underline;
+}
+
+.up-status {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    padding: 4px 10px;
+    border-radius: var(--radius-pill);
+}
+.up-status--shipped   { background: var(--sage-100); color: var(--pine-800); }
+.up-status--delivered { background: var(--success-100); color: var(--success-700); }
+.up-status--pending   { background: var(--amber-100); color: var(--amber-700); }
+.up-status--rejected  { background: var(--danger-100); color: var(--danger-700); }
+
+.up-empty {
+    color: var(--slate-500);
+    font-size: 0.9rem;
+    padding: 20px 0;
+    text-align: center;
+}
+
+/* ----- Profile details form ----- */
+.up-success {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--success-100);
+    color: var(--success-700);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    font-size: 0.88rem;
+    margin-bottom: 18px;
+}
+.up-success svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+.up-error-summary {
+    color: var(--danger-700);
+    font-size: 0.85rem;
+    margin-bottom: 12px;
+}
+.up-error-summary:empty { display: none; }
+
+.up-form__row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.up-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 16px;
+}
+.up-form__row .up-field { margin-bottom: 0; }
+
+.up-field label {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: var(--slate-500);
+}
+
+.up-field input {
+    font-family: var(--font-body);
+    font-size: 0.92rem;
+    padding: 11px 13px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: var(--beige-50);
+    color: var(--ink-900);
+}
+.up-field input:focus {
+    outline: none;
+    border-color: var(--pine-800);
+}
+
+.up-field__error {
+    color: var(--danger-700);
+    font-size: 0.8rem;
+}
+
+/* ----- Responsive ----- */
+@media (max-width: 860px) {
+    .up-shell { grid-template-columns: 1fr; }
+    .up-sidebar { text-align: left; }
+    .up-sidebar__identity { flex-direction: row; text-align: left; align-items: center; gap: 12px; }
+    .up-nav { flex-direction: row; flex-wrap: wrap; }
+}
+@media (max-width: 560px) {
+    .up-form__row { grid-template-columns: 1fr; }
+    .up-card { padding: 22px 18px; }
 }
