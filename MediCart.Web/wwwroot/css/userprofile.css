@@ -89,17 +89,6 @@
     font-weight: 600;
 }
 
-.up-nav__link--logout {
-    margin-top: 10px;
-    padding-top: 12px;
-    border-top: 1px solid var(--line);
-    color: var(--danger-700);
-}
-.up-nav__link--logout:hover {
-    background: var(--danger-100);
-    color: var(--danger-700);
-}
-
 /* ----- Main content ----- */
 .up-main {
     display: flex;
