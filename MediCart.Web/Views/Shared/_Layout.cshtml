@@ -50,10 +50,22 @@
                     <span class="cart-button__badge">0</span>
                 </a>
 
-                <a asp-area="Identity" asp-page="/Account/Login" class="btn btn--outline btn--sm">Log in</a>
-                <a asp-area="Identity" asp-page="/Account/Register" class="btn btn--pine btn--sm">Register</a>
+                @if (User.Identity != null && User.Identity.IsAuthenticated)
+                {
+                    <a href="~/UserProfile" class="btn btn--ghost btn--sm" aria-current="@(IsCurrent("UserProfile", "Index") ? "page" : null)">
+                        My Profile
+                    </a>
+                    <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="~/" method="post" style="display:inline;">
+                        <button type="submit" class="btn btn--outline btn--sm">Log out</button>
+                    </form>
+                }
+                else
+                {
+                    <a asp-area="Identity" asp-page="/Account/Login" class="btn btn--outline btn--sm">Log in</a>
+                    <a asp-area="Identity" asp-page="/Account/Register" class="btn btn--pine btn--sm">Register</a>
+                }
 
-                <!-- TEMP: dev-only link, remove once auth/db is wired up -->
+                <!-- TEMP: dev-only link, remove once admin dashboard has its own login -->
                 <a href="~/Admin/Profile" class="btn btn--ghost btn--sm" style="border:1px dashed var(--amber-600);">Admin (temp)</a>
                 
                 <button type="button" class="navbar__toggle" aria-label="Open menu" aria-expanded="false">
@@ -78,10 +90,23 @@
             <li><a href="~/Home/About">About us</a></li>
             <li><a href="~/Home/Contact">Contact</a></li>
             <li><a href="~/Cart">Cart</a></li>
+            @if (User.Identity != null && User.Identity.IsAuthenticated)
+            {
+                <li><a href="~/UserProfile">My Profile</a></li>
+            }
         </ul>
         <div class="mobile-nav__actions">
-            <a asp-area="Identity" asp-page="/Account/Login" class="btn btn--outline-light">Log in</a>
-            <a asp-area="Identity" asp-page="/Account/Register" class="btn btn--amber">Register</a>
+            @if (User.Identity != null && User.Identity.IsAuthenticated)
+            {
+                <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="~/" method="post">
+                    <button type="submit" class="btn btn--outline-light" style="width:100%;">Log out</button>
+                </form>
+            }
+            else
+            {
+                <a asp-area="Identity" asp-page="/Account/Login" class="btn btn--outline-light">Log in</a>
+                <a asp-area="Identity" asp-page="/Account/Register" class="btn btn--amber">Register</a>
+            }
         </div>
     </nav>
 

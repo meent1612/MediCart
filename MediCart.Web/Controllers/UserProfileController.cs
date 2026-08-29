@@ -23,10 +23,13 @@ namespace MediCart.Web.Controllers
 
             var model = new UserProfileViewModel
             {
-                // AFTER — ?? string.Empty provides a safe fallback if Identity returns null
-                FullName = user.FullName ?? string.Empty,
-                Email = user.Email ?? string.Empty,
-                PhoneNumber = user.PhoneNumber ?? string.Empty
+                FullName = user.FullName,
+                Email = user.Email,
+                PhoneNumber = user.PhoneNumber,
+
+                // TODO: replace with real query once Orders table exists, e.g.:
+                // Orders = _db.Orders.Where(o => o.UserId == user.Id).ToList()
+                Orders = GetSampleOrders()
             };
 
             return View(model);
@@ -41,6 +44,7 @@ namespace MediCart.Web.Controllers
 
             if (!ModelState.IsValid)
             {
+                model.Orders = GetSampleOrders();
                 return View(model);
             }
 
@@ -57,7 +61,19 @@ namespace MediCart.Web.Controllers
             foreach (var error in result.Errors)
                 ModelState.AddModelError(string.Empty, error.Description);
 
+            model.Orders = GetSampleOrders();
             return View(model);
+        }
+
+        private static List<OrderHistoryItem> GetSampleOrders()
+        {
+            return new List<OrderHistoryItem>
+            {
+                new() { OrderId = "MC-10482", Date = new DateTime(2026, 8, 22), ItemCount = 3, Total = 355, Status = "Shipped" },
+                new() { OrderId = "MC-10331", Date = new DateTime(2026, 8, 14), ItemCount = 1, Total = 60, Status = "Delivered" },
+                new() { OrderId = "MC-10298", Date = new DateTime(2026, 8, 2), ItemCount = 4, Total = 410, Status = "Pending review" },
+                new() { OrderId = "MC-10120", Date = new DateTime(2026, 7, 19), ItemCount = 2, Total = 175, Status = "Rejected" },
+            };
         }
     }
 }
