@@ -1,83 +1,125 @@
 @model MediCart.Web.Models.UserProfileViewModel
 @{
     ViewData["Title"] = "My Profile";
+    Layout = "_Layout";
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/userprofile.css" asp-append-version="true" />
 }
 
-<section class="container userprofile-page">
-    <h1 class="userprofile-page__title">My Profile</h1>
+<div class="up-page">
+    <div class="up-shell">
 
-    <div class="profile-grid">
-
-        <!-- Identity card -->
-        <div class="profile-card">
-            <div class="profile-card__cover"></div>
-            <div class="profile-card__avatar-wrap">
-                <span class="admin-avatar admin-avatar--lg">
+        <!-- ===== Sidebar ===== -->
+        <aside class="up-sidebar">
+            <div class="up-sidebar__identity">
+                <span class="up-avatar">
                     @(string.IsNullOrEmpty(Model.FullName) ? "U" : Model.FullName.Substring(0, 1).ToUpper())
                 </span>
-            </div>
-            <h2 class="profile-card__name">@Model.FullName</h2>
-            <span class="profile-card__role">MediCart customer</span>
-
-            <dl class="profile-card__meta">
-                <div>
-                    <dt>Email</dt>
-                    <dd>@Model.Email</dd>
-                </div>
-                <div>
-                    <dt>Phone</dt>
-                    <dd>@(string.IsNullOrEmpty(Model.PhoneNumber) ? "—" : Model.PhoneNumber)</dd>
-                </div>
-            </dl>
-        </div>
-
-        <!-- Editable form -->
-        <div class="profile-panel">
-            <div class="tabs">
-                <button type="button" class="tabs__btn is-active">Account details</button>
+                <strong>@Model.FullName</strong>
+                <span class="up-sidebar__email">@Model.Email</span>
             </div>
 
-            <div class="tabs__panel">
+            <nav class="up-nav">
+                <a href="#profile-details" class="up-nav__link">Profile details</a>
+                <a href="#order-history" class="up-nav__link is-active">Order history</a>
+                <a href="#" class="up-nav__link">Saved address</a>
+                <a asp-area="Identity" asp-page="/Account/Logout" class="up-nav__link up-nav__link--logout">Log out</a>
+            </nav>
+        </aside>
+
+        <!-- ===== Main content ===== -->
+        <main class="up-main">
+
+            <!-- Order history -->
+            <section class="up-card" id="order-history">
+                <h2>Order history</h2>
+                <p class="up-card__sub">All orders placed from your account.</p>
+
+                @if (Model.Orders.Any())
+                {
+                    <div class="up-table-wrap">
+                        <table class="up-table">
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Date</th>
+                                    <th>Items</th>
+                                    <th>Total</th>
+                                    <th>Status</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var order in Model.Orders)
+                                {
+                                    var statusClass = order.Status switch
+                                    {
+                                        "Shipped" => "up-status up-status--shipped",
+                                        "Delivered" => "up-status up-status--delivered",
+                                        "Pending review" => "up-status up-status--pending",
+                                        "Rejected" => "up-status up-status--rejected",
+                                        _ => "up-status"
+                                    };
+                                    <tr>
+                                        <td class="up-table__mono">@order.OrderId</td>
+                                        <td>@order.Date.ToString("dd MMM yyyy")</td>
+                                        <td>@order.ItemCount item@(order.ItemCount != 1 ? "s" : "")</td>
+                                        <td class="up-table__mono">৳ @order.Total.ToString("N0")</td>
+                                        <td><span class="@statusClass">@order.Status</span></td>
+                                        <td><a href="#" class="up-table__view">View →</a></td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <p class="up-empty">You haven't placed any orders yet.</p>
+                }
+            </section>
+
+            <!-- Profile details -->
+            <section class="up-card" id="profile-details">
+                <h2>Profile details</h2>
+                <p class="up-card__sub">Keep your contact information up to date for delivery.</p>
+
                 @if (TempData["ProfileSuccess"] != null)
                 {
-                    <div class="contact-success" style="margin-bottom:18px;">
+                    <div class="up-success">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5" /></svg>
                         <span>@TempData["ProfileSuccess"]</span>
                     </div>
                 }
 
-                <div asp-validation-summary="ModelOnly" style="color:var(--danger-700); font-size:0.85rem; margin-bottom:14px;"></div>
+                <div asp-validation-summary="ModelOnly" class="up-error-summary" role="alert"></div>
 
-                <form asp-action="Index" method="post" class="admin-form" novalidate>
-                    <div class="admin-form__row">
-                        <div class="admin-form__field">
+                <form asp-action="Index" method="post" class="up-form" novalidate>
+                    <div class="up-form__row">
+                        <div class="up-field">
                             <label asp-for="FullName">Full name</label>
                             <input asp-for="FullName" />
-                            <span asp-validation-for="FullName" class="field__error"></span>
+                            <span asp-validation-for="FullName" class="up-field__error"></span>
                         </div>
-                        <div class="admin-form__field">
+                        <div class="up-field">
                             <label asp-for="PhoneNumber">Phone number</label>
-                            <input asp-for="PhoneNumber" />
-                            <span asp-validation-for="PhoneNumber" class="field__error"></span>
+                            <input asp-for="PhoneNumber" placeholder="01XXX-XXXXXX" />
+                            <span asp-validation-for="PhoneNumber" class="up-field__error"></span>
                         </div>
                     </div>
 
-                    <div class="admin-form__field">
-                        <label>Email address</label>
-                        <input value="@Model.Email" disabled />
-                        <span class="admin-form__hint">Email can't be changed here. Contact support if needed.</span>
+                    <div class="up-field">
+                        <label asp-for="Email">Email address</label>
+                        <input asp-for="Email" />
+                        <span asp-validation-for="Email" class="up-field__error"></span>
                     </div>
 
-                    <div class="admin-form__actions">
-                        <button type="submit" class="btn btn--pine">Save changes</button>
-                    </div>
+                    <button type="submit" class="btn btn--pine">Save changes</button>
                 </form>
-            </div>
-        </div>
+            </section>
+
+        </main>
     </div>
-</section>
+</div>
