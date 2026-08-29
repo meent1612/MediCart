@@ -1,3 +1,6 @@
+@using Microsoft.AspNetCore.Identity
+@using MediCart.Web.Data
+@inject UserManager<ApplicationUser> UserManager
 @{
     var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
     var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
@@ -5,6 +8,13 @@
     bool IsCurrent(string controller, string action) =>
         string.Equals(currentController, controller, StringComparison.OrdinalIgnoreCase) &&
         string.Equals(currentAction, action, StringComparison.OrdinalIgnoreCase);
+
+    string displayName = "";
+    if (User.Identity != null && User.Identity.IsAuthenticated)
+    {
+        var currentUser = await UserManager.GetUserAsync(User);
+        displayName = currentUser?.FullName ?? User.Identity.Name ?? "Account";
+    }
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -53,7 +63,7 @@
                 @if (User.Identity != null && User.Identity.IsAuthenticated)
                 {
                     <a href="~/UserProfile" class="btn btn--ghost btn--sm" aria-current="@(IsCurrent("UserProfile", "Index") ? "page" : null)">
-                        My Profile
+                        @displayName
                     </a>
                     <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="~/" method="post" style="display:inline;">
                         <button type="submit" class="btn btn--outline btn--sm">Log out</button>
@@ -92,7 +102,7 @@
             <li><a href="~/Cart">Cart</a></li>
             @if (User.Identity != null && User.Identity.IsAuthenticated)
             {
-                <li><a href="~/UserProfile">My Profile</a></li>
+                <li><a href="~/UserProfile">@displayName</a></li>
             }
         </ul>
         <div class="mobile-nav__actions">
