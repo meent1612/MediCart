@@ -1,0 +1,180 @@
+@model MediCart.Web.Models.AdminCategoriesViewModel
+@{
+    ViewData["Title"] = "Categories & Product Types";
+    Layout = "_AdminLayout";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin-categories.css" asp-append-version="true" />
+}
+
+@if (TempData["CategorySuccess"] != null)
+{
+    <div class="admin-alert admin-alert--success">@TempData["CategorySuccess"]</div>
+}
+@if (TempData["CategoryError"] != null)
+{
+    <div class="admin-alert admin-alert--error">@TempData["CategoryError"]</div>
+}
+@if (TempData["ProductTypeSuccess"] != null)
+{
+    <div class="admin-alert admin-alert--success">@TempData["ProductTypeSuccess"]</div>
+}
+@if (TempData["ProductTypeError"] != null)
+{
+    <div class="admin-alert admin-alert--error">@TempData["ProductTypeError"]</div>
+}
+
+<div class="admin-cat-grid">
+
+    <!-- ============ Categories ============ -->
+    <section class="admin-panel">
+        <div class="admin-panel__head">
+            <h2>Categories</h2>
+            <button type="button" class="btn btn--pine btn--sm" id="newCategoryBtn">+ New category</button>
+        </div>
+
+        <div class="admin-table-wrap">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Parent</th>
+                        <th>Subcategories</th>
+                        <th>Medicines</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var cat in Model.Categories)
+                    {
+                        <tr>
+                            <td>
+                                <strong>@cat.Name</strong>
+                                @if (!string.IsNullOrWhiteSpace(cat.Description))
+                                {
+                                    <div class="admin-table__sub">@cat.Description</div>
+                                }
+                            </td>
+                            <td>@(cat.ParentCategoryName ?? "—")</td>
+                            <td>@cat.SubCategoryCount</td>
+                            <td>@cat.MedicineCount</td>
+                            <td class="admin-table__actions">
+                                <button type="button" class="btn-link edit-category-btn"
+                                        data-id="@cat.Id" data-name="@cat.Name"
+                                        data-description="@cat.Description" data-parent-id="@cat.ParentCategoryId">
+                                    Edit
+                                </button>
+                                <form asp-action="DeleteCategory" method="post" class="inline-form"
+                                      onsubmit="return confirm('Delete this category?');">
+                                    <input type="hidden" name="id" value="@cat.Id" />
+                                    <button type="submit" class="btn-link btn-link--danger">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                    @if (!Model.Categories.Any())
+                    {
+                        <tr><td colspan="5" class="admin-table__empty">No categories yet.</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <form asp-action="CreateCategory" method="post" class="admin-form admin-form--panel" id="categoryForm">
+            <input type="hidden" name="Id" id="categoryFormId" />
+            <h3 id="categoryFormTitle">Add a category</h3>
+
+            <div class="admin-form__row">
+                <div class="admin-form__field">
+                    <label for="categoryName">Name</label>
+                    <input type="text" id="categoryName" name="Name" required maxlength="100" />
+                </div>
+                <div class="admin-form__field">
+                    <label for="categoryParent">Parent category (optional)</label>
+                    <select id="categoryParent" name="ParentCategoryId">
+                        <option value="">— None (top-level) —</option>
+                        @foreach (var opt in Model.ParentCategoryOptions)
+                        {
+                            <option value="@opt.Id">@opt.Name</option>
+                        }
+                    </select>
+                </div>
+            </div>
+
+            <div class="admin-form__field">
+                <label for="categoryDescription">Description (optional)</label>
+                <textarea id="categoryDescription" name="Description" rows="2" maxlength="300"></textarea>
+            </div>
+
+            <div class="admin-form__actions">
+                <button type="button" class="btn btn--outline" id="cancelCategoryEdit" hidden>Cancel edit</button>
+                <button type="submit" class="btn btn--pine" id="categoryFormSubmit">Add category</button>
+            </div>
+        </form>
+    </section>
+
+    <!-- ============ Product Types ============ -->
+    <section class="admin-panel">
+        <div class="admin-panel__head">
+            <h2>Product types</h2>
+            <button type="button" class="btn btn--pine btn--sm" id="newProductTypeBtn">+ New type</button>
+        </div>
+
+        <div class="admin-table-wrap">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Medicines</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var pt in Model.ProductTypes)
+                    {
+                        <tr>
+                            <td><strong>@pt.Name</strong></td>
+                            <td>@pt.MedicineCount</td>
+                            <td class="admin-table__actions">
+                                <button type="button" class="btn-link edit-producttype-btn"
+                                        data-id="@pt.Id" data-name="@pt.Name">
+                                    Edit
+                                </button>
+                                <form asp-action="DeleteProductType" method="post" class="inline-form"
+                                      onsubmit="return confirm('Delete this product type?');">
+                                    <input type="hidden" name="id" value="@pt.Id" />
+                                    <button type="submit" class="btn-link btn-link--danger">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                    @if (!Model.ProductTypes.Any())
+                    {
+                        <tr><td colspan="3" class="admin-table__empty">No product types yet.</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <form asp-action="CreateProductType" method="post" class="admin-form admin-form--panel" id="productTypeForm">
+            <input type="hidden" name="Id" id="productTypeFormId" />
+            <h3 id="productTypeFormTitle">Add a product type</h3>
+
+            <div class="admin-form__field">
+                <label for="productTypeName">Name</label>
+                <input type="text" id="productTypeName" name="Name" required maxlength="50" />
+            </div>
+
+            <div class="admin-form__actions">
+                <button type="button" class="btn btn--outline" id="cancelProductTypeEdit" hidden>Cancel edit</button>
+                <button type="submit" class="btn btn--pine" id="productTypeFormSubmit">Add type</button>
+            </div>
+        </form>
+    </section>
+
+</div>
+
+@section Scripts {
+    <script src="~/js/admin-categories.js" asp-append-version="true"></script>
+}
