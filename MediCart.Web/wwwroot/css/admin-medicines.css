@@ -1,0 +1,62 @@
+.admin-count-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    height: 22px;
+    padding: 0 8px;
+    border-radius: var(--radius-pill);
+    background: var(--sage-100);
+    color: var(--pine-800);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    margin-left: 8px;
+}
+
+.medicine-filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin: 16px 0 20px;
+}
+
+.medicine-filter-search {
+    flex: 1;
+    min-width: 200px;
+    font-family: var(--font-body);
+    font-size: 13.5px;
+    padding: 9px 13px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: var(--white);
+}
+
+.medicine-filter-bar select {
+    font-family: var(--font-body);
+    font-size: 13.5px;
+    padding: 9px 13px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: var(--white);
+    color: var(--ink-900);
+}
+
+.admin-table__muted { color: var(--slate-500); }
+
+.tag {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: var(--radius-pill);
+    display: inline-block;
+    margin-left: 4px;
+}
+.tag--rx { background: var(--danger-100); color: var(--danger-700); }
+.tag--low-stock { background: var(--amber-100); color: var(--amber-700); }
+.tag--expired { background: var(--danger-100); color: var(--danger-700); }
+.tag--expiring { background: var(--amber-100); color: var(--amber-700); }
+.tag--sensitivity-low { background: var(--sage-100); color: var(--pine-800); }
+.tag--sensitivity-mid { background: var(--amber-100); color: var(--amber-700); }
+.tag--sensitivity-high { background: var(--danger-100); color: var(--danger-700); }
