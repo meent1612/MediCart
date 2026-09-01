@@ -582,11 +582,14 @@ namespace MediCart.Web.Controllers
                     MedicineCount = p.Medicines.Count
                 }).ToList(),
 
-                ParentCategoryOptions = categories.Select(c => new CategoryOptionViewModel
-                {
-                    Id = c.Id,
-                    Name = c.Name
-                }).ToList()
+                ParentCategoryOptions = categories
+    .Where(c => c.ParentCategoryId == null)
+    .Select(c => new CategoryOptionViewModel
+    {
+        Id = c.Id,
+        Name = c.Name
+    })
+    .ToList()
             };
         }
 
