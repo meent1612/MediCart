@@ -512,8 +512,8 @@ namespace MediCart.Web.Controllers
 
             await _db.SaveChangesAsync();
 
-            TempData["MedicineSuccess"] = $"Medicine '{medicine.Name}' updated.";
-            return RedirectToAction(nameof(EditMedicine), new { id = medicine.Id });
+           TempData["MedicineSuccess"] = $"Medicine '{medicine.Name}' updated.";
+           return RedirectToAction(nameof(Medicines));
         }
 
         [HttpPost]
