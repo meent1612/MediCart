@@ -1,0 +1,144 @@
+@model MediCart.Web.Models.AdminMedicineFormPageViewModel
+@{
+    ViewData["Title"] = "Add medicine";
+    Layout = "_AdminLayout";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin-categories.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/admin-medicine-form.css" asp-append-version="true" />
+}
+
+@if (TempData["MedicineSuccess"] != null)
+{
+    <div class="admin-alert admin-alert--success">@TempData["MedicineSuccess"]</div>
+}
+
+<div asp-validation-summary="ModelOnly" class="admin-alert admin-alert--error" role="alert"></div>
+
+<section class="admin-panel admin-panel--wide">
+    <div class="admin-panel__head">
+        <h2>Add a new medicine</h2>
+    </div>
+
+    <form asp-action="AddMedicine" method="post" id="medicineForm" novalidate>
+
+        <div class="admin-form__row">
+            <div class="admin-form__field">
+                <label asp-for="Form.Name">Medicine name</label>
+                <input asp-for="Form.Name" maxlength="150" required />
+                <span asp-validation-for="Form.Name" class="admin-form__error"></span>
+            </div>
+            <div class="admin-form__field">
+                <label asp-for="Form.Manufacturer">Manufacturer</label>
+                <input asp-for="Form.Manufacturer" maxlength="100" />
+            </div>
+        </div>
+
+        <div class="admin-form__row">
+            <div class="admin-form__field">
+                <label asp-for="Form.CategoryId">Category</label>
+                <select asp-for="Form.CategoryId" required>
+                    <option value="">— Select category —</option>
+                    @foreach (var opt in Model.CategoryOptions)
+                    {
+                        <option value="@opt.Id">@opt.Label</option>
+                    }
+                </select>
+                <span asp-validation-for="Form.CategoryId" class="admin-form__error"></span>
+            </div>
+            <div class="admin-form__field">
+                <label asp-for="Form.ProductTypeId">Product type</label>
+                <select asp-for="Form.ProductTypeId" required>
+                    <option value="">— Select type —</option>
+                    @foreach (var opt in Model.ProductTypeOptions)
+                    {
+                        <option value="@opt.Id">@opt.Label</option>
+                    }
+                </select>
+                <span asp-validation-for="Form.ProductTypeId" class="admin-form__error"></span>
+            </div>
+        </div>
+
+        <div class="admin-form__row">
+            <div class="admin-form__field">
+                <label asp-for="Form.Price">Price (৳)</label>
+                <input asp-for="Form.Price" type="number" step="0.01" min="0.01" required />
+                <span asp-validation-for="Form.Price" class="admin-form__error"></span>
+            </div>
+            <div class="admin-form__field">
+                <label asp-for="Form.StockQuantity">Starting stock quantity</label>
+                <input asp-for="Form.StockQuantity" type="number" min="0" required />
+                <span asp-validation-for="Form.StockQuantity" class="admin-form__error"></span>
+            </div>
+        </div>
+
+        <div class="admin-form__row">
+            <div class="admin-form__field">
+                <label asp-for="Form.ExpiryDate">Expiry date</label>
+                <input asp-for="Form.ExpiryDate" type="date" required />
+                <span asp-validation-for="Form.ExpiryDate" class="admin-form__error"></span>
+            </div>
+            <div class="admin-form__field">
+                <label asp-for="Form.SensitivityLevel">Sensitivity tier</label>
+                <select asp-for="Form.SensitivityLevel">
+                    <option value="">Not sensitive</option>
+                    <option value="low">Low (flags at 30+ units)</option>
+                    <option value="mid">Mid (flags at 15+ units)</option>
+                    <option value="high">High (flags at 5+ units)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="admin-form__field admin-form__field--checkbox">
+            <label>
+                <input asp-for="Form.RequiresPrescription" type="checkbox" />
+                Requires a prescription at checkout
+            </label>
+        </div>
+
+        <div class="admin-form__field">
+            <div class="admin-form__side-effects-head">
+                <label>Side effects</label>
+                <button type="button" class="btn-link" id="addSideEffectBtn">+ Add side effect</button>
+            </div>
+
+            <div id="sideEffectsList" class="side-effects-list">
+                @for (int i = 0; i < Model.Form.SideEffects.Count; i++)
+                {
+                    <div class="side-effect-row">
+                        <input type="text" name="SideEffects[@i].Effect" value="@Model.Form.SideEffects[i].Effect"
+                               placeholder="e.g. Nausea" maxlength="150" />
+                        <select name="SideEffects[@i].Severity">
+                            <option value="mild" selected="@(Model.Form.SideEffects[i].Severity == "mild" ? "selected" : null)">Mild</option>
+                            <option value="moderate" selected="@(Model.Form.SideEffects[i].Severity == "moderate" ? "selected" : null)">Moderate</option>
+                            <option value="severe" selected="@(Model.Form.SideEffects[i].Severity == "severe" ? "selected" : null)">Severe</option>
+                        </select>
+                        <button type="button" class="btn-link btn-link--danger remove-side-effect-btn">Remove</button>
+                    </div>
+                }
+            </div>
+
+            <template id="sideEffectRowTemplate">
+                <div class="side-effect-row">
+                    <input type="text" name="SideEffects[__INDEX__].Effect" placeholder="e.g. Nausea" maxlength="150" />
+                    <select name="SideEffects[__INDEX__].Severity">
+                        <option value="mild">Mild</option>
+                        <option value="moderate">Moderate</option>
+                        <option value="severe">Severe</option>
+                    </select>
+                    <button type="button" class="btn-link btn-link--danger remove-side-effect-btn">Remove</button>
+                </div>
+            </template>
+        </div>
+
+        <div class="admin-form__actions">
+            <button type="submit" class="btn btn--pine">Add medicine</button>
+        </div>
+    </form>
+</section>
+
+@section Scripts {
+    <script src="~/js/admin-medicine-form.js" asp-append-version="true"></script>
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}
