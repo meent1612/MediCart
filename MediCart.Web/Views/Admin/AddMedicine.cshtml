@@ -40,7 +40,21 @@
                 <input asp-for="Form.Manufacturer" maxlength="100" />
             </div>
         </div>
+        <div class="admin-form__row">
+            <div class="admin-form__field">
+                <label asp-for="Form.GenericName">Generic name</label>
+                <input asp-for="Form.GenericName" maxlength="150" placeholder="e.g. Paracetamol + Caffeine" />
+            </div>
+            <div class="admin-form__field">
+                <label asp-for="Form.Unit">Unit</label>
+                <input asp-for="Form.Unit" maxlength="30" placeholder="e.g. Strip of 10 tablets" />
+            </div>
+        </div>
 
+        <div class="admin-form__field">
+            <label asp-for="Form.Description">Description</label>
+            <textarea asp-for="Form.Description" rows="3" maxlength="1000" placeholder="What this medicine is used for..."></textarea>
+        </div>
         <div class="admin-form__row">
             <div class="admin-form__field">
                 <label asp-for="Form.CategoryId">Category</label>
