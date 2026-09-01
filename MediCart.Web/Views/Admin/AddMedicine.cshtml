@@ -138,14 +138,13 @@
             </template>
         </div>
 
-        <div class="admin-form__actions admin-form__actions--split">
+                <div class="admin-form__actions admin-form__actions--split">
             @if (isEdit)
             {
-                <form asp-action="DeleteMedicine" method="post"
-                      onsubmit="return confirm('Delete this medicine permanently? This cannot be undone.');">
-                    <input type="hidden" name="id" value="@Model.Form.Id" />
-                    <button type="submit" class="btn btn--outline btn--danger-outline">Delete medicine</button>
-                </form>
+                <button type="button" id="deleteMedicineBtn" class="btn btn--outline btn--danger-outline"
+                        data-id="@Model.Form.Id">
+                    Delete medicine
+                </button>
             }
             <button type="submit" class="btn btn--pine">@(isEdit ? "Save changes" : "Add medicine")</button>
         </div>
