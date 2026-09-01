@@ -29,4 +29,34 @@
             reindexRows();
         }
     });
+    var deleteBtn = document.getElementById("deleteMedicineBtn");
+    if (deleteBtn) {
+        deleteBtn.addEventListener("click", function () {
+            if (!confirm("Delete this medicine permanently? This cannot be undone.")) return;
+
+            var tokenInput = document.querySelector('#medicineForm input[name="__RequestVerificationToken"]');
+
+            var deleteForm = document.createElement("form");
+            deleteForm.method = "post";
+            deleteForm.action = "/Admin/DeleteMedicine";
+            deleteForm.style.display = "none";
+
+            var idField = document.createElement("input");
+            idField.type = "hidden";
+            idField.name = "id";
+            idField.value = deleteBtn.dataset.id;
+            deleteForm.appendChild(idField);
+
+            if (tokenInput) {
+                var tokenField = document.createElement("input");
+                tokenField.type = "hidden";
+                tokenField.name = "__RequestVerificationToken";
+                tokenField.value = tokenInput.value;
+                deleteForm.appendChild(tokenField);
+            }
+
+            document.body.appendChild(deleteForm);
+            deleteForm.submit();
+        });
+    }
 })();
