@@ -324,7 +324,166 @@ namespace MediCart.Web.Controllers
             // Note: once Step 17's medicine list page exists, this should
             // redirect there instead so the admin sees it in the table.
         }
+        [HttpGet]
+        public async Task<IActionResult> EditMedicine(int id)
+        {
+            var medicine = await _db.Medicines
+                .Include(m => m.Stock)
+                .Include(m => m.SideEffects)
+                .FirstOrDefaultAsync(m => m.Id == id);
 
+            if (medicine == null)
+            {
+                TempData["MedicineError"] = "Medicine not found.";
+                return RedirectToAction(nameof(AddMedicine));
+            }
+
+            var form = new MedicineFormViewModel
+            {
+                Id = medicine.Id,
+                Name = medicine.Name,
+                CategoryId = medicine.CategoryId,
+                ProductTypeId = medicine.ProductTypeId,
+                Manufacturer = medicine.Manufacturer,
+                Price = medicine.Price,
+                StockQuantity = medicine.Stock?.Quantity ?? 0,
+                ExpiryDate = medicine.Stock?.ExpiryDate ?? DateOnly.FromDateTime(DateTime.UtcNow.AddYears(2)),
+                RequiresPrescription = medicine.RequiresPrescription,
+                SensitivityLevel = medicine.SensitivityLevel,
+                SideEffects = medicine.SideEffects
+                    .Select(se => new SideEffectFormViewModel { Effect = se.Effect, Severity = se.Severity })
+                    .ToList()
+            };
+
+            var model = new AdminMedicineFormPageViewModel
+            {
+                Form = form,
+                CategoryOptions = await BuildCategoryDropdownOptionsAsync(),
+                ProductTypeOptions = await BuildProductTypeDropdownOptionsAsync()
+            };
+
+            return View("AddMedicine", model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditMedicine(MedicineFormViewModel form)
+        {
+            form.SideEffects = form.SideEffects
+                .Where(se => !string.IsNullOrWhiteSpace(se.Effect))
+                .ToList();
+
+            if (form.Id is null)
+            {
+                TempData["MedicineError"] = "Missing medicine id.";
+                return RedirectToAction(nameof(AddMedicine));
+            }
+
+            if (!ModelState.IsValid)
+            {
+                var invalidModel = new AdminMedicineFormPageViewModel
+                {
+                    Form = form,
+                    CategoryOptions = await BuildCategoryDropdownOptionsAsync(),
+                    ProductTypeOptions = await BuildProductTypeDropdownOptionsAsync()
+                };
+                return View("AddMedicine", invalidModel);
+            }
+
+            var medicine = await _db.Medicines
+                .Include(m => m.Stock)
+                .Include(m => m.SideEffects)
+                .FirstOrDefaultAsync(m => m.Id == form.Id.Value);
+
+            if (medicine == null)
+            {
+                TempData["MedicineError"] = "Medicine not found — it may have been deleted.";
+                return RedirectToAction(nameof(AddMedicine));
+            }
+
+            var categoryExists = await _db.Categories.AnyAsync(c => c.Id == form.CategoryId);
+            var productTypeExists = await _db.ProductTypes.AnyAsync(p => p.Id == form.ProductTypeId);
+
+            if (!categoryExists || !productTypeExists)
+            {
+                ModelState.AddModelError(string.Empty, "The selected category or product type no longer exists — refresh the page.");
+                var invalidModel = new AdminMedicineFormPageViewModel
+                {
+                    Form = form,
+                    CategoryOptions = await BuildCategoryDropdownOptionsAsync(),
+                    ProductTypeOptions = await BuildProductTypeDropdownOptionsAsync()
+                };
+                return View("AddMedicine", invalidModel);
+            }
+
+            medicine.Name = form.Name.Trim();
+            medicine.CategoryId = form.CategoryId;
+            medicine.ProductTypeId = form.ProductTypeId;
+            medicine.Manufacturer = string.IsNullOrWhiteSpace(form.Manufacturer) ? null : form.Manufacturer.Trim();
+            medicine.Price = form.Price;
+            medicine.RequiresPrescription = form.RequiresPrescription;
+            medicine.SensitivityLevel = string.IsNullOrWhiteSpace(form.SensitivityLevel) ? null : form.SensitivityLevel;
+
+            if (medicine.Stock != null)
+            {
+                medicine.Stock.Quantity = form.StockQuantity;
+                medicine.Stock.ExpiryDate = form.ExpiryDate;
+                medicine.Stock.UpdatedAt = DateTime.UtcNow;
+            }
+            else
+            {
+                // Shouldn't happen in practice (Stock is created alongside Medicine
+                // in AddMedicine), but guard against a medicine that somehow lost its Stock row.
+                medicine.Stock = new Stock
+                {
+                    Quantity = form.StockQuantity,
+                    ExpiryDate = form.ExpiryDate,
+                    UpdatedAt = DateTime.UtcNow
+                };
+            }
+
+            // Simplest correct way to sync side effects: wipe and re-add rather
+            // than diffing old vs new — there's no id-per-row in the form to match against.
+            _db.SideEffects.RemoveRange(medicine.SideEffects);
+            medicine.SideEffects = form.SideEffects
+                .Select(se => new SideEffect { Effect = se.Effect.Trim(), Severity = se.Severity })
+                .ToList();
+
+            await _db.SaveChangesAsync();
+
+            TempData["MedicineSuccess"] = $"Medicine '{medicine.Name}' updated.";
+            return RedirectToAction(nameof(EditMedicine), new { id = medicine.Id });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteMedicine(int id)
+        {
+            var medicine = await _db.Medicines
+                .Include(m => m.OrderItems)
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+            if (medicine == null)
+            {
+                TempData["MedicineError"] = "Medicine not found.";
+                return RedirectToAction(nameof(AddMedicine));
+            }
+
+            if (medicine.OrderItems.Count > 0)
+            {
+                TempData["MedicineError"] =
+                    $"Cannot delete '{medicine.Name}' — it appears in {medicine.OrderItems.Count} past order(s). Deleting it would corrupt order history.";
+                return RedirectToAction(nameof(EditMedicine), new { id = medicine.Id });
+            }
+
+            // Stock, SideEffects, and any CartItems cascade-delete automatically
+            // per the FK constraints — carts are disposable, unlike order history.
+            _db.Medicines.Remove(medicine);
+            await _db.SaveChangesAsync();
+
+            TempData["MedicineSuccess"] = $"Medicine '{medicine.Name}' deleted.";
+            return RedirectToAction(nameof(AddMedicine));
+        }
         // ===================== Helpers =====================
 
         private async Task<AdminCategoriesViewModel> BuildCategoriesViewModelAsync()
