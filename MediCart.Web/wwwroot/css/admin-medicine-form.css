@@ -47,3 +47,17 @@ template { display: none; }
 @media (max-width: 640px) {
     .side-effect-row { grid-template-columns: 1fr; }
 }
+.admin-form__actions--split {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.btn--danger-outline {
+    color: var(--danger-700);
+    border-color: var(--danger-700);
+}
+.btn--danger-outline:hover {
+    background: var(--danger-700);
+    color: var(--white);
+}
