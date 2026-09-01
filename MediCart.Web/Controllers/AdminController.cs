@@ -21,11 +21,65 @@ namespace MediCart.Web.Controllers
         {
             return View();
         }
+                [HttpGet]
+        public async Task<IActionResult> Medicines(string? search, int? categoryId, int? productTypeId)
+        {
+            var query = _db.Medicines
+                .Include(m => m.Category)
+                .Include(m => m.ProductType)
+                .Include(m => m.Stock)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var term = search.Trim();
+                query = query.Where(m => EF.Functions.ILike(m.Name, $"%{term}%"));
+            }
+
+            if (categoryId.HasValue)
+            {
+                query = query.Where(m => m.CategoryId == categoryId.Value);
+            }
+
+            if (productTypeId.HasValue)
+            {
+                query = query.Where(m => m.ProductTypeId == productTypeId.Value);
+            }
+
+            var medicines = await query
+                .OrderBy(m => m.Name)
+                .Select(m => new MedicineListRowViewModel
+                {
+                    Id = m.Id,
+                    Name = m.Name,
+                    CategoryName = m.Category.Name,
+                    ProductTypeName = m.ProductType.Name,
+                    Manufacturer = m.Manufacturer,
+                    Price = m.Price,
+                    StockQuantity = m.Stock != null ? m.Stock.Quantity : 0,
+                    ExpiryDate = m.Stock != null ? m.Stock.ExpiryDate : DateOnly.MinValue,
+                    SensitivityLevel = m.SensitivityLevel,
+                    RequiresPrescription = m.RequiresPrescription
+                })
+                .ToListAsync();
+
+            var model = new AdminMedicinesPageViewModel
+            {
+                Medicines = medicines,
+                CategoryOptions = await BuildCategoryDropdownOptionsAsync(),
+                ProductTypeOptions = await BuildProductTypeDropdownOptionsAsync(),
+                Search = search,
+                CategoryId = categoryId,
+                ProductTypeId = productTypeId,
+                TotalCount = medicines.Count
+            };
+
+            return View(model);
+        }
 
         // TEMP placeholder stubs so sidebar links don't 404 — replace each
         // with a real action + view as those pages get built.
         [HttpGet] public IActionResult Dashboard() => View("ComingSoon");
-        [HttpGet] public IActionResult Medicines() => View("ComingSoon"); // becomes real in Step 17
         [HttpGet] public IActionResult IncomingOrders() => View("ComingSoon");
         [HttpGet] public IActionResult FlaggedOrders() => View("ComingSoon");
         [HttpGet] public IActionResult StockExpiry() => View("ComingSoon");
