@@ -1,6 +1,7 @@
 @model MediCart.Web.Models.AdminMedicineFormPageViewModel
 @{
-    ViewData["Title"] = "Add medicine";
+    var isEdit = Model.Form.Id.HasValue;
+    ViewData["Title"] = isEdit ? "Edit medicine" : "Add medicine";
     Layout = "_AdminLayout";
 }
 
@@ -13,15 +14,20 @@
 {
     <div class="admin-alert admin-alert--success">@TempData["MedicineSuccess"]</div>
 }
+@if (TempData["MedicineError"] != null)
+{
+    <div class="admin-alert admin-alert--error">@TempData["MedicineError"]</div>
+}
 
 <div asp-validation-summary="ModelOnly" class="admin-alert admin-alert--error" role="alert"></div>
 
 <section class="admin-panel admin-panel--wide">
     <div class="admin-panel__head">
-        <h2>Add a new medicine</h2>
+        <h2>@(isEdit ? $"Edit — {Model.Form.Name}" : "Add a new medicine")</h2>
     </div>
 
-    <form asp-action="AddMedicine" method="post" id="medicineForm" novalidate>
+    <form asp-action="@(isEdit ? "EditMedicine" : "AddMedicine")" method="post" id="medicineForm" novalidate>
+        <input type="hidden" asp-for="Form.Id" />
 
         <div class="admin-form__row">
             <div class="admin-form__field">
@@ -42,7 +48,7 @@
                     <option value="">— Select category —</option>
                     @foreach (var opt in Model.CategoryOptions)
                     {
-                        <option value="@opt.Id">@opt.Label</option>
+                        <option value="@opt.Id" selected="@(Model.Form.CategoryId == opt.Id ? "selected" : null)">@opt.Label</option>
                     }
                 </select>
                 <span asp-validation-for="Form.CategoryId" class="admin-form__error"></span>
@@ -53,7 +59,7 @@
                     <option value="">— Select type —</option>
                     @foreach (var opt in Model.ProductTypeOptions)
                     {
-                        <option value="@opt.Id">@opt.Label</option>
+                        <option value="@opt.Id" selected="@(Model.Form.ProductTypeId == opt.Id ? "selected" : null)">@opt.Label</option>
                     }
                 </select>
                 <span asp-validation-for="Form.ProductTypeId" class="admin-form__error"></span>
@@ -67,7 +73,7 @@
                 <span asp-validation-for="Form.Price" class="admin-form__error"></span>
             </div>
             <div class="admin-form__field">
-                <label asp-for="Form.StockQuantity">Starting stock quantity</label>
+                <label asp-for="Form.StockQuantity">Stock quantity</label>
                 <input asp-for="Form.StockQuantity" type="number" min="0" required />
                 <span asp-validation-for="Form.StockQuantity" class="admin-form__error"></span>
             </div>
@@ -82,10 +88,10 @@
             <div class="admin-form__field">
                 <label asp-for="Form.SensitivityLevel">Sensitivity tier</label>
                 <select asp-for="Form.SensitivityLevel">
-                    <option value="">Not sensitive</option>
-                    <option value="low">Low (flags at 30+ units)</option>
-                    <option value="mid">Mid (flags at 15+ units)</option>
-                    <option value="high">High (flags at 5+ units)</option>
+                    <option value="" selected="@(string.IsNullOrEmpty(Model.Form.SensitivityLevel) ? "selected" : null)">Not sensitive</option>
+                    <option value="low" selected="@(Model.Form.SensitivityLevel == "low" ? "selected" : null)">Low (flags at 30+ units)</option>
+                    <option value="mid" selected="@(Model.Form.SensitivityLevel == "mid" ? "selected" : null)">Mid (flags at 15+ units)</option>
+                    <option value="high" selected="@(Model.Form.SensitivityLevel == "high" ? "selected" : null)">High (flags at 5+ units)</option>
                 </select>
             </div>
         </div>
@@ -107,9 +113,9 @@
                 @for (int i = 0; i < Model.Form.SideEffects.Count; i++)
                 {
                     <div class="side-effect-row">
-                        <input type="text" name="SideEffects[@i].Effect" value="@Model.Form.SideEffects[i].Effect"
+                        <input type="text" name="Form.SideEffects[@i].Effect" value="@Model.Form.SideEffects[i].Effect"
                                placeholder="e.g. Nausea" maxlength="150" />
-                        <select name="SideEffects[@i].Severity">
+                        <select name="Form.SideEffects[@i].Severity">
                             <option value="mild" selected="@(Model.Form.SideEffects[i].Severity == "mild" ? "selected" : null)">Mild</option>
                             <option value="moderate" selected="@(Model.Form.SideEffects[i].Severity == "moderate" ? "selected" : null)">Moderate</option>
                             <option value="severe" selected="@(Model.Form.SideEffects[i].Severity == "severe" ? "selected" : null)">Severe</option>
@@ -121,8 +127,8 @@
 
             <template id="sideEffectRowTemplate">
                 <div class="side-effect-row">
-                    <input type="text" name="SideEffects[__INDEX__].Effect" placeholder="e.g. Nausea" maxlength="150" />
-                    <select name="SideEffects[__INDEX__].Severity">
+                    <input type="text" name="Form.SideEffects[__INDEX__].Effect" placeholder="e.g. Nausea" maxlength="150" />
+                    <select name="Form.SideEffects[__INDEX__].Severity">
                         <option value="mild">Mild</option>
                         <option value="moderate">Moderate</option>
                         <option value="severe">Severe</option>
@@ -132,8 +138,16 @@
             </template>
         </div>
 
-        <div class="admin-form__actions">
-            <button type="submit" class="btn btn--pine">Add medicine</button>
+        <div class="admin-form__actions admin-form__actions--split">
+            @if (isEdit)
+            {
+                <form asp-action="DeleteMedicine" method="post"
+                      onsubmit="return confirm('Delete this medicine permanently? This cannot be undone.');">
+                    <input type="hidden" name="id" value="@Model.Form.Id" />
+                    <button type="submit" class="btn btn--outline btn--danger-outline">Delete medicine</button>
+                </form>
+            }
+            <button type="submit" class="btn btn--pine">@(isEdit ? "Save changes" : "Add medicine")</button>
         </div>
     </form>
 </section>
