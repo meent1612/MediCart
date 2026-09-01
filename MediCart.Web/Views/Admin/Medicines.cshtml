@@ -1,0 +1,130 @@
+@model MediCart.Web.Models.AdminMedicinesPageViewModel
+@{
+    ViewData["Title"] = "Medicines";
+    Layout = "_AdminLayout";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin-categories.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/admin-medicines.css" asp-append-version="true" />
+}
+
+@if (TempData["MedicineSuccess"] != null)
+{
+    <div class="admin-alert admin-alert--success">@TempData["MedicineSuccess"]</div>
+}
+@if (TempData["MedicineError"] != null)
+{
+    <div class="admin-alert admin-alert--error">@TempData["MedicineError"]</div>
+}
+
+<div class="admin-panel__head">
+    <h2>Medicines <span class="admin-count-pill">@Model.TotalCount</span></h2>
+    <a asp-action="AddMedicine" class="btn btn--pine btn--sm">+ Add medicine</a>
+</div>
+
+<form method="get" asp-action="Medicines" class="medicine-filter-bar" id="medicineFilterForm">
+    <input type="text" name="search" value="@Model.Search" placeholder="Search by name…" class="medicine-filter-search" />
+
+    <select name="categoryId" id="filterCategory">
+        <option value="">All categories</option>
+        @foreach (var opt in Model.CategoryOptions)
+        {
+            <option value="@opt.Id" selected="@(Model.CategoryId == opt.Id ? "selected" : null)">@opt.Label</option>
+        }
+    </select>
+
+    <select name="productTypeId" id="filterProductType">
+        <option value="">All product types</option>
+        @foreach (var opt in Model.ProductTypeOptions)
+        {
+            <option value="@opt.Id" selected="@(Model.ProductTypeId == opt.Id ? "selected" : null)">@opt.Label</option>
+        }
+    </select>
+
+    <button type="submit" class="btn btn--outline btn--sm">Filter</button>
+    @if (!string.IsNullOrWhiteSpace(Model.Search) || Model.CategoryId.HasValue || Model.ProductTypeId.HasValue)
+    {
+        <a asp-action="Medicines" class="btn-link">Clear filters</a>
+    }
+</form>
+
+<div class="admin-table-wrap">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Type</th>
+                <th>Manufacturer</th>
+                <th>Price</th>
+                <th>Stock</th>
+                <th>Expiry</th>
+                <th>Sensitivity</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var med in Model.Medicines)
+            {
+                <tr>
+                    <td>
+                        <strong>@med.Name</strong>
+                        @if (med.RequiresPrescription)
+                        {
+                            <div class="admin-table__sub"><span class="tag tag--rx">Rx</span></div>
+                        }
+                    </td>
+                    <td>@med.CategoryName</td>
+                    <td>@med.ProductTypeName</td>
+                    <td>@(med.Manufacturer ?? "—")</td>
+                    <td>৳@med.Price.ToString("0.00")</td>
+                    <td>
+                        @med.StockQuantity
+                        @if (med.IsLowStock)
+                        {
+                            <span class="tag tag--low-stock">Low</span>
+                        }
+                    </td>
+                    <td>
+                        @med.ExpiryDate.ToString("dd MMM yyyy")
+                        @if (med.IsExpired)
+                        {
+                            <span class="tag tag--expired">Expired</span>
+                        }
+                        else if (med.IsExpiringSoon)
+                        {
+                            <span class="tag tag--expiring">Expiring soon</span>
+                        }
+                    </td>
+                    <td>
+                        @if (!string.IsNullOrEmpty(med.SensitivityLevel))
+                        {
+                            <span class="tag tag--sensitivity-@med.SensitivityLevel">@med.SensitivityLevel</span>
+                        }
+                        else
+                        {
+                            <span class="admin-table__muted">—</span>
+                        }
+                    </td>
+                    <td class="admin-table__actions">
+                        <a asp-action="EditMedicine" asp-route-id="@med.Id" class="btn-link">Edit</a>
+                        <form asp-action="DeleteMedicine" method="post" class="inline-form"
+                              onsubmit="return confirm('Delete this medicine permanently?');">
+                            <input type="hidden" name="id" value="@med.Id" />
+                            <button type="submit" class="btn-link btn-link--danger">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            @if (!Model.Medicines.Any())
+            {
+                <tr><td colspan="9" class="admin-table__empty">No medicines match your filters.</td></tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@section Scripts {
+    <script src="~/js/admin-medicines.js" asp-append-version="true"></script>
+}
