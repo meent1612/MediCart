@@ -25,14 +25,14 @@ namespace MediCart.Web.Controllers
         // TEMP placeholder stubs so sidebar links don't 404 — replace each
         // with a real action + view as those pages get built.
         [HttpGet] public IActionResult Dashboard() => View("ComingSoon");
-        [HttpGet] public IActionResult Medicines() => View("ComingSoon");
+        [HttpGet] public IActionResult Medicines() => View("ComingSoon"); // becomes real in Step 17
         [HttpGet] public IActionResult IncomingOrders() => View("ComingSoon");
         [HttpGet] public IActionResult FlaggedOrders() => View("ComingSoon");
         [HttpGet] public IActionResult StockExpiry() => View("ComingSoon");
         [HttpGet] public IActionResult AuditLog() => View("ComingSoon");
         [HttpGet] public IActionResult ContactMessages() => View("ComingSoon");
 
-        // ===================== Categories & Product Types =====================
+        // ===================== Categories & Product Types (Step 14) =====================
 
         [HttpGet]
         public async Task<IActionResult> Categories()
@@ -235,6 +235,96 @@ namespace MediCart.Web.Controllers
             return RedirectToAction(nameof(Categories));
         }
 
+        // ===================== Add Medicine (Step 15) =====================
+
+        [HttpGet]
+        public async Task<IActionResult> AddMedicine()
+        {
+            var model = new AdminMedicineFormPageViewModel
+            {
+                Form = new MedicineFormViewModel
+                {
+                    // sensible default so the admin doesn't have to think about it every time
+                    ExpiryDate = DateOnly.FromDateTime(DateTime.UtcNow.AddYears(2))
+                },
+                CategoryOptions = await BuildCategoryDropdownOptionsAsync(),
+                ProductTypeOptions = await BuildProductTypeDropdownOptionsAsync()
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddMedicine(MedicineFormViewModel form)
+        {
+            // Drop any blank side-effect rows the JS may have submitted
+            // (e.g. user clicked "+ Add side effect" but left it empty).
+            form.SideEffects = form.SideEffects
+                .Where(se => !string.IsNullOrWhiteSpace(se.Effect))
+                .ToList();
+
+            if (!ModelState.IsValid)
+            {
+                var invalidModel = new AdminMedicineFormPageViewModel
+                {
+                    Form = form,
+                    CategoryOptions = await BuildCategoryDropdownOptionsAsync(),
+                    ProductTypeOptions = await BuildProductTypeDropdownOptionsAsync()
+                };
+                return View(invalidModel);
+            }
+
+            var categoryExists = await _db.Categories.AnyAsync(c => c.Id == form.CategoryId);
+            var productTypeExists = await _db.ProductTypes.AnyAsync(p => p.Id == form.ProductTypeId);
+
+            if (!categoryExists || !productTypeExists)
+            {
+                ModelState.AddModelError(string.Empty, "The selected category or product type no longer exists — refresh the page.");
+                var invalidModel = new AdminMedicineFormPageViewModel
+                {
+                    Form = form,
+                    CategoryOptions = await BuildCategoryDropdownOptionsAsync(),
+                    ProductTypeOptions = await BuildProductTypeDropdownOptionsAsync()
+                };
+                return View(invalidModel);
+            }
+
+            // Medicine + Stock + SideEffects are all attached to one entity graph
+            // and saved in a single SaveChangesAsync — EF wraps that in one DB
+            // transaction, so it's all-or-nothing (no medicine without stock).
+            var medicine = new Medicine
+            {
+                Name = form.Name.Trim(),
+                CategoryId = form.CategoryId,
+                ProductTypeId = form.ProductTypeId,
+                Manufacturer = string.IsNullOrWhiteSpace(form.Manufacturer) ? null : form.Manufacturer.Trim(),
+                Price = form.Price,
+                RequiresPrescription = form.RequiresPrescription,
+                SensitivityLevel = string.IsNullOrWhiteSpace(form.SensitivityLevel) ? null : form.SensitivityLevel,
+                CreatedAt = DateTime.UtcNow,
+                Stock = new Stock
+                {
+                    Quantity = form.StockQuantity,
+                    ExpiryDate = form.ExpiryDate,
+                    UpdatedAt = DateTime.UtcNow
+                },
+                SideEffects = form.SideEffects.Select(se => new SideEffect
+                {
+                    Effect = se.Effect.Trim(),
+                    Severity = se.Severity
+                }).ToList()
+            };
+
+            _db.Medicines.Add(medicine);
+            await _db.SaveChangesAsync();
+
+            TempData["MedicineSuccess"] = $"Medicine '{medicine.Name}' added.";
+            return RedirectToAction(nameof(AddMedicine));
+            // Note: once Step 17's medicine list page exists, this should
+            // redirect there instead so the admin sees it in the table.
+        }
+
         // ===================== Helpers =====================
 
         private async Task<AdminCategoriesViewModel> BuildCategoriesViewModelAsync()
@@ -297,6 +387,39 @@ namespace MediCart.Web.Controllers
             }
 
             return false;
+        }
+
+        // Flattens the Category tree into a single indented list for a <select>,
+        // e.g. "Medicine", "- Diabetic Care", "-- Insulin".
+        private async Task<List<DropdownOptionViewModel>> BuildCategoryDropdownOptionsAsync()
+        {
+            var categories = await _db.Categories
+                .OrderBy(c => c.Name)
+                .ToListAsync();
+
+            var byParent = categories.ToLookup(c => c.ParentCategoryId);
+            var options = new List<DropdownOptionViewModel>();
+
+            void AddChildren(int? parentId, int depth)
+            {
+                foreach (var cat in byParent[parentId].OrderBy(c => c.Name))
+                {
+                    var prefix = depth == 0 ? "" : new string('-', depth) + " ";
+                    options.Add(new DropdownOptionViewModel { Id = cat.Id, Label = prefix + cat.Name });
+                    AddChildren(cat.Id, depth + 1);
+                }
+            }
+
+            AddChildren(null, 0);
+            return options;
+        }
+
+        private async Task<List<DropdownOptionViewModel>> BuildProductTypeDropdownOptionsAsync()
+        {
+            return await _db.ProductTypes
+                .OrderBy(p => p.Name)
+                .Select(p => new DropdownOptionViewModel { Id = p.Id, Label = p.Name })
+                .ToListAsync();
         }
     }
 }
