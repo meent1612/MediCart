@@ -37,6 +37,14 @@ namespace MediCart.Web.Models
 
         [StringLength(100)]
         public string? Manufacturer { get; set; }
+                [StringLength(150)]
+        public string? GenericName { get; set; }
+
+        [StringLength(30)]
+        public string? Unit { get; set; }
+
+        [StringLength(1000)]
+        public string? Description { get; set; }
 
         [Required(ErrorMessage = "Enter a price")]
         [Range(0.01, 100000, ErrorMessage = "Enter a price between 0.01 and 100,000")]

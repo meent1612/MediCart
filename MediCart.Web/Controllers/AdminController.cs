@@ -355,6 +355,9 @@ namespace MediCart.Web.Controllers
                 Manufacturer = string.IsNullOrWhiteSpace(form.Manufacturer) ? null : form.Manufacturer.Trim(),
                 Price = form.Price,
                 RequiresPrescription = form.RequiresPrescription,
+                GenericName = string.IsNullOrWhiteSpace(form.GenericName) ? null : form.GenericName.Trim(),
+                Unit = string.IsNullOrWhiteSpace(form.Unit) ? null : form.Unit.Trim(),
+                Description = string.IsNullOrWhiteSpace(form.Description) ? null : form.Description.Trim(),
                 SensitivityLevel = string.IsNullOrWhiteSpace(form.SensitivityLevel) ? null : form.SensitivityLevel,
                 CreatedAt = DateTime.UtcNow,
                 Stock = new Stock
@@ -374,9 +377,7 @@ namespace MediCart.Web.Controllers
             await _db.SaveChangesAsync();
 
             TempData["MedicineSuccess"] = $"Medicine '{medicine.Name}' added.";
-            return RedirectToAction(nameof(AddMedicine));
-            // Note: once Step 17's medicine list page exists, this should
-            // redirect there instead so the admin sees it in the table.
+            return RedirectToAction(nameof(Medicines));
         }
         [HttpGet]
         public async Task<IActionResult> EditMedicine(int id)
@@ -403,6 +404,9 @@ namespace MediCart.Web.Controllers
                 StockQuantity = medicine.Stock?.Quantity ?? 0,
                 ExpiryDate = medicine.Stock?.ExpiryDate ?? DateOnly.FromDateTime(DateTime.UtcNow.AddYears(2)),
                 RequiresPrescription = medicine.RequiresPrescription,
+                GenericName = medicine.GenericName,
+                Unit = medicine.Unit,
+                Description = medicine.Description,
                 SensitivityLevel = medicine.SensitivityLevel,
                 SideEffects = medicine.SideEffects
                     .Select(se => new SideEffectFormViewModel { Effect = se.Effect, Severity = se.Severity })
@@ -474,6 +478,9 @@ namespace MediCart.Web.Controllers
             medicine.CategoryId = form.CategoryId;
             medicine.ProductTypeId = form.ProductTypeId;
             medicine.Manufacturer = string.IsNullOrWhiteSpace(form.Manufacturer) ? null : form.Manufacturer.Trim();
+            medicine.GenericName = string.IsNullOrWhiteSpace(form.GenericName) ? null : form.GenericName.Trim();
+            medicine.Unit = string.IsNullOrWhiteSpace(form.Unit) ? null : form.Unit.Trim();
+            medicine.Description = string.IsNullOrWhiteSpace(form.Description) ? null : form.Description.Trim();
             medicine.Price = form.Price;
             medicine.RequiresPrescription = form.RequiresPrescription;
             medicine.SensitivityLevel = string.IsNullOrWhiteSpace(form.SensitivityLevel) ? null : form.SensitivityLevel;
@@ -505,8 +512,8 @@ namespace MediCart.Web.Controllers
 
             await _db.SaveChangesAsync();
 
-            TempData["MedicineSuccess"] = $"Medicine '{medicine.Name}' updated.";
-            return RedirectToAction(nameof(EditMedicine), new { id = medicine.Id });
+           TempData["MedicineSuccess"] = $"Medicine '{medicine.Name}' updated.";
+           return RedirectToAction(nameof(Medicines));
         }
 
         [HttpPost]
@@ -575,11 +582,14 @@ namespace MediCart.Web.Controllers
                     MedicineCount = p.Medicines.Count
                 }).ToList(),
 
-                ParentCategoryOptions = categories.Select(c => new CategoryOptionViewModel
-                {
-                    Id = c.Id,
-                    Name = c.Name
-                }).ToList()
+                ParentCategoryOptions = categories
+    .Where(c => c.ParentCategoryId == null)
+    .Select(c => new CategoryOptionViewModel
+    {
+        Id = c.Id,
+        Name = c.Name
+    })
+    .ToList()
             };
         }
 
