@@ -26,7 +26,7 @@
         <h2>@(isEdit ? $"Edit — {Model.Form.Name}" : "Add a new medicine")</h2>
     </div>
 
-    <form asp-action="@(isEdit ? "EditMedicine" : "AddMedicine")" method="post" id="medicineForm" novalidate>
+        <form asp-action="@(isEdit ? "EditMedicine" : "AddMedicine")" method="post" id="medicineForm" enctype="multipart/form-data" novalidate>
         <input type="hidden" asp-for="Form.Id" />
 
         <div class="admin-form__row">
@@ -51,10 +51,29 @@
             </div>
         </div>
 
-        <div class="admin-form__field">
+                <div class="admin-form__field">
+
             <label asp-for="Form.Description">Description</label>
+
             <textarea asp-for="Form.Description" rows="3" maxlength="1000" placeholder="What this medicine is used for..."></textarea>
+
         </div>
+
+        <div class="admin-form__field">
+            <label for="imageFileInput">Medicine image</label>
+            <input type="file" id="imageFileInput" name="Form.ImageFile" accept="image/jpeg,image/png,image/webp" />
+            <span asp-validation-for="Form.ImageFile" class="admin-form__error"></span>
+            <small class="admin-form__hint">JPG, PNG, or WEBP — under 5MB. Uploading replaces the current image below.</small>
+        </div>
+
+        <div class="admin-form__field">
+            <label asp-for="Form.ImageUrl">Or paste an image URL instead</label>
+            <input asp-for="Form.ImageUrl" type="url" maxlength="500" placeholder="https://..." id="imageUrlInput" />
+            <span asp-validation-for="Form.ImageUrl" class="admin-form__error"></span>
+        </div>
+
+        <img id="imageUrlPreview" src="@Model.Form.ImageUrl" alt="Preview"
+             class="image-url-preview" hidden="@(string.IsNullOrEmpty(Model.Form.ImageUrl) ? "hidden" : null)" />
         <div class="admin-form__row">
             <div class="admin-form__field">
                 <label asp-for="Form.CategoryId">Category</label>

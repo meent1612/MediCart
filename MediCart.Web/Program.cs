@@ -22,6 +22,7 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
 .AddEntityFrameworkStores<ApplicationDbContext>();
 
 builder.Services.AddControllersWithViews();
+builder.Services.AddScoped<MediCart.Web.Services.IImageUploadService, MediCart.Web.Services.CloudinaryImageService>();
 
 var app = builder.Build();
 
