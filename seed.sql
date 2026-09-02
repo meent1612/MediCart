@@ -165,3 +165,82 @@ FROM (VALUES
 ) AS c("DivisionName", "Name")
 JOIN "Divisions" d ON d."Name" = c."DivisionName"
 ON CONFLICT DO NOTHING;
+
+-- ============================================================
+-- Top-level Categories
+-- ============================================================
+
+INSERT INTO "Categories" ("Name", "Description", "ParentCategoryId", "CreatedAt")
+SELECT v."Name", v."Description", NULL, NOW()
+FROM (VALUES
+    ('Medicine',                 'Prescription and OTC drugs organised by condition'),
+    ('Vitamins & Supplements',   'Vitamins, minerals and dietary supplements'),
+    ('Diabetic Care',            'Diabetes management supplies and devices'),
+    ('Women''s Care',            'Feminine health, mother care, and hygiene products')
+) AS v("Name", "Description")
+WHERE NOT EXISTS (
+    SELECT 1 FROM "Categories" c WHERE c."Name" = v."Name" AND c."ParentCategoryId" IS NULL
+);
+
+-- ============================================================
+-- Subcategories
+-- ============================================================
+
+INSERT INTO "Categories" ("Name", "Description", "ParentCategoryId", "CreatedAt")
+SELECT sc."Name", NULL, parent."Id", NOW()
+FROM (VALUES
+    -- Medicine
+    ('Medicine', 'Allergies & Asthma'),
+    ('Medicine', 'Epilepsy & Neurological'),
+    ('Medicine', 'Pain Relief (Analgesics)'),
+    ('Medicine', 'Gastrointestinal'),
+    ('Medicine', 'Antibiotics & Anti-infectives'),
+    ('Medicine', 'Cardiac & Blood Pressure'),
+    ('Medicine', 'Diabetes'),
+    ('Medicine', 'Hormonal & Endocrine'),
+    ('Medicine', 'Mental Health'),
+
+    -- Vitamins & Supplements
+    ('Vitamins & Supplements', 'Multivitamins'),
+    ('Vitamins & Supplements', 'Vitamin D'),
+    ('Vitamins & Supplements', 'Vitamin C & Antioxidants'),
+    ('Vitamins & Supplements', 'Calcium & Bone Health'),
+    ('Vitamins & Supplements', 'Herbal & Natural Supplements'),
+    ('Vitamins & Supplements', 'Protein & Fitness Supplements'),
+    ('Vitamins & Supplements', 'Omega-3 & Fish Oil'),
+
+    -- Diabetic Care
+    ('Diabetic Care', 'Blood Glucose Monitors (Glucometers)'),
+    ('Diabetic Care', 'Test Strips & Lancets'),
+    ('Diabetic Care', 'Insulin Pens & Syringes'),
+    ('Diabetic Care', 'Diabetic Care Kits'),
+
+    -- Women's Care
+    ('Women''s Care', 'Feminine Hygiene'),
+    ('Women''s Care', 'Mother Care (Prenatal & Postnatal)'),
+    ('Women''s Care', 'Women''s Health Medications')
+) AS sc("ParentName", "Name")
+JOIN "Categories" parent ON parent."Name" = sc."ParentName" AND parent."ParentCategoryId" IS NULL
+WHERE NOT EXISTS (
+    SELECT 1 FROM "Categories" c WHERE c."Name" = sc."Name" AND c."ParentCategoryId" = parent."Id"
+);
+
+-- ============================================================
+-- Product Types
+-- ============================================================
+
+INSERT INTO "ProductTypes" ("Name")
+SELECT v."Name"
+FROM (VALUES
+    ('Tablet / Caplet'),
+    ('Capsule'),
+    ('Syrup / Suspension'),
+    ('Injection'),
+    ('Drops (Pediatric/Children''s)'),
+    ('Cream / Ointment'),
+    ('Powder')
+) AS v("Name")
+WHERE NOT EXISTS (
+    SELECT 1 FROM "ProductTypes" p WHERE p."Name" = v."Name"
+);
+ON CONFLICT DO NOTHING;
