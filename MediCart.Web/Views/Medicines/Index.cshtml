@@ -47,16 +47,10 @@
                 </div>
             </div>
 
-            <div class="filter-group">
+            <div class="filter-group filter-group--disabled">
                 <h3>Use tag</h3>
-                <div class="filter-options" data-filter-group="useTag">
-                    @foreach (var tag in Model.SelectMany(m => m.UseTags).Distinct().OrderBy(t => t))
-                    {
-                        <label class="filter-check">
-                            <input type="checkbox" value="@tag" />
-                            <span>@tag</span>
-                        </label>
-                    }
+                <div class="filter-options filter-options--disabled" data-filter-group="useTag">
+                    <p class="filter-note">Not available yet</p>
                 </div>
             </div>
 
@@ -79,10 +73,10 @@
                 <label class="sort">
                     Sort:
                     <select id="sortSelect">
-                        <option value="popular">Most popular</option>
+                        <option value="popular" disabled>Most popular (unavailable)</option>
+                        <option value="name-asc" selected>Name: A to Z</option>
                         <option value="price-asc">Price: low to high</option>
                         <option value="price-desc">Price: high to low</option>
-                        <option value="name-asc">Name: A to Z</option>
                     </select>
                 </label>
             </div>
@@ -97,14 +91,21 @@
                              data-category="@med.Category"
                              data-use-tags="@string.Join(",", med.UseTags)"
                              data-price="@med.Price"
-                             data-popularity="@med.Popularity"
+                             data-popularity="@(med.Popularity ?? 0)"
                              data-stock="@med.Stock">
 
                         <div class="product-card__image" aria-hidden="true">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="3.5" y="8.5" width="17" height="7" rx="3.5" transform="rotate(-45 12 12)" />
-                                <line x1="9.2" y1="14.8" x2="14.8" y2="9.2" />
-                            </svg>
+                            @if (!string.IsNullOrWhiteSpace(med.ImageUrl))
+                            {
+                                <img src="@med.ImageUrl" alt="@med.Name" loading="lazy" />
+                            }
+                            else
+                            {
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3.5" y="8.5" width="17" height="7" rx="3.5" transform="rotate(-45 12 12)" />
+                                    <line x1="9.2" y1="14.8" x2="14.8" y2="9.2" />
+                                </svg>
+                            }
                         </div>
 
                         <div class="product-card__body">
@@ -120,7 +121,7 @@
                                 {
                                     <span class="badge badge--stock-@med.StockCssClass">@med.StockStatus</span>
                                 }
-                                <span class="badge badge--potency">@med.Potency</span>
+                                <span class="badge badge--potency badge--disabled" title="Not available yet">Potency: N/A</span>
                             </div>
 
                             <div class="product-card__footer">

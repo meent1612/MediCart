@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MediCart.Web.Data;
 using MediCart.Web.Models;
@@ -11,19 +12,101 @@ namespace MediCart.Web.Controllers
     {
         private readonly ApplicationDbContext _db;
         private readonly Services.IImageUploadService _imageUploadService;
+        private readonly UserManager<ApplicationUser> _userManager;
 
         public AdminController(
             ApplicationDbContext db,
-            Services.IImageUploadService imageUploadService)
+            Services.IImageUploadService imageUploadService,
+            UserManager<ApplicationUser> userManager)
         {
             _db = db;
             _imageUploadService = imageUploadService;
+            _userManager = userManager;
         }
 
         [HttpGet]
-        public IActionResult Profile()
+        public async Task<IActionResult> Profile()
         {
-            return View();
+            var currentAdmin = await _userManager.GetUserAsync(User);
+
+            // TODO(backend): once [Authorize(Roles = "Admin")] is turned on,
+            // currentAdmin will never be null here. Until then, fall back to
+            // an empty shell so the page doesn't crash for a logged-out visitor.
+            if (currentAdmin == null)
+            {
+                return View(new AdminProfileViewModel());
+            }
+
+            var roles = await _userManager.GetRolesAsync(currentAdmin);
+
+            var nameParts = currentAdmin.FullName
+                .Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            var initials = nameParts.Length >= 2
+                ? $"{nameParts[0][0]}{nameParts[1][0]}".ToUpperInvariant()
+                : currentAdmin.FullName.Length >= 2
+                    ? currentAdmin.FullName.Substring(0, 2).ToUpperInvariant()
+                    : currentAdmin.FullName.ToUpperInvariant();
+
+            var recentActivity = await _db.AuditLogs
+                .Where(a => a.AdminId == currentAdmin.Id)
+                .OrderByDescending(a => a.CreatedAt)
+                .Take(8)
+                .Select(a => new AdminActivityItemViewModel
+                {
+                    Action = a.Action,
+                    TableName = a.TableName,
+                    RecordId = a.RecordId,
+                    CreatedAt = a.CreatedAt
+                })
+                .ToListAsync();
+
+            var model = new AdminProfileViewModel
+            {
+                FullName = currentAdmin.FullName,
+                Email = currentAdmin.Email ?? "",
+                PhoneNumber = currentAdmin.PhoneNumber,
+                Initials = initials,
+                RoleDisplay = roles.FirstOrDefault() ?? "Admin",
+                RecentActivity = recentActivity
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateProfile(AdminProfileFormViewModel form)
+        {
+            if (!ModelState.IsValid)
+            {
+                TempData["ProfileError"] = "Please enter a valid name and phone number.";
+                return RedirectToAction(nameof(Profile));
+            }
+
+            var currentAdmin = await _userManager.GetUserAsync(User);
+            if (currentAdmin == null)
+            {
+                TempData["ProfileError"] = "You need to be logged in to update your profile.";
+                return RedirectToAction(nameof(Profile));
+            }
+
+            currentAdmin.FullName = form.FullName.Trim();
+            currentAdmin.PhoneNumber = string.IsNullOrWhiteSpace(form.PhoneNumber)
+                ? null
+                : form.PhoneNumber.Trim();
+
+            var result = await _userManager.UpdateAsync(currentAdmin);
+
+            TempData["ProfileSuccess"] = result.Succeeded
+                ? "Profile updated."
+                : null;
+
+            if (!result.Succeeded)
+            {
+                TempData["ProfileError"] = string.Join(" ", result.Errors.Select(e => e.Description));
+            }
+
+            return RedirectToAction(nameof(Profile));
         }
 
         [HttpGet]

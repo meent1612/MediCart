@@ -10,10 +10,20 @@
         string.Equals(currentAction, action, StringComparison.OrdinalIgnoreCase);
 
     string displayName = "";
+    string profileUrl = "~/UserProfile";
     if (User.Identity != null && User.Identity.IsAuthenticated)
     {
         var currentUser = await UserManager.GetUserAsync(User);
         displayName = currentUser?.FullName ?? User.Identity.Name ?? "Account";
+
+        // TODO(backend): once role seeding/assignment is confirmed working,
+        // double check the role name here matches exactly what's assigned
+        // (e.g. "Admin") — a typo here would silently send admins to the
+        // wrong profile page instead of erroring.
+        if (currentUser != null && await UserManager.IsInRoleAsync(currentUser, "Admin"))
+        {
+            profileUrl = "~/Admin/Profile";
+        }
     }
 }
 <!DOCTYPE html>
@@ -62,7 +72,7 @@
 
                 @if (User.Identity != null && User.Identity.IsAuthenticated)
                 {
-                    <a href="~/UserProfile" class="btn btn--ghost btn--sm" aria-current="@(IsCurrent("UserProfile", "Index") ? "page" : null)">
+                    <a href="@Url.Content(profileUrl)" class="btn btn--ghost btn--sm" aria-current="@(IsCurrent("UserProfile", "Index") || IsCurrent("Admin", "Profile") ? "page" : null)">
                         @displayName
                     </a>
                     <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="~/" method="post" style="display:inline;">
@@ -75,9 +85,6 @@
                     <a asp-area="Identity" asp-page="/Account/Register" class="btn btn--pine btn--sm">Register</a>
                 }
 
-                <!-- TEMP: dev-only link, remove once admin dashboard has its own login -->
-                <a href="~/Admin/Profile" class="btn btn--ghost btn--sm" style="border:1px dashed var(--amber-600);">Admin (temp)</a>
-                
                 <button type="button" class="navbar__toggle" aria-label="Open menu" aria-expanded="false">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18" /></svg>
                 </button>
@@ -102,7 +109,7 @@
             <li><a href="~/Cart">Cart</a></li>
             @if (User.Identity != null && User.Identity.IsAuthenticated)
             {
-                <li><a href="~/UserProfile">@displayName</a></li>
+                <li><a href="@Url.Content(profileUrl)">@displayName</a></li>
             }
         </ul>
         <div class="mobile-nav__actions">

@@ -140,16 +140,27 @@
         if (!med) return;
         currentMedicine = med;
 
+        var NOT_AVAILABLE = "Not available yet";
+
         document.getElementById("modalTitle").textContent = med.Name;
-        document.getElementById("modalComposition").textContent = med.Composition + " " + med.Strength;
+        document.getElementById("modalComposition").textContent = med.Strength
+            ? med.Composition + " " + med.Strength
+            : med.Composition;
         document.getElementById("modalManufacturer").textContent = med.Manufacturer;
-        document.getElementById("modalStrength").textContent = med.Strength;
+
+        var strengthEl = document.getElementById("modalStrength");
+        strengthEl.textContent = med.Strength || NOT_AVAILABLE;
+        strengthEl.classList.toggle("modal__value--muted", !med.Strength);
+
         document.getElementById("modalForm").textContent = med.ProductType;
         document.getElementById("modalCategory").textContent = med.Category;
         document.getElementById("modalStock").textContent = med.Stock > 0 ? (med.Stock + " units") : "Out of stock";
         document.getElementById("modalPrice").textContent = "\u09F3" + med.Price;
         document.getElementById("modalAbout").textContent = med.About;
-        document.getElementById("modalDosage").textContent = med.Dosage;
+
+        var dosageEl = document.getElementById("modalDosage");
+        dosageEl.textContent = med.Dosage || NOT_AVAILABLE;
+        dosageEl.classList.toggle("modal__section-text--muted", !med.Dosage);
 
         var rxBadge = document.getElementById("modalRxBadge");
         rxBadge.hidden = !med.RequiresRx;

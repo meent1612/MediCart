@@ -1,6 +1,31 @@
+@using Microsoft.AspNetCore.Identity
+@using MediCart.Web.Data
+@inject UserManager<ApplicationUser> UserManager
 @{
     var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
     bool IsAction(string action) => string.Equals(currentAction, action, StringComparison.OrdinalIgnoreCase);
+
+    // TODO(backend): once [Authorize(Roles = "Admin")] is wired in on the
+    // Admin controllers, User.Identity.IsAuthenticated will always be true
+    // here. Until then, "Admin" / "A" are shown as a safe fallback for
+    // anyone who reaches this layout without being logged in.
+    string adminName = "Admin";
+    string adminInitials = "A";
+
+    if (User.Identity != null && User.Identity.IsAuthenticated)
+    {
+        var currentAdmin = await UserManager.GetUserAsync(User);
+        adminName = !string.IsNullOrWhiteSpace(currentAdmin?.FullName)
+            ? currentAdmin.FullName
+            : (User.Identity.Name ?? "Admin");
+
+        var nameParts = adminName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        adminInitials = nameParts.Length >= 2
+            ? $"{nameParts[0][0]}{nameParts[1][0]}".ToUpperInvariant()
+            : adminName.Length >= 2
+                ? adminName.Substring(0, 2).ToUpperInvariant()
+                : adminName.ToUpperInvariant();
+    }
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -73,9 +98,9 @@
             </nav>
 
             <a href="~/Admin/Profile" class="admin-sidebar__profile @(IsAction("Profile") ? "is-active" : "")">
-                <span class="admin-avatar admin-avatar--sm">MK</span>
+                <span class="admin-avatar admin-avatar--sm">@adminInitials</span>
                 <span class="admin-sidebar__profile-text">
-                    <strong>Md. Kayes</strong>
+                    <strong>@adminName</strong>
                     <small>View profile</small>
                 </span>
             </a>
@@ -89,8 +114,8 @@
                 <h1 class="admin-topbar__title">@ViewData["Title"]</h1>
                 <div class="admin-topbar__actions">
                     <a href="~/Admin/Profile" class="admin-topbar__user">
-                        <span class="admin-avatar admin-avatar--sm">MK</span>
-                        <span>Md. Kayes &middot; Admin</span>
+                        <span class="admin-avatar admin-avatar--sm">@adminInitials</span>
+                        <span>@adminName &middot; Admin</span>
                     </a>
                 </div>
             </header>

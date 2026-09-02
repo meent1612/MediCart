@@ -109,6 +109,25 @@
     cursor: pointer;
 }
 
+/* Use-tag filter has no backing data yet — shown as a disabled placeholder */
+.filter-group--disabled h3 {
+    color: #b8b19b;
+}
+
+.filter-options--disabled {
+    background: var(--card);
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+}
+
+.filter-note {
+    margin: 0;
+    font-size: 0.82rem;
+    color: var(--muted);
+    font-style: italic;
+}
+
 #priceRange {
     width: 100%;
     accent-color: var(--pine);
@@ -198,6 +217,12 @@
     height: 40px;
 }
 
+.product-card__image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
 .product-card__body {
     padding: 16px 18px 18px;
     display: flex;
@@ -257,6 +282,13 @@
 .badge--potency {
     background: #eee8d8;
     color: var(--muted);
+}
+
+.badge--disabled {
+    opacity: 0.6;
+    border: 1px dashed var(--border);
+    background: transparent;
+    cursor: default;
 }
 
 .product-card__footer {
@@ -448,6 +480,17 @@
 .modal__value {
     font-weight: 600;
     font-size: 0.95rem;
+}
+
+.modal__value--muted {
+    font-weight: 400;
+    font-style: italic;
+    color: var(--muted);
+}
+
+.modal__section-text--muted {
+    font-style: italic;
+    color: var(--muted) !important;
 }
 
 .modal__section {
