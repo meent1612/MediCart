@@ -22,6 +22,8 @@ namespace MediCart.Web.Models
     {
         // Null on Add. Step 16 (Edit) will reuse this same form/view with Id set.
         public int? Id { get; set; }
+        public IFormFile? ImageFile { get; set; }
+        public string? ImageUrl { get; set; }
 
         [Required(ErrorMessage = "Enter the medicine name")]
         [StringLength(150, MinimumLength = 2)]
