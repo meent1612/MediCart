@@ -55,9 +55,10 @@
                                 {
                                     var statusClass = order.Status switch
                                     {
+                                        "Pending" => "up-status up-status--pending",
+                                        "Processing" => "up-status up-status--pending",
                                         "Shipped" => "up-status up-status--shipped",
                                         "Delivered" => "up-status up-status--delivered",
-                                        "Pending review" => "up-status up-status--pending",
                                         "Rejected" => "up-status up-status--rejected",
                                         _ => "up-status"
                                     };
