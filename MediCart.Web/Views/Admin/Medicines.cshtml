@@ -2,6 +2,7 @@
 @{
     ViewData["Title"] = "Medicines";
     Layout = "_AdminLayout";
+    var hasActiveFilters = !string.IsNullOrWhiteSpace(Model.Search) || Model.CategoryId.HasValue || Model.ProductTypeId.HasValue;
 }
 
 @section Styles {
@@ -11,11 +12,19 @@
 
 @if (TempData["MedicineSuccess"] != null)
 {
-    <div class="admin-alert admin-alert--success">@TempData["MedicineSuccess"]</div>
+    <div class="admin-alert admin-alert--success" data-alert data-auto-dismiss="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><path d="m22 4-10 10-3-3" /></svg>
+        <span>@TempData["MedicineSuccess"]</span>
+        <button type="button" class="admin-alert__dismiss" aria-label="Dismiss message">&times;</button>
+    </div>
 }
 @if (TempData["MedicineError"] != null)
 {
-    <div class="admin-alert admin-alert--error">@TempData["MedicineError"]</div>
+    <div class="admin-alert admin-alert--error" data-alert>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01" /><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" /></svg>
+        <span>@TempData["MedicineError"]</span>
+        <button type="button" class="admin-alert__dismiss" aria-label="Dismiss message">&times;</button>
+    </div>
 }
 
 <div class="admin-panel__head">
@@ -24,7 +33,10 @@
 </div>
 
 <form method="get" asp-action="Medicines" class="medicine-filter-bar" id="medicineFilterForm">
-    <input type="text" name="search" value="@Model.Search" placeholder="Search by name…" class="medicine-filter-search" />
+    <div class="admin-search medicine-filter-search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
+        <input type="text" name="search" id="medicineSearchInput" value="@Model.Search" placeholder="Search by name…" autocomplete="off" />
+    </div>
 
     <select name="categoryId" id="filterCategory">
         <option value="">All categories</option>
@@ -43,50 +55,75 @@
     </select>
 
     <button type="submit" class="btn btn--outline btn--sm">Filter</button>
-    @if (!string.IsNullOrWhiteSpace(Model.Search) || Model.CategoryId.HasValue || Model.ProductTypeId.HasValue)
+    @if (hasActiveFilters)
     {
         <a asp-action="Medicines" class="btn-link">Clear filters</a>
     }
 </form>
 
-<div class="admin-table-wrap">
-    <table class="admin-table">
+<p class="medicine-results-count" id="resultsCount" aria-live="polite">@Model.TotalCount medicine@(Model.TotalCount == 1 ? "" : "s") found</p>
+
+<div class="admin-table-wrap" id="medicineTableWrap">
+    <table class="admin-table" id="medicineTable">
         <thead>
             <tr>
-                <th>Name</th>
+                <th class="sort-th" data-sort-key="name" data-sort-type="text" tabindex="0" role="button" aria-sort="none">
+                    Name
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+                </th>
                 <th>Category</th>
                 <th>Type</th>
                 <th>Manufacturer</th>
-                <th>Price</th>
-                <th>Stock</th>
-                <th>Expiry</th>
+                <th class="sort-th" data-sort-key="price" data-sort-type="number" tabindex="0" role="button" aria-sort="none">
+                    Price
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+                </th>
+                <th class="sort-th" data-sort-key="stock" data-sort-type="number" tabindex="0" role="button" aria-sort="none">
+                    Stock
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+                </th>
+                <th class="sort-th" data-sort-key="expiry" data-sort-type="text" tabindex="0" role="button" aria-sort="none">
+                    Expiry
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+                </th>
                 <th>Sensitivity</th>
                 <th></th>
             </tr>
         </thead>
         <tbody>
+            @{ var rowIndex = 0; }
             @foreach (var med in Model.Medicines)
             {
-                <tr>
-                    <td>
+                rowIndex++;
+                <tr class="med-row"
+                    style="--row-index:@rowIndex"
+                    data-name="@med.Name"
+                    data-category="@med.CategoryName"
+                    data-product-type="@med.ProductTypeName"
+                    data-price="@med.Price.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)"
+                    data-stock="@med.StockQuantity"
+                    data-expiry="@med.ExpiryDate.ToString("yyyy-MM-dd")"
+                    data-sensitivity="@(med.SensitivityLevel ?? "")"
+                    data-rx="@(med.RequiresPrescription ? "true" : "false")">
+                    <td data-label="Name">
                         <strong>@med.Name</strong>
                         @if (med.RequiresPrescription)
                         {
                             <div class="admin-table__sub"><span class="tag tag--rx">Rx</span></div>
                         }
                     </td>
-                    <td>@med.CategoryName</td>
-                    <td>@med.ProductTypeName</td>
-                    <td>@(med.Manufacturer ?? "—")</td>
-                    <td>৳@med.Price.ToString("0.00")</td>
-                    <td>
+                    <td data-label="Category">@med.CategoryName</td>
+                    <td data-label="Type">@med.ProductTypeName</td>
+                    <td data-label="Manufacturer">@(med.Manufacturer ?? "—")</td>
+                    <td data-label="Price">৳@med.Price.ToString("0.00")</td>
+                    <td data-label="Stock">
                         @med.StockQuantity
                         @if (med.IsLowStock)
                         {
                             <span class="tag tag--low-stock">Low</span>
                         }
                     </td>
-                    <td>
+                    <td data-label="Expiry">
                         @med.ExpiryDate.ToString("dd MMM yyyy")
                         @if (med.IsExpired)
                         {
@@ -97,7 +134,7 @@
                             <span class="tag tag--expiring">Expiring soon</span>
                         }
                     </td>
-                    <td>
+                    <td data-label="Sensitivity">
                         @if (!string.IsNullOrEmpty(med.SensitivityLevel))
                         {
                             <span class="tag tag--sensitivity-@med.SensitivityLevel">@med.SensitivityLevel</span>
@@ -109,20 +146,51 @@
                     </td>
                     <td class="admin-table__actions">
                         <a asp-action="EditMedicine" asp-route-id="@med.Id" class="btn-link">Edit</a>
-                        <form asp-action="DeleteMedicine" method="post" class="inline-form"
+                        <form asp-action="DeleteMedicine" method="post" class="inline-form" id="deleteForm-@med.Id"
                               onsubmit="return confirm('Delete this medicine permanently?');">
                             <input type="hidden" name="id" value="@med.Id" />
-                            <button type="submit" class="btn-link btn-link--danger">Delete</button>
+                            <button type="submit" class="btn-link btn-link--danger js-delete-trigger"
+                                    data-form-id="deleteForm-@med.Id" data-medicine-name="@med.Name">Delete</button>
                         </form>
                     </td>
                 </tr>
             }
             @if (!Model.Medicines.Any())
             {
-                <tr><td colspan="9" class="admin-table__empty">No medicines match your filters.</td></tr>
+                <tr>
+                    <td colspan="9" class="admin-table__empty">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8v8l9 5 9-5Z" /><path d="M3 8l9 5 9-5M12 13v8" /></svg>
+                        <p>No medicines match your filters.</p>
+                        @if (hasActiveFilters)
+                        {
+                            <p class="admin-table__no-matches"><a asp-action="Medicines" class="btn-link">Clear filters</a> to see the full catalogue.</p>
+                        }
+                    </td>
+                </tr>
+            }
+            else
+            {
+                <tr id="clientNoMatchesRow" class="admin-table__empty-row" hidden>
+                    <td colspan="9" class="admin-table__empty">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
+                        <p>No medicines match your search.</p>
+                        <p class="admin-table__no-matches"><button type="button" class="btn-link" id="clientClearFiltersBtn">Clear filters</button></p>
+                    </td>
+                </tr>
             }
         </tbody>
     </table>
+</div>
+
+<div class="modal-overlay" id="deleteModalOverlay" aria-hidden="true">
+    <div class="modal-card" role="alertdialog" aria-modal="true" aria-labelledby="deleteModalTitle" aria-describedby="deleteModalDesc">
+        <h3 id="deleteModalTitle">Delete medicine?</h3>
+        <p id="deleteModalDesc">This will permanently remove <strong id="deleteModalName">this medicine</strong> from your catalogue. This can't be undone.</p>
+        <div class="modal-card__actions">
+            <button type="button" class="btn btn--outline btn--sm" id="deleteModalCancel">Cancel</button>
+            <button type="button" class="btn btn--danger btn--sm" id="deleteModalConfirm">Delete</button>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
