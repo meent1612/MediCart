@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using MediCart.Web.Data;
 using MediCart.Web.Models;
 
@@ -10,10 +11,12 @@ namespace MediCart.Web.Controllers
     public class UserProfileController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ApplicationDbContext _context;
 
-        public UserProfileController(UserManager<ApplicationUser> userManager)
+        public UserProfileController(UserManager<ApplicationUser> userManager, ApplicationDbContext context)
         {
             _userManager = userManager;
+            _context = context;
         }
 
         public async Task<IActionResult> Index()
@@ -24,12 +27,9 @@ namespace MediCart.Web.Controllers
             var model = new UserProfileViewModel
             {
                 FullName = user.FullName,
-                Email = user.Email,
+                Email = user.Email ?? string.Empty,
                 PhoneNumber = user.PhoneNumber,
-
-                // TODO: replace with real query once Orders table exists, e.g.:
-                // Orders = _db.Orders.Where(o => o.UserId == user.Id).ToList()
-                Orders = GetSampleOrders()
+                Orders = await GetOrdersForUser(user.Id)
             };
 
             return View(model);
@@ -44,7 +44,7 @@ namespace MediCart.Web.Controllers
 
             if (!ModelState.IsValid)
             {
-                model.Orders = GetSampleOrders();
+                model.Orders = await GetOrdersForUser(user.Id);
                 return View(model);
             }
 
@@ -61,19 +61,25 @@ namespace MediCart.Web.Controllers
             foreach (var error in result.Errors)
                 ModelState.AddModelError(string.Empty, error.Description);
 
-            model.Orders = GetSampleOrders();
+            model.Orders = await GetOrdersForUser(user.Id);
             return View(model);
         }
 
-        private static List<OrderHistoryItem> GetSampleOrders()
+        private async Task<List<OrderHistoryItem>> GetOrdersForUser(string userId)
         {
-            return new List<OrderHistoryItem>
-            {
-                new() { OrderId = "MC-10482", Date = new DateTime(2026, 8, 22), ItemCount = 3, Total = 355, Status = "Shipped" },
-                new() { OrderId = "MC-10331", Date = new DateTime(2026, 8, 14), ItemCount = 1, Total = 60, Status = "Delivered" },
-                new() { OrderId = "MC-10298", Date = new DateTime(2026, 8, 2), ItemCount = 4, Total = 410, Status = "Pending review" },
-                new() { OrderId = "MC-10120", Date = new DateTime(2026, 7, 19), ItemCount = 2, Total = 175, Status = "Rejected" },
-            };
+            return await _context.Orders
+                .Where(o => o.UserId == userId)
+                .Include(o => o.OrderItems)
+                .OrderByDescending(o => o.CreatedAt)
+                .Select(o => new OrderHistoryItem
+                {
+                    OrderId = "MC-" + (10000 + o.Id),          // formatted display code
+                    Date = o.CreatedAt,
+                    ItemCount = o.OrderItems.Sum(i => i.Quantity),
+                    Total = o.TotalAmount,
+                    Status = o.Status
+                })
+                .ToListAsync();
         }
     }
 }
