@@ -2,6 +2,15 @@
 @{
     ViewData["Title"] = "Categories & Product Types";
     Layout = "_AdminLayout";
+
+    // Every category is at most 2 levels deep: AdminController only ever
+    // offers TOP-LEVEL categories as parent options (see
+    // BuildCategoriesViewModelAsync -> ParentCategoryOptions), so a simple
+    // parent/child grouping here is safe and won't hide any deeper rows.
+    var topLevelCategories = Model.Categories.Where(c => c.ParentCategoryId == null).ToList();
+    var childrenByParent = Model.Categories
+        .Where(c => c.ParentCategoryId != null)
+        .ToLookup(c => c.ParentCategoryId);
 }
 
 @section Styles {
@@ -10,28 +19,52 @@
 
 @if (TempData["CategorySuccess"] != null)
 {
-    <div class="admin-alert admin-alert--success">@TempData["CategorySuccess"]</div>
+    <div class="admin-alert admin-alert--success">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+        <span>@TempData["CategorySuccess"]</span>
+        <button type="button" class="admin-alert__dismiss" aria-label="Dismiss">&times;</button>
+    </div>
 }
 @if (TempData["CategoryError"] != null)
 {
-    <div class="admin-alert admin-alert--error">@TempData["CategoryError"]</div>
+    <div class="admin-alert admin-alert--error">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" /><path d="M12 8v5M12 16h.01" /></svg>
+        <span>@TempData["CategoryError"]</span>
+        <button type="button" class="admin-alert__dismiss" aria-label="Dismiss">&times;</button>
+    </div>
 }
 @if (TempData["ProductTypeSuccess"] != null)
 {
-    <div class="admin-alert admin-alert--success">@TempData["ProductTypeSuccess"]</div>
+    <div class="admin-alert admin-alert--success">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+        <span>@TempData["ProductTypeSuccess"]</span>
+        <button type="button" class="admin-alert__dismiss" aria-label="Dismiss">&times;</button>
+    </div>
 }
 @if (TempData["ProductTypeError"] != null)
 {
-    <div class="admin-alert admin-alert--error">@TempData["ProductTypeError"]</div>
+    <div class="admin-alert admin-alert--error">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" /><path d="M12 8v5M12 16h.01" /></svg>
+        <span>@TempData["ProductTypeError"]</span>
+        <button type="button" class="admin-alert__dismiss" aria-label="Dismiss">&times;</button>
+    </div>
 }
 
 <div class="admin-cat-grid">
 
     <!-- ============ Categories ============ -->
-    <section class="admin-panel">
+    <section class="admin-panel reveal in-view">
         <div class="admin-panel__head">
             <h2>Categories</h2>
-            <button type="button" class="btn btn--pine btn--sm" id="newCategoryBtn">+ New category</button>
+            <button type="button" class="btn btn--pine btn--sm" id="newCategoryBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14" /></svg>
+                New category
+            </button>
+        </div>
+
+        <div class="admin-search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
+            <input type="text" id="categorySearch" placeholder="Search categories..." aria-label="Search categories" />
         </div>
 
         <div class="admin-table-wrap">
@@ -45,20 +78,37 @@
                         <th></th>
                     </tr>
                 </thead>
-                <tbody>
-                    @foreach (var cat in Model.Categories)
+                <tbody id="categoryTableBody">
+                    @foreach (var cat in topLevelCategories)
                     {
-                        <tr>
+                        var children = childrenByParent[cat.Id].ToList();
+                        var hasChildren = children.Count > 0;
+
+                        <tr class="cat-row cat-row--parent" data-id="@cat.Id" data-cat-name="@cat.Name.ToLower()">
                             <td>
-                                <strong>@cat.Name</strong>
-                                @if (!string.IsNullOrWhiteSpace(cat.Description))
-                                {
-                                    <div class="admin-table__sub">@cat.Description</div>
-                                }
+                                <div class="cat-row__name">
+                                    @if (hasChildren)
+                                    {
+                                        <button type="button" class="cat-toggle" data-parent-id="@cat.Id" aria-expanded="true" aria-label="Toggle subcategories">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6" /></svg>
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <span class="cat-toggle cat-toggle--spacer"></span>
+                                    }
+                                    <div>
+                                        <strong>@cat.Name</strong>
+                                        @if (!string.IsNullOrWhiteSpace(cat.Description))
+                                        {
+                                            <div class="admin-table__sub">@cat.Description</div>
+                                        }
+                                    </div>
+                                </div>
                             </td>
-                            <td>@(cat.ParentCategoryName ?? "—")</td>
-                            <td>@cat.SubCategoryCount</td>
-                            <td>@cat.MedicineCount</td>
+                            <td data-label="Parent">&mdash;</td>
+                            <td data-label="Subcategories"><span class="count-pill @(cat.SubCategoryCount > 0 ? "count-pill--active" : "")">@cat.SubCategoryCount</span></td>
+                            <td data-label="Medicines"><span class="count-pill @(cat.MedicineCount > 0 ? "count-pill--active" : "")">@cat.MedicineCount</span></td>
                             <td class="admin-table__actions">
                                 <button type="button" class="btn-link edit-category-btn"
                                         data-id="@cat.Id" data-name="@cat.Name"
@@ -72,13 +122,52 @@
                                 </form>
                             </td>
                         </tr>
+
+                        @foreach (var child in children)
+                        {
+                            <tr class="cat-row cat-row--child" data-parent-id="@cat.Id" data-cat-name="@child.Name.ToLower()">
+                                <td>
+                                    <div class="cat-row__name cat-row__name--child">
+                                        <span class="cat-connector" aria-hidden="true"></span>
+                                        <div>
+                                            <strong>@child.Name</strong>
+                                            @if (!string.IsNullOrWhiteSpace(child.Description))
+                                            {
+                                                <div class="admin-table__sub">@child.Description</div>
+                                            }
+                                        </div>
+                                    </div>
+                                </td>
+                                <td data-label="Parent">@cat.Name</td>
+                                <td data-label="Subcategories"><span class="count-pill">@child.SubCategoryCount</span></td>
+                                <td data-label="Medicines"><span class="count-pill @(child.MedicineCount > 0 ? "count-pill--active" : "")">@child.MedicineCount</span></td>
+                                <td class="admin-table__actions">
+                                    <button type="button" class="btn-link edit-category-btn"
+                                            data-id="@child.Id" data-name="@child.Name"
+                                            data-description="@child.Description" data-parent-id="@child.ParentCategoryId">
+                                        Edit
+                                    </button>
+                                    <form asp-action="DeleteCategory" method="post" class="inline-form"
+                                          onsubmit="return confirm('Delete this category?');">
+                                        <input type="hidden" name="id" value="@child.Id" />
+                                        <button type="submit" class="btn-link btn-link--danger">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
                     }
                     @if (!Model.Categories.Any())
                     {
-                        <tr><td colspan="5" class="admin-table__empty">No categories yet.</td></tr>
+                        <tr id="categoriesEmptyRow">
+                            <td colspan="5" class="admin-table__empty">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="1.5" /><path d="M3 9h18" /></svg>
+                                <p>No categories yet. Add your first one below.</p>
+                            </td>
+                        </tr>
                     }
                 </tbody>
             </table>
+            <p class="admin-table__no-matches" id="categoryNoMatches" hidden>No categories match your search.</p>
         </div>
 
         <form asp-action="CreateCategory" method="post" class="admin-form admin-form--panel" id="categoryForm">
@@ -115,10 +204,18 @@
     </section>
 
     <!-- ============ Product Types ============ -->
-    <section class="admin-panel">
+    <section class="admin-panel reveal in-view">
         <div class="admin-panel__head">
             <h2>Product types</h2>
-            <button type="button" class="btn btn--pine btn--sm" id="newProductTypeBtn">+ New type</button>
+            <button type="button" class="btn btn--pine btn--sm" id="newProductTypeBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14" /></svg>
+                New type
+            </button>
+        </div>
+
+        <div class="admin-search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
+            <input type="text" id="productTypeSearch" placeholder="Search product types..." aria-label="Search product types" />
         </div>
 
         <div class="admin-table-wrap">
@@ -130,12 +227,12 @@
                         <th></th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="productTypeTableBody">
                     @foreach (var pt in Model.ProductTypes)
                     {
-                        <tr>
+                        <tr class="pt-row" data-pt-name="@pt.Name.ToLower()">
                             <td><strong>@pt.Name</strong></td>
-                            <td>@pt.MedicineCount</td>
+                            <td data-label="Medicines"><span class="count-pill @(pt.MedicineCount > 0 ? "count-pill--active" : "")">@pt.MedicineCount</span></td>
                             <td class="admin-table__actions">
                                 <button type="button" class="btn-link edit-producttype-btn"
                                         data-id="@pt.Id" data-name="@pt.Name">
@@ -151,10 +248,16 @@
                     }
                     @if (!Model.ProductTypes.Any())
                     {
-                        <tr><td colspan="3" class="admin-table__empty">No product types yet.</td></tr>
+                        <tr id="productTypesEmptyRow">
+                            <td colspan="3" class="admin-table__empty">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="1.5" /><path d="M3 9h18" /></svg>
+                                <p>No product types yet. Add your first one below.</p>
+                            </td>
+                        </tr>
                     }
                 </tbody>
             </table>
+            <p class="admin-table__no-matches" id="productTypeNoMatches" hidden>No product types match your search.</p>
         </div>
 
         <form asp-action="CreateProductType" method="post" class="admin-form admin-form--panel" id="productTypeForm">
