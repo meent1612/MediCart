@@ -25,6 +25,8 @@
         cancelCategoryEdit.hidden = true;
     }
 
+    if (categoryForm.dataset.hadError === "true") categoryForm.hidden = false;
+
     document.querySelectorAll(".edit-category-btn").forEach(function (btn) {
         btn.addEventListener("click", function () {
             categoryFormId.value = btn.dataset.id;
@@ -35,13 +37,18 @@
             categoryFormSubmit.textContent = "Save changes";
             categoryForm.action = "/Admin/EditCategory";
             cancelCategoryEdit.hidden = false;
+            categoryForm.hidden = false;
             categoryForm.scrollIntoView({ behavior: "smooth", block: "center" });
         });
     });
 
-    cancelCategoryEdit.addEventListener("click", resetCategoryForm);
+    cancelCategoryEdit.addEventListener("click", function () {
+        resetCategoryForm();
+        categoryForm.hidden = true;
+    });
     newCategoryBtn.addEventListener("click", function () {
         resetCategoryForm();
+        categoryForm.hidden = false;
         categoryName.focus();
     });
 
@@ -65,6 +72,8 @@
         cancelProductTypeEdit.hidden = true;
     }
 
+    if (productTypeForm.dataset.hadError === "true") productTypeForm.hidden = false;
+
     document.querySelectorAll(".edit-producttype-btn").forEach(function (btn) {
         btn.addEventListener("click", function () {
             productTypeFormId.value = btn.dataset.id;
@@ -73,13 +82,90 @@
             productTypeFormSubmit.textContent = "Save changes";
             productTypeForm.action = "/Admin/EditProductType";
             cancelProductTypeEdit.hidden = false;
+            productTypeForm.hidden = false;
             productTypeForm.scrollIntoView({ behavior: "smooth", block: "center" });
         });
     });
 
-    cancelProductTypeEdit.addEventListener("click", resetProductTypeForm);
+    cancelProductTypeEdit.addEventListener("click", function () {
+        resetProductTypeForm();
+        productTypeForm.hidden = true;
+    });
     newProductTypeBtn.addEventListener("click", function () {
         resetProductTypeForm();
+        productTypeForm.hidden = false;
         productTypeName.focus();
+    });
+
+    // ---- Category tree: expand/collapse subcategories ----
+    document.querySelectorAll(".cat-toggle[data-parent-id]").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+            var parentId = btn.dataset.parentId;
+            var isExpanded = btn.getAttribute("aria-expanded") === "true";
+
+            document.querySelectorAll('.cat-row--child[data-parent-id="' + parentId + '"]').forEach(function (row) {
+                row.classList.toggle("cat-row--collapsed-hidden", isExpanded);
+            });
+
+            btn.setAttribute("aria-expanded", String(!isExpanded));
+        });
+    });
+
+    // ---- Category search (matches parent or child name; keeps a parent
+    // visible if any of its children match, and vice versa) ----
+    var categorySearch = document.getElementById("categorySearch");
+    var categoryNoMatches = document.getElementById("categoryNoMatches");
+
+    categorySearch?.addEventListener("input", function () {
+        var term = categorySearch.value.trim().toLowerCase();
+        var visibleCount = 0;
+
+        document.querySelectorAll(".cat-row--parent").forEach(function (parentRow) {
+            var parentId = parentRow.dataset.id;
+            var childRows = document.querySelectorAll('.cat-row--child[data-parent-id="' + parentId + '"]');
+
+            var parentMatches = term === "" || parentRow.dataset.catName.indexOf(term) !== -1;
+            var anyChildMatches = false;
+            childRows.forEach(function (childRow) {
+                if (childRow.dataset.catName.indexOf(term) !== -1) anyChildMatches = true;
+            });
+
+            var showParent = term === "" || parentMatches || anyChildMatches;
+            parentRow.classList.toggle("cat-row--search-hidden", !showParent);
+            if (showParent) visibleCount++;
+
+            childRows.forEach(function (childRow) {
+                var childMatches = term === "" || parentMatches || childRow.dataset.catName.indexOf(term) !== -1;
+                var show = showParent && childMatches;
+                childRow.classList.toggle("cat-row--search-hidden", !show);
+                if (show) visibleCount++;
+            });
+        });
+
+        if (categoryNoMatches) categoryNoMatches.hidden = visibleCount !== 0 || term === "";
+    });
+
+    // ---- Product type search ----
+    var productTypeSearch = document.getElementById("productTypeSearch");
+    var productTypeNoMatches = document.getElementById("productTypeNoMatches");
+
+    productTypeSearch?.addEventListener("input", function () {
+        var term = productTypeSearch.value.trim().toLowerCase();
+        var visibleCount = 0;
+
+        document.querySelectorAll(".pt-row").forEach(function (row) {
+            var matches = term === "" || row.dataset.ptName.indexOf(term) !== -1;
+            row.classList.toggle("cat-row--search-hidden", !matches);
+            if (matches) visibleCount++;
+        });
+
+        if (productTypeNoMatches) productTypeNoMatches.hidden = visibleCount !== 0 || term === "";
+    });
+
+    // ---- Dismissible alert banners ----
+    document.querySelectorAll(".admin-alert__dismiss").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+            btn.closest(".admin-alert")?.remove();
+        });
     });
 })();

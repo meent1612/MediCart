@@ -3,6 +3,7 @@
     var isEdit = Model.Form.Id.HasValue;
     ViewData["Title"] = isEdit ? "Edit medicine" : "Add medicine";
     Layout = "_AdminLayout";
+    var hasImage = !string.IsNullOrEmpty(Model.Form.ImageUrl);
 }
 
 @section Styles {
@@ -12,11 +13,19 @@
 
 @if (TempData["MedicineSuccess"] != null)
 {
-    <div class="admin-alert admin-alert--success">@TempData["MedicineSuccess"]</div>
+    <div class="admin-alert admin-alert--success" data-alert data-auto-dismiss="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><path d="m22 4-10 10-3-3" /></svg>
+        <span>@TempData["MedicineSuccess"]</span>
+        <button type="button" class="admin-alert__dismiss" aria-label="Dismiss message">&times;</button>
+    </div>
 }
 @if (TempData["MedicineError"] != null)
 {
-    <div class="admin-alert admin-alert--error">@TempData["MedicineError"]</div>
+    <div class="admin-alert admin-alert--error" data-alert>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01" /><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" /></svg>
+        <span>@TempData["MedicineError"]</span>
+        <button type="button" class="admin-alert__dismiss" aria-label="Dismiss message">&times;</button>
+    </div>
 }
 
 <div asp-validation-summary="ModelOnly" class="admin-alert admin-alert--error" role="alert"></div>
@@ -26,8 +35,10 @@
         <h2>@(isEdit ? $"Edit — {Model.Form.Name}" : "Add a new medicine")</h2>
     </div>
 
-        <form asp-action="@(isEdit ? "EditMedicine" : "AddMedicine")" method="post" id="medicineForm" enctype="multipart/form-data" novalidate>
+    <form asp-action="@(isEdit ? "EditMedicine" : "AddMedicine")" method="post" id="medicineForm" enctype="multipart/form-data" novalidate>
         <input type="hidden" asp-for="Form.Id" />
+
+        <div class="admin-form__section-label">Basic details</div>
 
         <div class="admin-form__row">
             <div class="admin-form__field">
@@ -50,30 +61,49 @@
                 <input asp-for="Form.Unit" maxlength="30" placeholder="e.g. Strip of 10 tablets" />
             </div>
         </div>
-
-                <div class="admin-form__field">
-
+        <div class="admin-form__field">
             <label asp-for="Form.Description">Description</label>
-
             <textarea asp-for="Form.Description" rows="3" maxlength="1000" placeholder="What this medicine is used for..."></textarea>
-
         </div>
+
+        <div class="admin-form__section-label">Image</div>
 
         <div class="admin-form__field">
-            <label for="imageFileInput">Medicine image</label>
-            <input type="file" id="imageFileInput" name="Form.ImageFile" accept="image/jpeg,image/png,image/webp" />
-            <span asp-validation-for="Form.ImageFile" class="admin-form__error"></span>
-            <small class="admin-form__hint">JPG, PNG, or WEBP — under 5MB. Uploading replaces the current image below.</small>
+            <div class="image-upload">
+                <div class="image-upload__preview" id="imagePreviewBox">
+                    @if (hasImage)
+                    {
+                        <img id="imagePreviewImg" src="@Model.Form.ImageUrl" alt="Medicine image preview" />
+                    }
+                    else
+                    {
+                        <span class="image-upload__placeholder" id="imagePreviewPlaceholder">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-5-5L5 21" /></svg>
+                            No image yet
+                        </span>
+                    }
+                    <button type="button" class="image-upload__clear" id="imageClearBtn" aria-label="Remove image" hidden="@(hasImage ? null : "hidden")">&times;</button>
+                </div>
+
+                <div class="image-upload__controls">
+                    <div class="image-upload__row">
+                        <label for="imageFileInput" class="btn btn--outline btn--sm">Choose image</label>
+                        <span class="image-upload__filename" id="imageFileName">No file chosen</span>
+                    </div>
+                    <input type="file" id="imageFileInput" name="Form.ImageFile" accept="image/jpeg,image/png,image/webp" class="visually-hidden" />
+                    <span asp-validation-for="Form.ImageFile" class="admin-form__error"></span>
+                    <small class="admin-form__hint">JPG, PNG, or WEBP — under 5MB. Uploading replaces the current image.</small>
+
+                    <div class="image-upload__divider"><span>or paste an image URL</span></div>
+
+                    <input asp-for="Form.ImageUrl" type="url" maxlength="500" placeholder="https://..." id="imageUrlInput" />
+                    <span asp-validation-for="Form.ImageUrl" class="admin-form__error"></span>
+                </div>
+            </div>
         </div>
 
-        <div class="admin-form__field">
-            <label asp-for="Form.ImageUrl">Or paste an image URL instead</label>
-            <input asp-for="Form.ImageUrl" type="url" maxlength="500" placeholder="https://..." id="imageUrlInput" />
-            <span asp-validation-for="Form.ImageUrl" class="admin-form__error"></span>
-        </div>
+        <div class="admin-form__section-label">Classification &amp; inventory</div>
 
-        <img id="imageUrlPreview" src="@Model.Form.ImageUrl" alt="Preview"
-             class="image-url-preview" hidden="@(string.IsNullOrEmpty(Model.Form.ImageUrl) ? "hidden" : null)" />
         <div class="admin-form__row">
             <div class="admin-form__field">
                 <label asp-for="Form.CategoryId">Category</label>
@@ -129,6 +159,8 @@
             </div>
         </div>
 
+        <div class="admin-form__section-label">Additional details</div>
+
         <div class="admin-form__field admin-form__field--checkbox">
             <label>
                 <input asp-for="Form.RequiresPrescription" type="checkbox" />
@@ -141,6 +173,10 @@
                 <label>Side effects</label>
                 <button type="button" class="btn-link" id="addSideEffectBtn">+ Add side effect</button>
             </div>
+
+            <p class="admin-form__empty-hint" id="sideEffectsEmpty" hidden="@(Model.Form.SideEffects.Count > 0 ? "hidden" : null)">
+                No side effects added yet — click "+ Add side effect" to list one.
+            </p>
 
             <div id="sideEffectsList" class="side-effects-list">
                 @for (int i = 0; i < Model.Form.SideEffects.Count; i++)
@@ -171,11 +207,11 @@
             </template>
         </div>
 
-                <div class="admin-form__actions admin-form__actions--split">
+        <div class="admin-form__actions admin-form__actions--split">
             @if (isEdit)
             {
                 <button type="button" id="deleteMedicineBtn" class="btn btn--outline btn--danger-outline"
-                        data-id="@Model.Form.Id">
+                        data-id="@Model.Form.Id" data-name="@Model.Form.Name">
                     Delete medicine
                 </button>
             }
@@ -183,6 +219,20 @@
         </div>
     </form>
 </section>
+
+@if (isEdit)
+{
+    <div class="modal-overlay" id="deleteModalOverlay" aria-hidden="true">
+        <div class="modal-card" role="alertdialog" aria-modal="true" aria-labelledby="deleteModalTitle" aria-describedby="deleteModalDesc">
+            <h3 id="deleteModalTitle">Delete medicine?</h3>
+            <p id="deleteModalDesc">This will permanently remove <strong id="deleteModalName">this medicine</strong> from your catalogue. This can't be undone.</p>
+            <div class="modal-card__actions">
+                <button type="button" class="btn btn--outline btn--sm" id="deleteModalCancel">Cancel</button>
+                <button type="button" class="btn btn--danger btn--sm" id="deleteModalConfirm">Delete</button>
+            </div>
+        </div>
+    </div>
+}
 
 @section Scripts {
     <script src="~/js/admin-medicine-form.js" asp-append-version="true"></script>
