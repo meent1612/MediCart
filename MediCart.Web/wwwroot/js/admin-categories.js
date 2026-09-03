@@ -25,6 +25,8 @@
         cancelCategoryEdit.hidden = true;
     }
 
+    if (categoryForm.dataset.hadError === "true") categoryForm.hidden = false;
+
     document.querySelectorAll(".edit-category-btn").forEach(function (btn) {
         btn.addEventListener("click", function () {
             categoryFormId.value = btn.dataset.id;
@@ -35,13 +37,18 @@
             categoryFormSubmit.textContent = "Save changes";
             categoryForm.action = "/Admin/EditCategory";
             cancelCategoryEdit.hidden = false;
+            categoryForm.hidden = false;
             categoryForm.scrollIntoView({ behavior: "smooth", block: "center" });
         });
     });
 
-    cancelCategoryEdit.addEventListener("click", resetCategoryForm);
+    cancelCategoryEdit.addEventListener("click", function () {
+        resetCategoryForm();
+        categoryForm.hidden = true;
+    });
     newCategoryBtn.addEventListener("click", function () {
         resetCategoryForm();
+        categoryForm.hidden = false;
         categoryName.focus();
     });
 
@@ -65,6 +72,8 @@
         cancelProductTypeEdit.hidden = true;
     }
 
+    if (productTypeForm.dataset.hadError === "true") productTypeForm.hidden = false;
+
     document.querySelectorAll(".edit-producttype-btn").forEach(function (btn) {
         btn.addEventListener("click", function () {
             productTypeFormId.value = btn.dataset.id;
@@ -73,13 +82,18 @@
             productTypeFormSubmit.textContent = "Save changes";
             productTypeForm.action = "/Admin/EditProductType";
             cancelProductTypeEdit.hidden = false;
+            productTypeForm.hidden = false;
             productTypeForm.scrollIntoView({ behavior: "smooth", block: "center" });
         });
     });
 
-    cancelProductTypeEdit.addEventListener("click", resetProductTypeForm);
+    cancelProductTypeEdit.addEventListener("click", function () {
+        resetProductTypeForm();
+        productTypeForm.hidden = true;
+    });
     newProductTypeBtn.addEventListener("click", function () {
         resetProductTypeForm();
+        productTypeForm.hidden = false;
         productTypeName.focus();
     });
 

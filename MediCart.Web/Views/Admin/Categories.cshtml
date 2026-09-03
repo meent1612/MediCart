@@ -170,7 +170,8 @@
             <p class="admin-table__no-matches" id="categoryNoMatches" hidden>No categories match your search.</p>
         </div>
 
-        <form asp-action="CreateCategory" method="post" class="admin-form admin-form--panel" id="categoryForm">
+        <form asp-action="CreateCategory" method="post" class="admin-form admin-form--panel" id="categoryForm"
+              data-had-error="@(TempData["CategoryError"] != null ? "true" : "false")" hidden>
             <input type="hidden" name="Id" id="categoryFormId" />
             <h3 id="categoryFormTitle">Add a category</h3>
 
@@ -260,7 +261,8 @@
             <p class="admin-table__no-matches" id="productTypeNoMatches" hidden>No product types match your search.</p>
         </div>
 
-        <form asp-action="CreateProductType" method="post" class="admin-form admin-form--panel" id="productTypeForm">
+        <form asp-action="CreateProductType" method="post" class="admin-form admin-form--panel" id="productTypeForm"
+              data-had-error="@(TempData["ProductTypeError"] != null ? "true" : "false")" hidden>
             <input type="hidden" name="Id" id="productTypeFormId" />
             <h3 id="productTypeFormTitle">Add a product type</h3>
 

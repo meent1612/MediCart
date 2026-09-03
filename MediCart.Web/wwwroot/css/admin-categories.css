@@ -162,6 +162,11 @@
 }
 
 /* ----- Forms ----- */
+#categoryForm[hidden],
+#productTypeForm[hidden] {
+    display: none !important;
+}
+
 .admin-form--panel { padding-top: 18px; border-top: 1px dashed var(--line); }
 .admin-form--panel h3 { font-size: 0.95rem; margin: 0 0 14px; color: var(--ink-900); }
 
