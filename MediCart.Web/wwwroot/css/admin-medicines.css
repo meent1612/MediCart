@@ -84,15 +84,19 @@
 .sort-th {
     cursor: pointer;
     user-select: none;
+    transition: color .15s ease;
+}
+.sort-th__label {
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    transition: color .15s ease;
+    white-space: nowrap;
 }
 .sort-th svg {
     width: 11px;
     height: 11px;
     opacity: .35;
+    flex-shrink: 0;
     transition: opacity .15s ease, transform .15s ease;
 }
 .sort-th:hover { color: var(--pine-800); }
