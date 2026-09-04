@@ -3,14 +3,7 @@
     ViewData["Title"] = "Categories & Product Types";
     Layout = "_AdminLayout";
 
-    // Every category is at most 2 levels deep: AdminController only ever
-    // offers TOP-LEVEL categories as parent options (see
-    // BuildCategoriesViewModelAsync -> ParentCategoryOptions), so a simple
-    // parent/child grouping here is safe and won't hide any deeper rows.
-    var topLevelCategories = Model.Categories.Where(c => c.ParentCategoryId == null).ToList();
-    var childrenByParent = Model.Categories
-        .Where(c => c.ParentCategoryId != null)
-        .ToLookup(c => c.ParentCategoryId);
+    var subCategoriesByParent = Model.SubCategories.ToLookup(sc => sc.CategoryId);
 }
 
 @section Styles {
@@ -79,9 +72,9 @@
                     </tr>
                 </thead>
                 <tbody id="categoryTableBody">
-                    @foreach (var cat in topLevelCategories)
+                    @foreach (var cat in Model.Categories)
                     {
-                        var children = childrenByParent[cat.Id].ToList();
+                        var children = subCategoriesByParent[cat.Id].ToList();
                         var hasChildren = children.Count > 0;
 
                         <tr class="cat-row cat-row--parent" data-id="@cat.Id" data-cat-name="@cat.Name.ToLower()">
@@ -112,7 +105,8 @@
                             <td class="admin-table__actions">
                                 <button type="button" class="btn-link edit-category-btn"
                                         data-id="@cat.Id" data-name="@cat.Name"
-                                        data-description="@cat.Description" data-parent-id="@cat.ParentCategoryId">
+                                        data-description="@cat.Description" data-parent-id=""
+                                        data-kind="category">
                                     Edit
                                 </button>
                                 <form asp-action="DeleteCategory" method="post" class="inline-form"
@@ -139,16 +133,17 @@
                                     </div>
                                 </td>
                                 <td data-label="Parent">@cat.Name</td>
-                                <td data-label="Subcategories"><span class="count-pill">@child.SubCategoryCount</span></td>
+                                <td data-label="Subcategories"><span class="count-pill">0</span></td>
                                 <td data-label="Medicines"><span class="count-pill @(child.MedicineCount > 0 ? "count-pill--active" : "")">@child.MedicineCount</span></td>
                                 <td class="admin-table__actions">
                                     <button type="button" class="btn-link edit-category-btn"
                                             data-id="@child.Id" data-name="@child.Name"
-                                            data-description="@child.Description" data-parent-id="@child.ParentCategoryId">
+                                            data-description="@child.Description" data-parent-id="@child.CategoryId"
+                                            data-kind="subcategory">
                                         Edit
                                     </button>
-                                    <form asp-action="DeleteCategory" method="post" class="inline-form"
-                                          onsubmit="return confirm('Delete this category?');">
+                                    <form asp-action="DeleteSubCategory" method="post" class="inline-form"
+                                          onsubmit="return confirm('Delete this subcategory?');">
                                         <input type="hidden" name="id" value="@child.Id" />
                                         <button type="submit" class="btn-link btn-link--danger">Delete</button>
                                     </form>
@@ -173,12 +168,14 @@
         <form asp-action="CreateCategory" method="post" class="admin-form admin-form--panel" id="categoryForm"
               data-had-error="@(TempData["CategoryError"] != null ? "true" : "false")" hidden>
             <input type="hidden" name="Id" id="categoryFormId" />
+            <input type="hidden" name="Kind" id="categoryFormKind" value="category" />
             <h3 id="categoryFormTitle">Add a category</h3>
 
             <div class="admin-form__row">
                 <div class="admin-form__field">
                     <label for="categoryName">Name</label>
-                    <input type="text" id="categoryName" name="Name" required maxlength="100" />
+                    <input type="text" id="categoryName" name="Name" required maxlength="100" pattern="[A-Za-z][A-Za-z\s']*"
+                           title="Letters only — no numbers or symbols" />
                 </div>
                 <div class="admin-form__field">
                     <label for="categoryParent">Parent category (optional)</label>
@@ -268,7 +265,8 @@
 
             <div class="admin-form__field">
                 <label for="productTypeName">Name</label>
-                <input type="text" id="productTypeName" name="Name" required maxlength="50" />
+                <input type="text" id="productTypeName" name="Name" required maxlength="50" pattern="[A-Za-z][A-Za-z\s/()'\-]*"
+                       title="Letters only — no numbers" />
             </div>
 
             <div class="admin-form__actions">
