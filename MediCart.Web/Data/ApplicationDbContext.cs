@@ -9,6 +9,7 @@ namespace MediCart.Web.Data
         public DbSet<Division> Divisions { get; set; }
         public DbSet<City> Cities { get; set; }
         public DbSet<Category> Categories { get; set; }
+        public DbSet<SubCategory> SubCategories { get; set; }
         public DbSet<ProductType> ProductTypes { get; set; }
         public DbSet<Medicine> Medicines { get; set; }
         public DbSet<SideEffect> SideEffects { get; set; }
@@ -31,12 +32,25 @@ namespace MediCart.Web.Data
                 .HasIndex(c => new { c.DivisionId, c.Name })
                 .IsUnique();
 
-            // Category — self-referencing
-            builder.Entity<Category>()
-                .HasOne(c => c.ParentCategory)
-                .WithMany(c => c.SubCategories)
-                .HasForeignKey(c => c.ParentCategoryId)
-                .OnDelete(DeleteBehavior.Restrict);
+            // SubCategory — required FK to Category
+builder.Entity<SubCategory>()
+    .HasOne(sc => sc.Category)
+    .WithMany(c => c.SubCategories)
+    .HasForeignKey(sc => sc.CategoryId)
+    .OnDelete(DeleteBehavior.Restrict);
+
+// Medicine — required Category FK, optional SubCategory FK
+builder.Entity<Medicine>()
+    .HasOne(m => m.Category)
+    .WithMany(c => c.Medicines)
+    .HasForeignKey(m => m.CategoryId)
+    .OnDelete(DeleteBehavior.Restrict);
+
+builder.Entity<Medicine>()
+    .HasOne(m => m.SubCategory)
+    .WithMany(sc => sc.Medicines)
+    .HasForeignKey(m => m.SubCategoryId)
+    .OnDelete(DeleteBehavior.Restrict);
 
             // Medicine — decimal column + check constraint
             builder.Entity<Medicine>()

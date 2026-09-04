@@ -209,160 +209,219 @@ namespace MediCart.Web.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateCategory(
-            CategoryFormViewModel form)
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> CreateCategory(CategoryFormViewModel form)
+{
+    if (!ModelState.IsValid)
+    {
+        TempData["CategoryError"] = ModelState.Values
+            .SelectMany(v => v.Errors)
+            .Select(e => e.ErrorMessage)
+            .FirstOrDefault() ?? "Please enter a valid name.";
+
+        return RedirectToAction(nameof(Categories));
+    }
+
+    var name = form.Name.Trim();
+
+    if (form.ParentCategoryId is null)
+    {
+        var duplicate = await _db.Categories.AnyAsync(c =>
+            c.Name.ToLower() == name.ToLower());
+
+        if (duplicate)
         {
-            if (!ModelState.IsValid)
-            {
-                TempData["CategoryError"] =
-                    "Please enter a valid category name.";
-
-                return RedirectToAction(nameof(Categories));
-            }
-
-            var duplicate = await _db.Categories.AnyAsync(c =>
-                c.Name.ToLower() ==
-                form.Name.Trim().ToLower()
-                &&
-                c.ParentCategoryId == form.ParentCategoryId);
-
-            if (duplicate)
-            {
-                TempData["CategoryError"] =
-                    $"'{form.Name}' already exists at this level.";
-
-                return RedirectToAction(nameof(Categories));
-            }
-
-            var category = new Category
-            {
-                Name = form.Name.Trim(),
-                Description =
-                    string.IsNullOrWhiteSpace(form.Description)
-                        ? null
-                        : form.Description.Trim(),
-                ParentCategoryId = form.ParentCategoryId,
-                CreatedAt = DateTime.UtcNow
-            };
-
-            _db.Categories.Add(category);
-            await _db.SaveChangesAsync();
-
-            TempData["CategorySuccess"] =
-                $"Category '{category.Name}' added.";
-
+            TempData["CategoryError"] = $"'{name}' already exists as a category.";
             return RedirectToAction(nameof(Categories));
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditCategory(
-            CategoryFormViewModel form)
+        _db.Categories.Add(new Category
         {
-            if (form.Id is null || !ModelState.IsValid)
-            {
-                TempData["CategoryError"] =
-                    "Please enter a valid category name.";
+            Name = name,
+            Description = string.IsNullOrWhiteSpace(form.Description) ? null : form.Description.Trim(),
+            CreatedAt = DateTime.UtcNow
+        });
 
-                return RedirectToAction(nameof(Categories));
-            }
-
-            var category =
-                await _db.Categories.FindAsync(form.Id.Value);
-
-            if (category == null)
-            {
-                TempData["CategoryError"] =
-                    "Category not found.";
-
-                return RedirectToAction(nameof(Categories));
-            }
-
-            if (form.ParentCategoryId == category.Id)
-            {
-                TempData["CategoryError"] =
-                    "A category cannot be its own parent.";
-
-                return RedirectToAction(nameof(Categories));
-            }
-
-            if (form.ParentCategoryId.HasValue &&
-                await IsDescendantAsync(
-                    category.Id,
-                    form.ParentCategoryId.Value))
-            {
-                TempData["CategoryError"] =
-                    "Cannot move a category under its own subcategory.";
-
-                return RedirectToAction(nameof(Categories));
-            }
-
-            category.Name = form.Name.Trim();
-
-            category.Description =
-                string.IsNullOrWhiteSpace(form.Description)
-                    ? null
-                    : form.Description.Trim();
-
-            category.ParentCategoryId =
-                form.ParentCategoryId;
-
-            await _db.SaveChangesAsync();
-
-            TempData["CategorySuccess"] =
-                $"Category '{category.Name}' updated.";
-
+        TempData["CategorySuccess"] = $"Category '{name}' added.";
+    }
+    else
+    {
+        var parentExists = await _db.Categories.AnyAsync(c => c.Id == form.ParentCategoryId.Value);
+        if (!parentExists)
+        {
+            TempData["CategoryError"] = "Selected parent category no longer exists — refresh the page.";
             return RedirectToAction(nameof(Categories));
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteCategory(int id)
+        var duplicate = await _db.SubCategories.AnyAsync(sc =>
+            sc.CategoryId == form.ParentCategoryId.Value &&
+            sc.Name.ToLower() == name.ToLower());
+
+        if (duplicate)
         {
-            var category = await _db.Categories
-                .Include(c => c.SubCategories)
-                .Include(c => c.Medicines)
-                .FirstOrDefaultAsync(c => c.Id == id);
-
-            if (category == null)
-            {
-                TempData["CategoryError"] =
-                    "Category not found.";
-
-                return RedirectToAction(nameof(Categories));
-            }
-
-            if (category.SubCategories.Count > 0)
-            {
-                TempData["CategoryError"] =
-                    $"Cannot delete '{category.Name}' — it has " +
-                    $"{category.SubCategories.Count} " +
-                    $"subcategor{(category.SubCategories.Count == 1 ? "y" : "ies")}. " +
-                    "Delete or reassign those first.";
-
-                return RedirectToAction(nameof(Categories));
-            }
-
-            if (category.Medicines.Count > 0)
-            {
-                TempData["CategoryError"] =
-                    $"Cannot delete '{category.Name}' — " +
-                    $"{category.Medicines.Count} medicine(s) still use it. " +
-                    "Reassign them first.";
-
-                return RedirectToAction(nameof(Categories));
-            }
-
-            _db.Categories.Remove(category);
-            await _db.SaveChangesAsync();
-
-            TempData["CategorySuccess"] =
-                $"Category '{category.Name}' deleted.";
-
+            TempData["CategoryError"] = $"'{name}' already exists under this category.";
             return RedirectToAction(nameof(Categories));
         }
 
+        _db.SubCategories.Add(new SubCategory
+        {
+            CategoryId = form.ParentCategoryId.Value,
+            Name = name,
+            Description = string.IsNullOrWhiteSpace(form.Description) ? null : form.Description.Trim(),
+            CreatedAt = DateTime.UtcNow
+        });
+
+        TempData["CategorySuccess"] = $"Subcategory '{name}' added.";
+    }
+
+    await _db.SaveChangesAsync();
+    return RedirectToAction(nameof(Categories));
+}
+
+[HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> EditCategory(CategoryFormViewModel form)
+{
+    if (form.Id is null || string.IsNullOrEmpty(form.Kind) || !ModelState.IsValid)
+    {
+        TempData["CategoryError"] = ModelState.Values
+            .SelectMany(v => v.Errors)
+            .Select(e => e.ErrorMessage)
+            .FirstOrDefault() ?? "Please enter a valid name.";
+
+        return RedirectToAction(nameof(Categories));
+    }
+
+    var name = form.Name.Trim();
+
+    // Editing can't move a row between the two tables — block it explicitly
+    // rather than silently doing the wrong thing.
+    var wouldChangeKind = form.Kind == "category"
+        ? form.ParentCategoryId.HasValue
+        : !form.ParentCategoryId.HasValue;
+
+    if (wouldChangeKind)
+    {
+        TempData["CategoryError"] =
+            "Can't turn a category into a subcategory (or back) by editing. Delete it and add it again instead.";
+        return RedirectToAction(nameof(Categories));
+    }
+
+    if (form.Kind == "category")
+    {
+        var category = await _db.Categories.FindAsync(form.Id.Value);
+        if (category == null)
+        {
+            TempData["CategoryError"] = "Category not found.";
+            return RedirectToAction(nameof(Categories));
+        }
+
+        var duplicate = await _db.Categories.AnyAsync(c =>
+            c.Id != category.Id && c.Name.ToLower() == name.ToLower());
+
+        if (duplicate)
+        {
+            TempData["CategoryError"] = $"'{name}' already exists as a category.";
+            return RedirectToAction(nameof(Categories));
+        }
+
+        category.Name = name;
+        category.Description = string.IsNullOrWhiteSpace(form.Description) ? null : form.Description.Trim();
+    }
+    else
+    {
+        var subCategory = await _db.SubCategories.FindAsync(form.Id.Value);
+        if (subCategory == null)
+        {
+            TempData["CategoryError"] = "Subcategory not found.";
+            return RedirectToAction(nameof(Categories));
+        }
+
+        var duplicate = await _db.SubCategories.AnyAsync(sc =>
+            sc.Id != subCategory.Id &&
+            sc.CategoryId == form.ParentCategoryId!.Value &&
+            sc.Name.ToLower() == name.ToLower());
+
+        if (duplicate)
+        {
+            TempData["CategoryError"] = $"'{name}' already exists under this category.";
+            return RedirectToAction(nameof(Categories));
+        }
+
+                subCategory.Name = name;
+        subCategory.Description = string.IsNullOrWhiteSpace(form.Description) ? null : form.Description.Trim();
+        subCategory.CategoryId = form.ParentCategoryId!.Value;
+    }
+
+    await _db.SaveChangesAsync();
+    TempData["CategorySuccess"] = $"'{name}' updated.";
+    return RedirectToAction(nameof(Categories));
+}
+
+[HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> DeleteCategory(int id)
+{
+    var category = await _db.Categories
+        .Include(c => c.SubCategories)
+        .Include(c => c.Medicines)
+        .FirstOrDefaultAsync(c => c.Id == id);
+
+    if (category == null)
+    {
+        TempData["CategoryError"] = "Category not found.";
+        return RedirectToAction(nameof(Categories));
+    }
+
+    if (category.SubCategories.Count > 0)
+    {
+        TempData["CategoryError"] =
+            $"Cannot delete '{category.Name}' — it has {category.SubCategories.Count} " +
+            $"subcategor{(category.SubCategories.Count == 1 ? "y" : "ies")}. Delete those first.";
+        return RedirectToAction(nameof(Categories));
+    }
+
+    if (category.Medicines.Count > 0)
+    {
+        TempData["CategoryError"] =
+            $"Cannot delete '{category.Name}' — {category.Medicines.Count} medicine(s) still use it.";
+        return RedirectToAction(nameof(Categories));
+    }
+
+    _db.Categories.Remove(category);
+    await _db.SaveChangesAsync();
+
+    TempData["CategorySuccess"] = $"Category '{category.Name}' deleted.";
+    return RedirectToAction(nameof(Categories));
+}
+
+[HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> DeleteSubCategory(int id)
+{
+    var subCategory = await _db.SubCategories
+        .Include(sc => sc.Medicines)
+        .FirstOrDefaultAsync(sc => sc.Id == id);
+
+    if (subCategory == null)
+    {
+        TempData["CategoryError"] = "Subcategory not found.";
+        return RedirectToAction(nameof(Categories));
+    }
+
+    if (subCategory.Medicines.Count > 0)
+    {
+        TempData["CategoryError"] =
+            $"Cannot delete '{subCategory.Name}' — {subCategory.Medicines.Count} medicine(s) still use it.";
+        return RedirectToAction(nameof(Categories));
+    }
+
+    _db.SubCategories.Remove(subCategory);
+    await _db.SaveChangesAsync();
+
+    TempData["CategorySuccess"] = $"Subcategory '{subCategory.Name}' deleted.";
+    return RedirectToAction(nameof(Categories));
+}
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateProductType(
@@ -980,138 +1039,72 @@ public async Task<IActionResult> AddMedicine(
         // Helpers
         // =====================
 
-        private async Task<AdminCategoriesViewModel>
-            BuildCategoriesViewModelAsync()
+        private async Task<AdminCategoriesViewModel> BuildCategoriesViewModelAsync()
+{
+    var categories = await _db.Categories
+        .Include(c => c.SubCategories)
+        .Include(c => c.Medicines)
+        .OrderBy(c => c.Name)
+        .ToListAsync();
+
+    var subCategories = await _db.SubCategories
+        .Include(sc => sc.Category)
+        .Include(sc => sc.Medicines)
+        .OrderBy(sc => sc.Name)
+        .ToListAsync();
+
+    var productTypes = await _db.ProductTypes
+        .Include(p => p.Medicines)
+        .OrderBy(p => p.Name)
+        .ToListAsync();
+
+    return new AdminCategoriesViewModel
+    {
+        Categories = categories.Select(c => new CategoryRowViewModel
         {
-            var categories = await _db.Categories
-                .Include(c => c.ParentCategory)
-                .Include(c => c.SubCategories)
-                .Include(c => c.Medicines)
-                .OrderBy(c =>
-                    c.ParentCategoryId == null ? 0 : 1)
-                .ThenBy(c => c.Name)
-                .ToListAsync();
+            Id = c.Id,
+            Name = c.Name,
+            Description = c.Description,
+            SubCategoryCount = c.SubCategories.Count,
+            MedicineCount = c.Medicines.Count
+        }).ToList(),
 
-            var productTypes = await _db.ProductTypes
-                .Include(p => p.Medicines)
-                .OrderBy(p => p.Name)
-                .ToListAsync();
-
-            return new AdminCategoriesViewModel
-            {
-                Categories = categories
-                    .Select(c =>
-                        new CategoryRowViewModel
-                        {
-                            Id = c.Id,
-                            Name = c.Name,
-                            Description = c.Description,
-                            ParentCategoryId =
-                                c.ParentCategoryId,
-                            ParentCategoryName =
-                                c.ParentCategory?.Name,
-                            SubCategoryCount =
-                                c.SubCategories.Count,
-                            MedicineCount =
-                                c.Medicines.Count
-                        })
-                    .ToList(),
-
-                ProductTypes = productTypes
-                    .Select(p =>
-                        new ProductTypeRowViewModel
-                        {
-                            Id = p.Id,
-                            Name = p.Name,
-                            MedicineCount =
-                                p.Medicines.Count
-                        })
-                    .ToList(),
-
-                // Only top-level categories can be
-                // selected as parents.
-                ParentCategoryOptions = categories
-                    .Where(c =>
-                        c.ParentCategoryId == null)
-                    .Select(c =>
-                        new CategoryOptionViewModel
-                        {
-                            Id = c.Id,
-                            Name = c.Name
-                        })
-                    .ToList()
-            };
-        }
-
-        private async Task<bool> IsDescendantAsync(
-            int categoryId,
-            int candidateParentId)
+        SubCategories = subCategories.Select(sc => new SubCategoryRowViewModel
         {
-            int? currentId = candidateParentId;
+            Id = sc.Id,
+            Name = sc.Name,
+            Description = sc.Description,
+            CategoryId = sc.CategoryId,
+            CategoryName = sc.Category.Name,
+            MedicineCount = sc.Medicines.Count
+        }).ToList(),
 
-            while (currentId.HasValue)
-            {
-                if (currentId.Value == categoryId)
-                {
-                    return true;
-                }
-
-                currentId = await _db.Categories
-                    .Where(c =>
-                        c.Id == currentId.Value)
-                    .Select(c =>
-                        c.ParentCategoryId)
-                    .FirstOrDefaultAsync();
-            }
-
-            return false;
-        }
-
-        private async Task<List<DropdownOptionViewModel>>
-            BuildCategoryDropdownOptionsAsync()
+        ProductTypes = productTypes.Select(p => new ProductTypeRowViewModel
         {
-            var categories = await _db.Categories
-                .OrderBy(c => c.Name)
-                .ToListAsync();
+            Id = p.Id,
+            Name = p.Name,
+            MedicineCount = p.Medicines.Count
+        }).ToList(),
 
-            var byParent =
-                categories.ToLookup(
-                    c => c.ParentCategoryId);
+        ParentCategoryOptions = categories.Select(c => new CategoryOptionViewModel
+        {
+            Id = c.Id,
+            Name = c.Name
+        }).ToList()
+    };
+}
 
-            var options =
-                new List<DropdownOptionViewModel>();
-
-            void AddChildren(
-                int? parentId,
-                int depth)
-            {
-                foreach (var cat in
-                    byParent[parentId]
-                        .OrderBy(c => c.Name))
-                {
-                    var prefix =
-                        depth == 0
-                            ? ""
-                            : new string('-', depth) + " ";
-
-                    options.Add(
-                        new DropdownOptionViewModel
-                        {
-                            Id = cat.Id,
-                            Label =
-                                prefix + cat.Name
-                        });
-
-                    AddChildren(
-                        cat.Id,
-                        depth + 1);
-                }
-            }
-
-            AddChildren(null, 0);
-
-            return options;
-        }
+private async Task<List<DropdownOptionViewModel>> BuildCategoryDropdownOptionsAsync()
+{
+    return await _db.Categories
+        .OrderBy(c => c.Name)
+        .Select(c => new DropdownOptionViewModel
+        {
+            Id = c.Id,
+            Label = c.Name
+        })
+        .ToListAsync();
+}
 
         private async Task<List<DropdownOptionViewModel>>
             BuildProductTypeDropdownOptionsAsync()

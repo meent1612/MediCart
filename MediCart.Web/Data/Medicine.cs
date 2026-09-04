@@ -4,6 +4,7 @@ namespace MediCart.Web.Data
     {
         public int Id { get; set; }
         public int CategoryId { get; set; }
+        public int? SubCategoryId { get; set; }
         public int ProductTypeId { get; set; }
         public string Name { get; set; } = string.Empty;
         public string? GenericName { get; set; }
@@ -17,6 +18,7 @@ namespace MediCart.Web.Data
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public Category Category { get; set; } = null!;
+        public SubCategory? SubCategory { get; set; }
         public ProductType ProductType { get; set; } = null!;
         public Stock? Stock { get; set; }
         public ICollection<SideEffect> SideEffects { get; set; } = new List<SideEffect>();
