@@ -170,8 +170,8 @@ ON CONFLICT DO NOTHING;
 -- Top-level Categories
 -- ============================================================
 
-INSERT INTO "Categories" ("Name", "Description", "ParentCategoryId", "CreatedAt")
-SELECT v."Name", v."Description", NULL, NOW()
+INSERT INTO "Categories" ("Name", "Description", "CreatedAt")
+SELECT v."Name", v."Description", NOW()
 FROM (VALUES
     ('Medicine',                 'Prescription and OTC drugs organised by condition'),
     ('Vitamins & Supplements',   'Vitamins, minerals and dietary supplements'),
@@ -179,15 +179,15 @@ FROM (VALUES
     ('Women''s Care',            'Feminine health, mother care, and hygiene products')
 ) AS v("Name", "Description")
 WHERE NOT EXISTS (
-    SELECT 1 FROM "Categories" c WHERE c."Name" = v."Name" AND c."ParentCategoryId" IS NULL
+    SELECT 1 FROM "Categories" c WHERE c."Name" = v."Name"
 );
 
 -- ============================================================
--- Subcategories
+-- SubCategories
 -- ============================================================
 
-INSERT INTO "Categories" ("Name", "Description", "ParentCategoryId", "CreatedAt")
-SELECT sc."Name", NULL, parent."Id", NOW()
+INSERT INTO "SubCategories" ("CategoryId", "Name", "CreatedAt")
+SELECT parent."Id", sc."Name", NOW()
 FROM (VALUES
     -- Medicine
     ('Medicine', 'Allergies & Asthma'),
@@ -220,9 +220,10 @@ FROM (VALUES
     ('Women''s Care', 'Mother Care (Prenatal & Postnatal)'),
     ('Women''s Care', 'Women''s Health Medications')
 ) AS sc("ParentName", "Name")
-JOIN "Categories" parent ON parent."Name" = sc."ParentName" AND parent."ParentCategoryId" IS NULL
+JOIN "Categories" parent ON parent."Name" = sc."ParentName"
 WHERE NOT EXISTS (
-    SELECT 1 FROM "Categories" c WHERE c."Name" = sc."Name" AND c."ParentCategoryId" = parent."Id"
+    SELECT 1 FROM "SubCategories" existing
+    WHERE existing."Name" = sc."Name" AND existing."CategoryId" = parent."Id"
 );
 
 -- ============================================================
