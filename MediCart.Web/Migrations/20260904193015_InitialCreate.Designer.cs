@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MediCart.Web.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260902134840_InitialCreate")]
+    [Migration("20260904193015_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -174,12 +174,7 @@ namespace MediCart.Web.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int?>("ParentCategoryId")
-                        .HasColumnType("integer");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("ParentCategoryId");
 
                     b.ToTable("Categories");
                 });
@@ -336,6 +331,9 @@ namespace MediCart.Web.Migrations
                     b.Property<string>("SensitivityLevel")
                         .HasColumnType("text");
 
+                    b.Property<int?>("SubCategoryId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Unit")
                         .HasColumnType("text");
 
@@ -344,6 +342,8 @@ namespace MediCart.Web.Migrations
                     b.HasIndex("CategoryId");
 
                     b.HasIndex("ProductTypeId");
+
+                    b.HasIndex("SubCategoryId");
 
                     b.ToTable("Medicines", t =>
                         {
@@ -584,6 +584,34 @@ namespace MediCart.Web.Migrations
                     b.ToTable("Stocks");
                 });
 
+            modelBuilder.Entity("MediCart.Web.Data.SubCategory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
+
+                    b.ToTable("SubCategories");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")
@@ -750,16 +778,6 @@ namespace MediCart.Web.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("MediCart.Web.Data.Category", b =>
-                {
-                    b.HasOne("MediCart.Web.Data.Category", "ParentCategory")
-                        .WithMany("SubCategories")
-                        .HasForeignKey("ParentCategoryId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("ParentCategory");
-                });
-
             modelBuilder.Entity("MediCart.Web.Data.City", b =>
                 {
                     b.HasOne("MediCart.Web.Data.Division", "Division")
@@ -795,7 +813,7 @@ namespace MediCart.Web.Migrations
                     b.HasOne("MediCart.Web.Data.Category", "Category")
                         .WithMany("Medicines")
                         .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("MediCart.Web.Data.ProductType", "ProductType")
@@ -804,9 +822,16 @@ namespace MediCart.Web.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("MediCart.Web.Data.SubCategory", "SubCategory")
+                        .WithMany("Medicines")
+                        .HasForeignKey("SubCategoryId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("Category");
 
                     b.Navigation("ProductType");
+
+                    b.Navigation("SubCategory");
                 });
 
             modelBuilder.Entity("MediCart.Web.Data.Notification", b =>
@@ -907,6 +932,17 @@ namespace MediCart.Web.Migrations
                     b.Navigation("Medicine");
                 });
 
+            modelBuilder.Entity("MediCart.Web.Data.SubCategory", b =>
+                {
+                    b.HasOne("MediCart.Web.Data.Category", "Category")
+                        .WithMany("SubCategories")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Category");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -1003,6 +1039,11 @@ namespace MediCart.Web.Migrations
             modelBuilder.Entity("MediCart.Web.Data.Stock", b =>
                 {
                     b.Navigation("ExpiryAlerts");
+                });
+
+            modelBuilder.Entity("MediCart.Web.Data.SubCategory", b =>
+                {
+                    b.Navigation("Medicines");
                 });
 #pragma warning restore 612, 618
         }
