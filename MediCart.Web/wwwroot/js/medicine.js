@@ -22,22 +22,19 @@
     function applyFilters() {
         var types = getChecked("productType");
         var categories = getChecked("category");
-        var tags = getChecked("useTag");
         var maxPrice = parseFloat(priceRange.value);
         var visibleCount = 0;
 
         cards.forEach(function (card) {
             var cardType = card.dataset.productType;
             var cardCategory = card.dataset.category;
-            var cardTags = card.dataset.useTags ? card.dataset.useTags.split(",") : [];
             var cardPrice = parseFloat(card.dataset.price);
 
             var matchesType = types.length === 0 || types.indexOf(cardType) !== -1;
             var matchesCategory = categories.length === 0 || categories.indexOf(cardCategory) !== -1;
-            var matchesTag = tags.length === 0 || tags.some(function (t) { return cardTags.indexOf(t) !== -1; });
             var matchesPrice = cardPrice <= maxPrice;
 
-            var visible = matchesType && matchesCategory && matchesTag && matchesPrice;
+            var visible = matchesType && matchesCategory && matchesPrice;
             card.style.display = visible ? "" : "none";
             if (visible) visibleCount++;
         });

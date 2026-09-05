@@ -109,25 +109,6 @@
     cursor: pointer;
 }
 
-/* Use-tag filter has no backing data yet — shown as a disabled placeholder */
-.filter-group--disabled h3 {
-    color: #b8b19b;
-}
-
-.filter-options--disabled {
-    background: var(--card);
-    border: 1px dashed var(--border);
-    border-radius: 8px;
-    padding: 12px 14px;
-}
-
-.filter-note {
-    margin: 0;
-    font-size: 0.82rem;
-    color: var(--muted);
-    font-style: italic;
-}
-
 #priceRange {
     width: 100%;
     accent-color: var(--pine);
