@@ -29,9 +29,6 @@ namespace MediCart.Web.Controllers
         {
             var currentAdmin = await _userManager.GetUserAsync(User);
 
-            // TODO(backend): once [Authorize(Roles = "Admin")] is turned on,
-            // currentAdmin will never be null here. Until then, fall back to
-            // an empty shell so the page doesn't crash for a logged-out visitor.
             if (currentAdmin == null)
             {
                 return View(new AdminProfileViewModel());
@@ -113,10 +110,12 @@ namespace MediCart.Web.Controllers
         public async Task<IActionResult> Medicines(
             string? search,
             int? categoryId,
+            int? subCategoryId,
             int? productTypeId)
         {
             var query = _db.Medicines
                 .Include(m => m.Category)
+                .Include(m => m.SubCategory)
                 .Include(m => m.ProductType)
                 .Include(m => m.Stock)
                 .AsQueryable();
@@ -134,6 +133,12 @@ namespace MediCart.Web.Controllers
                     m.CategoryId == categoryId.Value);
             }
 
+            if (subCategoryId.HasValue)
+            {
+                query = query.Where(m =>
+                    m.SubCategoryId == subCategoryId.Value);
+            }
+
             if (productTypeId.HasValue)
             {
                 query = query.Where(m =>
@@ -147,6 +152,7 @@ namespace MediCart.Web.Controllers
                     Id = m.Id,
                     Name = m.Name,
                     CategoryName = m.Category.Name,
+                    SubCategoryName = m.SubCategory != null ? m.SubCategory.Name : null,
                     ProductTypeName = m.ProductType.Name,
                     Manufacturer = m.Manufacturer,
                     Price = m.Price,
@@ -170,6 +176,7 @@ namespace MediCart.Web.Controllers
                     await BuildProductTypeDropdownOptionsAsync(),
                 Search = search,
                 CategoryId = categoryId,
+                SubCategoryId = subCategoryId,
                 ProductTypeId = productTypeId,
                 TotalCount = medicines.Count
             };
@@ -209,8 +216,8 @@ namespace MediCart.Web.Controllers
         }
 
         // Returns the subcategories belonging to a given category, as JSON.
-        // Used by the Add/Edit Medicine form to populate a dependent dropdown
-        // without shipping the entire subcategory list up front.
+        // Used by the Add/Edit Medicine form AND the Medicines filter bar to
+        // populate a dependent dropdown without shipping the entire list up front.
         [HttpGet]
         public async Task<IActionResult> GetSubCategories(int categoryId)
         {
@@ -313,10 +320,6 @@ namespace MediCart.Web.Controllers
 
             var name = form.Name.Trim();
 
-            // Editing can't move a row between the two tables — block it explicitly
-            // rather than silently doing the wrong thing. (Moving a SUBCATEGORY to a
-            // different PARENT category is fine and handled below — this only blocks
-            // turning a category into a subcategory or vice versa.)
             var wouldChangeKind = form.Kind == "category"
                 ? form.ParentCategoryId.HasValue
                 : !form.ParentCategoryId.HasValue;
@@ -590,188 +593,167 @@ namespace MediCart.Web.Controllers
             return View(model);
         }
 
-[HttpPost]
-[ValidateAntiForgeryToken]
-public async Task<IActionResult> AddMedicine(
-    AdminMedicineFormPageViewModel model)
-{
-    var form = model.Form;
-
-    form.SideEffects = form.SideEffects
-        .Where(se =>
-            !string.IsNullOrWhiteSpace(se.Effect))
-        .ToList();
-
-    string? finalImageUrl = form.ImageUrl;
-
-    // Handle medicine image upload
-    if (form.ImageFile != null &&
-        form.ImageFile.Length > 0)
-    {
-        if (!IsValidImageFile(form.ImageFile))
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddMedicine(
+            AdminMedicineFormPageViewModel model)
         {
-            ModelState.AddModelError(
-                "Form.ImageFile",
-                "Upload a JPG, PNG, or WEBP image under 5MB.");
-        }
-        else
-        {
-            try
+            var form = model.Form;
+
+            form.SideEffects = form.SideEffects
+                .Where(se =>
+                    !string.IsNullOrWhiteSpace(se.Effect))
+                .ToList();
+
+            string? finalImageUrl = form.ImageUrl;
+
+            if (form.ImageFile != null &&
+                form.ImageFile.Length > 0)
             {
-                finalImageUrl =
-                    await _imageUploadService
-                        .UploadMedicineImageAsync(
-                            form.ImageFile);
+                if (!IsValidImageFile(form.ImageFile))
+                {
+                    ModelState.AddModelError(
+                        "Form.ImageFile",
+                        "Upload a JPG, PNG, or WEBP image under 5MB.");
+                }
+                else
+                {
+                    try
+                    {
+                        finalImageUrl =
+                            await _imageUploadService
+                                .UploadMedicineImageAsync(
+                                    form.ImageFile);
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        ModelState.AddModelError(
+                            "Form.ImageFile",
+                            ex.Message);
+                    }
+                }
             }
-            catch (InvalidOperationException ex)
+
+            if (!ModelState.IsValid)
+            {
+                model.CategoryOptions =
+                    await BuildCategoryDropdownOptionsAsync();
+
+                model.ProductTypeOptions =
+                    await BuildProductTypeDropdownOptionsAsync();
+
+                return View(model);
+            }
+
+            var categoryExists =
+                await _db.Categories.AnyAsync(c =>
+                    c.Id == form.CategoryId);
+
+            var productTypeExists =
+                await _db.ProductTypes.AnyAsync(p =>
+                    p.Id == form.ProductTypeId);
+
+            if (!categoryExists ||
+                !productTypeExists)
             {
                 ModelState.AddModelError(
-                    "Form.ImageFile",
-                    ex.Message);
+                    string.Empty,
+                    "The selected category or product type " +
+                    "no longer exists — refresh the page.");
+
+                model.CategoryOptions =
+                    await BuildCategoryDropdownOptionsAsync();
+
+                model.ProductTypeOptions =
+                    await BuildProductTypeDropdownOptionsAsync();
+
+                return View(model);
             }
-        }
-    }
 
-    // If validation fails, return to the form
-    if (!ModelState.IsValid)
-    {
-        model.CategoryOptions =
-            await BuildCategoryDropdownOptionsAsync();
-
-        model.ProductTypeOptions =
-            await BuildProductTypeDropdownOptionsAsync();
-
-        return View(model);
-    }
-
-    // Check that the selected category exists
-    var categoryExists =
-        await _db.Categories.AnyAsync(c =>
-            c.Id == form.CategoryId);
-
-    // Check that the selected product type exists
-    var productTypeExists =
-        await _db.ProductTypes.AnyAsync(p =>
-            p.Id == form.ProductTypeId);
-
-    if (!categoryExists ||
-        !productTypeExists)
-    {
-        ModelState.AddModelError(
-            string.Empty,
-            "The selected category or product type " +
-            "no longer exists — refresh the page.");
-
-        model.CategoryOptions =
-            await BuildCategoryDropdownOptionsAsync();
-
-        model.ProductTypeOptions =
-            await BuildProductTypeDropdownOptionsAsync();
-
-        return View(model);
-    }
-
-    // If a SubCategory was selected, it must actually belong to the chosen Category.
-    if (form.SubCategoryId.HasValue)
-    {
-        var subCategoryValid = await _db.SubCategories.AnyAsync(sc =>
-            sc.Id == form.SubCategoryId.Value &&
-            sc.CategoryId == form.CategoryId);
-
-        if (!subCategoryValid)
-        {
-            ModelState.AddModelError(
-                "Form.SubCategoryId",
-                "The selected subcategory doesn't belong to the chosen category.");
-
-            model.CategoryOptions = await BuildCategoryDropdownOptionsAsync();
-            model.ProductTypeOptions = await BuildProductTypeDropdownOptionsAsync();
-            return View(model);
-        }
-    }
-
-    // Create the medicine
-    var medicine = new Medicine
-    {
-        Name = form.Name.Trim(),
-
-        CategoryId = form.CategoryId,
-
-        SubCategoryId = form.SubCategoryId,
-
-        ProductTypeId = form.ProductTypeId,
-
-        Manufacturer =
-            string.IsNullOrWhiteSpace(form.Manufacturer)
-                ? null
-                : form.Manufacturer.Trim(),
-
-        GenericName =
-            string.IsNullOrWhiteSpace(form.GenericName)
-                ? null
-                : form.GenericName.Trim(),
-
-        Unit =
-            string.IsNullOrWhiteSpace(form.Unit)
-                ? null
-                : form.Unit.Trim(),
-
-        Description =
-            string.IsNullOrWhiteSpace(form.Description)
-                ? null
-                : form.Description.Trim(),
-
-        ImageUrl =
-            string.IsNullOrWhiteSpace(finalImageUrl)
-                ? null
-                : finalImageUrl.Trim(),
-
-        Price = form.Price,
-
-        RequiresPrescription =
-            form.RequiresPrescription,
-
-        SensitivityLevel =
-            string.IsNullOrWhiteSpace(form.SensitivityLevel)
-                ? null
-                : form.SensitivityLevel,
-
-        CreatedAt = DateTime.UtcNow,
-
-        // Create stock together with the medicine
-        Stock = new Stock
-        {
-            Quantity = form.StockQuantity,
-
-            ExpiryDate = form.ExpiryDate,
-
-            UpdatedAt = DateTime.UtcNow
-        },
-
-        // Create side effects together with the medicine
-        SideEffects = form.SideEffects
-            .Select(se => new SideEffect
+            if (form.SubCategoryId.HasValue)
             {
-                Effect = se.Effect.Trim(),
+                var subCategoryValid = await _db.SubCategories.AnyAsync(sc =>
+                    sc.Id == form.SubCategoryId.Value &&
+                    sc.CategoryId == form.CategoryId);
 
-                Severity = se.Severity
-            })
-            .ToList()
-    };
+                if (!subCategoryValid)
+                {
+                    ModelState.AddModelError(
+                        "Form.SubCategoryId",
+                        "The selected subcategory doesn't belong to the chosen category.");
 
-    // Add medicine to EF Core
-    _db.Medicines.Add(medicine);
+                    model.CategoryOptions = await BuildCategoryDropdownOptionsAsync();
+                    model.ProductTypeOptions = await BuildProductTypeDropdownOptionsAsync();
+                    return View(model);
+                }
+            }
 
-    // Save medicine + stock + side effects to PostgreSQL
-    await _db.SaveChangesAsync();
+            var medicine = new Medicine
+            {
+                Name = form.Name.Trim(),
+                CategoryId = form.CategoryId,
+                SubCategoryId = form.SubCategoryId,
+                ProductTypeId = form.ProductTypeId,
 
-    // Show success message after redirect
-    TempData["MedicineSuccess"] =
-        $"Medicine '{medicine.Name}' added.";
+                Manufacturer =
+                    string.IsNullOrWhiteSpace(form.Manufacturer)
+                        ? null
+                        : form.Manufacturer.Trim(),
 
-    // Redirect to the medicine list
-    return RedirectToAction(nameof(Medicines));
-}
+                GenericName =
+                    string.IsNullOrWhiteSpace(form.GenericName)
+                        ? null
+                        : form.GenericName.Trim(),
+
+                Unit =
+                    string.IsNullOrWhiteSpace(form.Unit)
+                        ? null
+                        : form.Unit.Trim(),
+
+                Description =
+                    string.IsNullOrWhiteSpace(form.Description)
+                        ? null
+                        : form.Description.Trim(),
+
+                ImageUrl =
+                    string.IsNullOrWhiteSpace(finalImageUrl)
+                        ? null
+                        : finalImageUrl.Trim(),
+
+                Price = form.Price,
+                RequiresPrescription = form.RequiresPrescription,
+
+                SensitivityLevel =
+                    string.IsNullOrWhiteSpace(form.SensitivityLevel)
+                        ? null
+                        : form.SensitivityLevel,
+
+                CreatedAt = DateTime.UtcNow,
+
+                Stock = new Stock
+                {
+                    Quantity = form.StockQuantity,
+                    ExpiryDate = form.ExpiryDate,
+                    UpdatedAt = DateTime.UtcNow
+                },
+
+                SideEffects = form.SideEffects
+                    .Select(se => new SideEffect
+                    {
+                        Effect = se.Effect.Trim(),
+                        Severity = se.Severity
+                    })
+                    .ToList()
+            };
+
+            _db.Medicines.Add(medicine);
+            await _db.SaveChangesAsync();
+
+            TempData["MedicineSuccess"] =
+                $"Medicine '{medicine.Name}' added.";
+
+            return RedirectToAction(nameof(Medicines));
+        }
 
 
         // =====================
@@ -818,13 +800,8 @@ public async Task<IActionResult> AddMedicine(
                 GenericName = medicine.GenericName,
                 Unit = medicine.Unit,
                 Description = medicine.Description,
-
-                // NEW: existing Cloudinary URL is passed
-                // into the edit form.
                 ImageUrl = medicine.ImageUrl,
-
-                SensitivityLevel =
-                    medicine.SensitivityLevel,
+                SensitivityLevel = medicine.SensitivityLevel,
 
                 SideEffects = medicine.SideEffects
                     .Select(se =>
@@ -954,7 +931,6 @@ public async Task<IActionResult> AddMedicine(
                 return View("AddMedicine", invalidModel);
             }
 
-            // If a SubCategory was selected, it must actually belong to the chosen Category.
             if (form.SubCategoryId.HasValue)
             {
                 var subCategoryValid = await _db.SubCategories.AnyAsync(sc =>
@@ -1012,9 +988,7 @@ public async Task<IActionResult> AddMedicine(
                     : finalImageUrl.Trim();
 
             medicine.Price = form.Price;
-
-            medicine.RequiresPrescription =
-                form.RequiresPrescription;
+            medicine.RequiresPrescription = form.RequiresPrescription;
 
             medicine.SensitivityLevel =
                 string.IsNullOrWhiteSpace(
@@ -1024,14 +998,9 @@ public async Task<IActionResult> AddMedicine(
 
             if (medicine.Stock != null)
             {
-                medicine.Stock.Quantity =
-                    form.StockQuantity;
-
-                medicine.Stock.ExpiryDate =
-                    form.ExpiryDate;
-
-                medicine.Stock.UpdatedAt =
-                    DateTime.UtcNow;
+                medicine.Stock.Quantity = form.StockQuantity;
+                medicine.Stock.ExpiryDate = form.ExpiryDate;
+                medicine.Stock.UpdatedAt = DateTime.UtcNow;
             }
             else
             {
@@ -1043,8 +1012,7 @@ public async Task<IActionResult> AddMedicine(
                 };
             }
 
-            _db.SideEffects.RemoveRange(
-                medicine.SideEffects);
+            _db.SideEffects.RemoveRange(medicine.SideEffects);
 
             medicine.SideEffects =
                 form.SideEffects
@@ -1192,8 +1160,6 @@ public async Task<IActionResult> AddMedicine(
                 .ToListAsync();
         }
 
-        // Validates images before sending them
-        // to Cloudinary.
         private static bool IsValidImageFile(
             IFormFile file)
         {
