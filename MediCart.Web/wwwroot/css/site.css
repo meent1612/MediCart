@@ -193,6 +193,21 @@ em { font-style: italic; color: var(--pine-800); }
     color: var(--pine-800);
 }
 
+.navbar__admin-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+    color: var(--pine, #3f5b4d); /* swap for your actual pine/sage token name */
+}
+
+.navbar__admin-link:hover {
+    opacity: 0.85;
+}
+
+.navbar__admin-link svg {
+    flex-shrink: 0;
+}
 .navbar__links {
     display: flex;
     align-items: center;
