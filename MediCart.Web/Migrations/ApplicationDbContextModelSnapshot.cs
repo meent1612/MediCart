@@ -130,7 +130,7 @@ namespace MediCart.Web.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTime>("AddedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("MedicineId")
@@ -138,6 +138,9 @@ namespace MediCart.Web.Migrations
 
                     b.Property<int>("Quantity")
                         .HasColumnType("integer");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("UserId")
                         .IsRequired()
