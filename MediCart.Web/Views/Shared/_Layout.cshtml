@@ -113,7 +113,6 @@
         <ul class="mobile-nav__links">
             <li><a href="~/">Home</a></li>
             <li><a href="~/Medicines">Browse medicines</a></li>
-            <li><a href="~/Medicines/Categories">Categories</a></li>
             <li><a href="~/Home/About">About us</a></li>
             <li><a href="~/Home/Contact">Contact</a></li>
             @if (showCartIcon)
@@ -159,16 +158,22 @@
             <div>
                 <h4>Shop</h4>
                 <ul>
+                    <li><a href="~/">Home</a></li>
                     <li><a href="~/Medicines">Browse medicines</a></li>
-                    <li><a href="~/Medicines/Categories">Categories</a></li>
-                    <li><a asp-area="Identity" asp-page="/Account/Register">Create an account</a></li>
+                    @if (User.Identity == null || !User.Identity.IsAuthenticated)
+                    {
+                        <li><a asp-area="Identity" asp-page="/Account/Register">Create an account</a></li>
+                    }
                 </ul>
             </div>
             <div>
                 <h4>Support</h4>
                 <ul>
                     <li><a href="~/Home/Contact">Contact us</a></li>
-                    <li><a asp-area="Identity" asp-page="/Account/Login">Log in</a></li>
+                    @if (User.Identity == null || !User.Identity.IsAuthenticated)
+                    {
+                        <li><a asp-area="Identity" asp-page="/Account/Login">Log in</a></li>
+                    }
                 </ul>
             </div>
             <div>

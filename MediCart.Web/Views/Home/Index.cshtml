@@ -361,17 +361,20 @@
     </section>
 
     <!-- ============================================================
-         CLOSING CTA
+         CLOSING CTA (guests only — signed-in users already have an account)
          ============================================================ -->
-    <section class="cta-banner reveal">
-        <div class="cta-banner__noise" aria-hidden="true"></div>
-        <h2>Ready to order with confidence?</h2>
-        <p>Create a free account to track orders, save your details, and check out faster next time.</p>
-        <div class="cta-banner__actions">
-            <a asp-area="Identity" asp-page="/Account/Register" class="btn btn--amber">Create an account</a>
-            <a href="~/Medicines" class="btn btn--outline-light">Browse medicines</a>
-        </div>
-    </section>
+    @if (User.Identity?.IsAuthenticated != true)
+    {
+        <section class="cta-banner reveal">
+            <div class="cta-banner__noise" aria-hidden="true"></div>
+            <h2>Ready to order with confidence?</h2>
+            <p>Create a free account to track orders, save your details, and check out faster next time.</p>
+            <div class="cta-banner__actions">
+                <a asp-area="Identity" asp-page="/Account/Register" class="btn btn--amber">Create an account</a>
+                <a href="~/Medicines" class="btn btn--outline-light">Browse medicines</a>
+            </div>
+        </section>
+    }
 
 </div>
 
