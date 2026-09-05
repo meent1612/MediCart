@@ -6,6 +6,37 @@
     <link rel="stylesheet" href="~/css/home.css" asp-append-version="true" />
 }
 
+@functions {
+    // Maps a ProductType name to an inline SVG icon. Falls back to a
+    // generic capsule glyph for any type not explicitly styled, so new
+    // product types added in the admin panel don't break the layout.
+    string ProductTypeIcon(string name)
+    {
+        return (name ?? "").Trim().ToLowerInvariant() switch
+        {
+            "tablet" => "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\"><rect x=\"3\" y=\"9\" width=\"18\" height=\"6\" rx=\"3\" transform=\"rotate(-45 12 12)\" /><path d=\"M9.5 14.5 14.5 9.5\" /></svg>",
+            "syrup" => "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M9 2h6M10 2v6.34a2 2 0 0 1-.4 1.2L6.3 15a4 4 0 0 0-.8 2.4V20a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2v-2.6a4 4 0 0 0-.8-2.4l-3.3-5.46a2 2 0 0 1-.4-1.2V2\" /></svg>",
+            "injection" => "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m18 2 4 4M17 7l-9 9-4 4-1-1 4-4 9-9zM12 6l6 6M9 9l6 6\" /></svg>",
+            "ointment" => "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"6\" y=\"8\" width=\"12\" height=\"13\" rx=\"2\" /><path d=\"M9 8V5a3 3 0 0 1 6 0v3\" /></svg>",
+            "drops" => "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11Z\" /></svg>",
+            "capsule" => "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\"><rect x=\"2\" y=\"9\" width=\"20\" height=\"6\" rx=\"3\" /><path d=\"M12 9v6\" /></svg>",
+            "cream" => "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 3c3 3 5 5.5 5 9a5 5 0 0 1-10 0c0-3.5 2-6 5-9Z\" /><path d=\"M8 21h8\" /></svg>",
+            "inhaler" or "spray" => "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M8 6h5a3 3 0 0 1 3 3v2H8z\" /><path d=\"M8 11v8a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2v-8\" /><path d=\"M17 8h2M17 11h3\" /></svg>",
+            _ => "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\"><rect x=\"3\" y=\"9\" width=\"18\" height=\"6\" rx=\"3\" transform=\"rotate(-45 12 12)\" /><path d=\"M9.5 14.5 14.5 9.5\" /></svg>"
+        };
+    }
+
+    // 1–2 letter monogram used on category avatars ("Skin Care" → "SC").
+    string CategoryInitials(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return "?";
+        var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        return parts.Length == 1
+            ? parts[0].Substring(0, Math.Min(2, parts[0].Length)).ToUpperInvariant()
+            : (parts[0][0].ToString() + parts[1][0].ToString()).ToUpperInvariant();
+    }
+}
+
 <div class="container">
 
     <!-- ============================================================
@@ -107,36 +138,66 @@
         </div>
 
         <div class="category-grid">
-            <a href="~/Medicines?type=Tablet" class="category-card">
-                <span class="category-card__icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="9" width="18" height="6" rx="3" transform="rotate(-45 12 12)" /><path d="M9.5 14.5 14.5 9.5" /></svg>
-                </span>
-                <span class="category-card__label">Tablet</span>
-            </a>
-            <a href="~/Medicines?type=Syrup" class="category-card">
-                <span class="category-card__icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2h6M10 2v6.34a2 2 0 0 1-.4 1.2L6.3 15a4 4 0 0 0-.8 2.4V20a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2v-2.6a4 4 0 0 0-.8-2.4l-3.3-5.46a2 2 0 0 1-.4-1.2V2" /></svg>
-                </span>
-                <span class="category-card__label">Syrup</span>
-            </a>
-            <a href="~/Medicines?type=Injection" class="category-card">
-                <span class="category-card__icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m18 2 4 4M17 7l-9 9-4 4-1-1 4-4 9-9zM12 6l6 6M9 9l6 6" /></svg>
-                </span>
-                <span class="category-card__label">Injection</span>
-            </a>
-            <a href="~/Medicines?type=Ointment" class="category-card">
-                <span class="category-card__icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="8" width="12" height="13" rx="2" /><path d="M9 8V5a3 3 0 0 1 6 0v3" /></svg>
-                </span>
-                <span class="category-card__label">Ointment</span>
-            </a>
-            <a href="~/Medicines?type=Drops" class="category-card">
-                <span class="category-card__icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11Z" /></svg>
-                </span>
-                <span class="category-card__label">Drops</span>
-            </a>
+            @{
+                var productTypes = ViewBag.ProductTypes as List<MediCart.Web.Models.ProductTypeFilterOption>;
+            }
+            @if (productTypes != null && productTypes.Any())
+            {
+                foreach (var pt in productTypes)
+                {
+                    <a href="~/Medicines?type=@Uri.EscapeDataString(pt.Name)" class="category-card">
+                        <span class="category-card__icon">@Html.Raw(ProductTypeIcon(pt.Name))</span>
+                        <span class="category-card__label">@pt.Name</span>
+                    </a>
+                }
+            }
+            else
+            {
+                <p class="empty-note">No product types available yet.</p>
+            }
+        </div>
+    </section>
+
+    <!-- ============================================================
+         SHOP BY CATEGORY
+         ============================================================ -->
+    <section class="section section--alt reveal">
+        <div class="section__head">
+            <p class="eyebrow">Shop by category</p>
+            <h2>Browse by category</h2>
+            <p>Find medicines the way you'd ask for them in person — by category, then by exactly what you need within it.</p>
+        </div>
+
+        <div class="shop-category-grid">
+            @{
+                var categories = ViewBag.Categories as List<MediCart.Web.Models.CategoryFilterOption>;
+            }
+            @if (categories != null && categories.Any())
+            {
+                foreach (var cat in categories)
+                {
+                    <a href="~/Medicines?categoryId=@cat.Id" class="shop-category-card">
+                        <span class="shop-category-card__avatar shop-category-card__avatar--@(cat.Id % 5)">
+                            @CategoryInitials(cat.Name)
+                        </span>
+                        <span class="shop-category-card__name">@cat.Name</span>
+                        @if (cat.SubCategories.Any())
+                        {
+                            <span class="shop-category-card__subs">
+                                @string.Join(" · ", cat.SubCategories.Take(3).Select(s => s.Name))@(cat.SubCategories.Count > 3 ? $" +{cat.SubCategories.Count - 3} more" : "")
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="shop-category-card__subs shop-category-card__subs--muted">View products</span>
+                        }
+                    </a>
+                }
+            }
+            else
+            {
+                <p class="empty-note">No categories available yet.</p>
+            }
         </div>
     </section>
 
