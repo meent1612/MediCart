@@ -13,28 +13,41 @@
     var clearFiltersBtn = document.getElementById("clearFilters");
     var medicineData = JSON.parse(document.getElementById("medicineData").textContent);
 
+    // Some filter groups (e.g. "subCategory") are split across several
+    // separate containers in the DOM — one nested under each category —
+    // all sharing the same data-filter-group value. querySelectorAll
+    // (not querySelector) picks up every one of them.
     function getChecked(groupName) {
-        var group = document.querySelector('[data-filter-group="' + groupName + '"]');
-        if (!group) return [];
-        return Array.prototype.slice.call(group.querySelectorAll("input:checked")).map(function (i) { return i.value; });
+        var groups = document.querySelectorAll('[data-filter-group="' + groupName + '"]');
+        var values = [];
+        groups.forEach(function (group) {
+            Array.prototype.slice.call(group.querySelectorAll("input:checked")).forEach(function (i) {
+                values.push(i.value);
+            });
+        });
+        return values;
     }
 
     function applyFilters() {
-        var types = getChecked("productType");
-        var categories = getChecked("category");
+        var productTypeIds = getChecked("productType");
+        var categoryIds = getChecked("category");
+        var subCategoryIds = getChecked("subCategory");
         var maxPrice = parseFloat(priceRange.value);
         var visibleCount = 0;
 
         cards.forEach(function (card) {
-            var cardType = card.dataset.productType;
-            var cardCategory = card.dataset.category;
+            var cardProductTypeId = card.dataset.productTypeId;
+            var cardCategoryId = card.dataset.categoryId;
+            var cardSubCategoryId = card.dataset.subcategoryId; // "" if the medicine has no subcategory
             var cardPrice = parseFloat(card.dataset.price);
 
-            var matchesType = types.length === 0 || types.indexOf(cardType) !== -1;
-            var matchesCategory = categories.length === 0 || categories.indexOf(cardCategory) !== -1;
+            var matchesProductType = productTypeIds.length === 0 || productTypeIds.indexOf(cardProductTypeId) !== -1;
+            var matchesCategory = categoryIds.length === 0 || categoryIds.indexOf(cardCategoryId) !== -1;
+            var matchesSubCategory = subCategoryIds.length === 0 ||
+                (cardSubCategoryId !== "" && subCategoryIds.indexOf(cardSubCategoryId) !== -1);
             var matchesPrice = cardPrice <= maxPrice;
 
-            var visible = matchesType && matchesCategory && matchesPrice;
+            var visible = matchesProductType && matchesCategory && matchesSubCategory && matchesPrice;
             card.style.display = visible ? "" : "none";
             if (visible) visibleCount++;
         });
@@ -219,6 +232,11 @@
 
         document.getElementById("modalForm").textContent = med.ProductType;
         document.getElementById("modalCategory").textContent = med.Category;
+
+        var subCategoryEl = document.getElementById("modalSubCategory");
+        subCategoryEl.textContent = med.SubCategory || "None";
+        subCategoryEl.classList.toggle("modal__value--muted", !med.SubCategory);
+
         document.getElementById("modalStock").textContent = med.Stock > 0 ? (med.Stock + " units") : "Out of stock";
         document.getElementById("modalPrice").textContent = "\u09F3" + med.Price;
         document.getElementById("modalAbout").textContent = med.About;

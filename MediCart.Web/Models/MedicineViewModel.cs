@@ -8,8 +8,16 @@ namespace MediCart.Web.Models
         public string Name { get; set; } = "";
         public string Composition { get; set; } = "";
         public string Manufacturer { get; set; } = "";
+
+        public int ProductTypeId { get; set; }
         public string ProductType { get; set; } = "";   // Tablet, Syrup, Injection, Ointment, Drops
+
+        public int CategoryId { get; set; }
         public string Category { get; set; } = "";      // Pain relief, Gastric, Fever & cold, Allergy, Vitamins
+
+        public int? SubCategoryId { get; set; }
+        public string? SubCategory { get; set; }        // null if the medicine has no subcategory assigned
+
         public decimal Price { get; set; }
         public int Stock { get; set; }
         public bool RequiresRx { get; set; }

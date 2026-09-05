@@ -109,6 +109,24 @@
     cursor: pointer;
 }
 
+/* Subcategories nested under their parent category checkbox */
+.filter-options--sub {
+    margin: 2px 0 10px 14px;
+    padding-left: 12px;
+    border-left: 1px solid var(--border);
+    gap: 8px;
+}
+
+.filter-check--sub {
+    font-size: 0.85rem;
+    color: var(--muted);
+}
+
+.filter-check--sub input {
+    width: 14px;
+    height: 14px;
+}
+
 #priceRange {
     width: 100%;
     accent-color: var(--pine);

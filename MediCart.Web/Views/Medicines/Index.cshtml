@@ -1,6 +1,9 @@
 @model List<MediCart.Web.Models.MedicineViewModel>
+@using MediCart.Web.Models
 @{
     ViewData["Title"] = "Browse medicines";
+    var categories = (List<CategoryFilterOption>)(ViewBag.Categories ?? new List<CategoryFilterOption>());
+    var productTypes = (List<ProductTypeFilterOption>)(ViewBag.ProductTypes ?? new List<ProductTypeFilterOption>());
 }
 
 @section Styles {
@@ -28,11 +31,11 @@
             <div class="filter-group">
                 <h3>Product type</h3>
                 <div class="filter-options" data-filter-group="productType">
-                    @foreach (var type in Model.Select(m => m.ProductType).Distinct().OrderBy(t => t))
+                    @foreach (var pt in productTypes)
                     {
                         <label class="filter-check">
-                            <input type="checkbox" value="@type" />
-                            <span>@type</span>
+                            <input type="checkbox" value="@pt.Id" />
+                            <span>@pt.Name</span>
                         </label>
                     }
                 </div>
@@ -41,12 +44,25 @@
             <div class="filter-group">
                 <h3>Category</h3>
                 <div class="filter-options" data-filter-group="category">
-                    @foreach (var cat in Model.Select(m => m.Category).Distinct().OrderBy(c => c))
+                    @foreach (var cat in categories)
                     {
                         <label class="filter-check">
-                            <input type="checkbox" value="@cat" />
-                            <span>@cat</span>
+                            <input type="checkbox" value="@cat.Id" />
+                            <span>@cat.Name</span>
                         </label>
+
+                        @if (cat.SubCategories.Any())
+                        {
+                            <div class="filter-options filter-options--sub" data-filter-group="subCategory">
+                                @foreach (var sub in cat.SubCategories)
+                                {
+                                    <label class="filter-check filter-check--sub">
+                                        <input type="checkbox" value="@sub.Id" />
+                                        <span>@sub.Name</span>
+                                    </label>
+                                }
+                            </div>
+                        }
                     }
                 </div>
             </div>
@@ -86,8 +102,9 @@
                     <article class="product-card"
                              data-id="@med.Id"
                              data-name="@med.Name.ToLower()"
-                             data-product-type="@med.ProductType"
-                             data-category="@med.Category"
+                             data-product-type-id="@med.ProductTypeId"
+                             data-category-id="@med.CategoryId"
+                             data-subcategory-id="@(med.SubCategoryId.HasValue ? med.SubCategoryId.Value.ToString() : "")"
                              data-price="@med.Price"
                              data-popularity="@(med.Popularity ?? 0)"
                              data-stock="@med.Stock">
@@ -178,6 +195,10 @@
                 <span class="modal__value" id="modalCategory"></span>
             </div>
             <div>
+                <span class="modal__label">Subcategory</span>
+                <span class="modal__value" id="modalSubCategory"></span>
+            </div>
+            <div>
                 <span class="modal__label">In stock</span>
                 <span class="modal__value" id="modalStock"></span>
             </div>
@@ -223,6 +244,7 @@
         m.Manufacturer,
         m.ProductType,
         m.Category,
+        m.SubCategory,
         m.Price,
         m.Stock,
         m.RequiresRx,
