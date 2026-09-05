@@ -1,95 +1,17 @@
 (function () {
     "use strict";
 
-    /* ---------------------------------------------------------------------
-       Elements
-       ------------------------------------------------------------------ */
-    var form = document.getElementById("medicineFilterForm");
-    var searchInput = document.getElementById("medicineSearchInput");
-    var filterCategory = document.getElementById("filterCategory");
-    var filterProductType = document.getElementById("filterProductType");
-    var resultsCount = document.getElementById("resultsCount");
-    var tableWrap = document.getElementById("medicineTableWrap");
     var table = document.getElementById("medicineTable");
-    var noMatchesRow = document.getElementById("clientNoMatchesRow");
-    var clearFiltersBtn = document.getElementById("clientClearFiltersBtn");
-
-    if (!form || !table) return;
+    if (!table) return;
 
     var tbody = table.querySelector("tbody");
-    var rows = Array.prototype.slice.call(tbody.querySelectorAll("tr.med-row"));
-    var totalRowCount = rows.length;
 
     /* ---------------------------------------------------------------------
-       Debounce helper
-       ------------------------------------------------------------------ */
-    function debounce(fn, wait) {
-        var timer;
-        return function () {
-            var args = arguments;
-            clearTimeout(timer);
-            timer = setTimeout(function () { fn.apply(null, args); }, wait);
-        };
-    }
-
-    /* ---------------------------------------------------------------------
-       Instant client-side filtering (search + category + product type)
-       ------------------------------------------------------------------ */
-    function selectedOptionText(select) {
-        if (!select || select.selectedIndex < 0) return "";
-        return select.options[select.selectedIndex].text.trim();
-    }
-
-    function applyFilters() {
-        if (totalRowCount === 0) return;
-
-        var term = (searchInput?.value || "").trim().toLowerCase();
-        var categoryActive = !!(filterCategory && filterCategory.value !== "");
-        var typeActive = !!(filterProductType && filterProductType.value !== "");
-        var categoryText = selectedOptionText(filterCategory);
-        var typeText = selectedOptionText(filterProductType);
-
-        var visibleCount = 0;
-
-        rows.forEach(function (row) {
-            var matchesTerm = !term || row.dataset.name.toLowerCase().indexOf(term) !== -1;
-            var matchesCategory = !categoryActive || row.dataset.category === categoryText;
-            var matchesType = !typeActive || row.dataset.productType === typeText;
-            var isMatch = matchesTerm && matchesCategory && matchesType;
-
-            row.hidden = !isMatch;
-            if (isMatch) visibleCount++;
-        });
-
-        if (noMatchesRow) {
-            noMatchesRow.hidden = visibleCount !== 0;
-        }
-
-        if (resultsCount) {
-            resultsCount.textContent = visibleCount === totalRowCount
-                ? totalRowCount + " medicine" + (totalRowCount === 1 ? "" : "s") + " found"
-                : "Showing " + visibleCount + " of " + totalRowCount + " medicines";
-        }
-    }
-
-    var debouncedFilter = debounce(applyFilters, 120);
-
-    searchInput?.addEventListener("input", debouncedFilter);
-    filterCategory?.addEventListener("change", applyFilters);
-    filterProductType?.addEventListener("change", applyFilters);
-
-    clearFiltersBtn?.addEventListener("click", function () {
-        if (searchInput) searchInput.value = "";
-        if (filterCategory) filterCategory.selectedIndex = 0;
-        if (filterProductType) filterProductType.selectedIndex = 0;
-        applyFilters();
-        searchInput?.focus();
-    });
-
-    /* ---------------------------------------------------------------------
-       Sortable columns
+       Sortable columns (client-side re-sort of the current page only —
+       does not change which medicines are shown, only their order)
        ------------------------------------------------------------------ */
     var sortHeaders = Array.prototype.slice.call(table.querySelectorAll(".sort-th"));
+    var rows = Array.prototype.slice.call(tbody.querySelectorAll("tr.med-row"));
 
     function parseSortValue(row, key, type) {
         var raw = row.dataset[key] !== undefined ? row.dataset[key] : "";
@@ -107,12 +29,10 @@
         });
         sorted.forEach(function (row) { tbody.appendChild(row); });
         rows = sorted;
-        if (noMatchesRow) tbody.appendChild(noMatchesRow);
     }
 
     function handleSortActivate(header) {
         var key = header.dataset.sortKey;
-        // camelCase the dataset key for keys like "productType" — our keys are single words, so this is a no-op safeguard.
         var type = header.dataset.sortType || "text";
         var current = header.getAttribute("aria-sort");
         var next = current === "ascending" ? "descending" : "ascending";
@@ -132,6 +52,55 @@
             }
         });
     });
+
+    /* ---------------------------------------------------------------------
+       Dependent SubCategory dropdown in the filter bar.
+       Filtering itself only happens when "Filter" is clicked (normal GET
+       submit) — this only repopulates which subcategory options are valid
+       for the currently selected category.
+       ------------------------------------------------------------------ */
+    var filterCategory = document.getElementById("filterCategory");
+    var filterSubCategory = document.getElementById("filterSubCategory");
+
+    function loadFilterSubCategories(categoryId, preselectId) {
+        filterSubCategory.innerHTML = '<option value="">All subcategories</option>';
+        if (!categoryId) return;
+
+        fetch("/Admin/GetSubCategories?categoryId=" + encodeURIComponent(categoryId))
+            .then(function (res) {
+                if (!res.ok) throw new Error("Failed to load subcategories");
+                return res.json();
+            })
+            .then(function (subCategories) {
+                subCategories.forEach(function (sc) {
+                    var opt = document.createElement("option");
+                    opt.value = sc.id;
+                    opt.textContent = sc.label;
+                    if (preselectId && String(sc.id) === String(preselectId)) {
+                        opt.selected = true;
+                    }
+                    filterSubCategory.appendChild(opt);
+                });
+            })
+            .catch(function () {});
+    }
+
+    if (filterCategory && filterSubCategory) {
+        var initialSelectedSubCategory = filterSubCategory.dataset.selected || "";
+
+        // On category change: reload the subcategory list, but reset the
+        // selection since the previous subcategory may not belong to the
+        // newly chosen category. Does NOT submit the form.
+        filterCategory.addEventListener("change", function () {
+            loadFilterSubCategories(filterCategory.value, null);
+        });
+
+        // On initial page load: if a category (and possibly subcategory)
+        // was already applied via the URL, restore that state.
+        if (filterCategory.value) {
+            loadFilterSubCategories(filterCategory.value, initialSelectedSubCategory);
+        }
+    }
 
     /* ---------------------------------------------------------------------
        Delete confirmation modal
@@ -173,7 +142,6 @@
             return;
         }
         if (e.key === "Tab") {
-            // Simple two-item focus trap between Cancel and Delete.
             var focusables = [deleteCancelBtn, deleteConfirmBtn];
             var currentIndex = focusables.indexOf(document.activeElement);
             e.preventDefault();
@@ -196,8 +164,6 @@
         if (e.target === deleteOverlay) closeDeleteModal();
     });
     deleteConfirmBtn?.addEventListener("click", function () {
-        // form.submit() bypasses the native onsubmit confirm() fallback,
-        // so the user isn't asked twice.
         pendingForm?.submit();
     });
 
