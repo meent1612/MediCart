@@ -2,7 +2,7 @@
 @{
     ViewData["Title"] = "Medicines";
     Layout = "_AdminLayout";
-    var hasActiveFilters = !string.IsNullOrWhiteSpace(Model.Search) || Model.CategoryId.HasValue || Model.ProductTypeId.HasValue;
+    var hasActiveFilters = !string.IsNullOrWhiteSpace(Model.Search) || Model.CategoryId.HasValue || Model.SubCategoryId.HasValue || Model.ProductTypeId.HasValue;
 }
 
 @section Styles {
@@ -26,6 +26,7 @@
         <button type="button" class="admin-alert__dismiss" aria-label="Dismiss message">&times;</button>
     </div>
 }
+
 <div class="admin-panel__head">
     <h2>Medicines <span class="admin-count-pill">@Model.TotalCount</span></h2>
     <a asp-action="AddMedicine" class="btn btn--pine btn--sm">+ Add medicine</a>
@@ -43,6 +44,10 @@
         {
             <option value="@opt.Id" selected="@(Model.CategoryId == opt.Id ? "selected" : null)">@opt.Label</option>
         }
+    </select>
+
+    <select name="subCategoryId" id="filterSubCategory" data-selected="@Model.SubCategoryId">
+        <option value="">All subcategories</option>
     </select>
 
     <select name="productTypeId" id="filterProductType">
@@ -115,7 +120,13 @@
                             <div class="admin-table__sub"><span class="tag tag--rx">Rx</span></div>
                         }
                     </td>
-                    <td data-label="Category">@med.CategoryName</td>
+                    <td data-label="Category">
+                        @med.CategoryName
+                        @if (!string.IsNullOrEmpty(med.SubCategoryName))
+                        {
+                            <div class="admin-table__sub">@med.SubCategoryName</div>
+                        }
+                    </td>
                     <td data-label="Type">@med.ProductTypeName</td>
                     <td data-label="Manufacturer">@(med.Manufacturer ?? "—")</td>
                     <td data-label="Price">৳@med.Price.ToString("0.00")</td>
@@ -168,16 +179,6 @@
                         {
                             <p class="admin-table__no-matches"><a asp-action="Medicines" class="btn-link">Clear filters</a> to see the full catalogue.</p>
                         }
-                    </td>
-                </tr>
-            }
-            else
-            {
-                <tr id="clientNoMatchesRow" class="admin-table__empty-row" hidden>
-                    <td colspan="9" class="admin-table__empty">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
-                        <p>No medicines match your search.</p>
-                        <p class="admin-table__no-matches"><button type="button" class="btn-link" id="clientClearFiltersBtn">Clear filters</button></p>
                     </td>
                 </tr>
             }
