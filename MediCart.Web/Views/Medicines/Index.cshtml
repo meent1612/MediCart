@@ -10,8 +10,6 @@
     <link rel="stylesheet" href="~/css/medicine.css" asp-append-version="true" />
 }
 
-@* Hidden token required by CartController's [ValidateAntiForgeryToken].
-   medicine.js reads this and sends it back with every Add-to-cart request. *@
 @Html.AntiForgeryToken()
 
 <div class="container browse">
@@ -86,7 +84,6 @@
                 <label class="sort">
                     Sort:
                     <select id="sortSelect">
-                        <option value="popular" disabled>Most popular (unavailable)</option>
                         <option value="name-asc" selected>Name: A to Z</option>
                         <option value="price-asc">Price: low to high</option>
                         <option value="price-desc">Price: high to low</option>
@@ -106,7 +103,6 @@
                              data-category-id="@med.CategoryId"
                              data-subcategory-id="@(med.SubCategoryId.HasValue ? med.SubCategoryId.Value.ToString() : "")"
                              data-price="@med.Price"
-                             data-popularity="@(med.Popularity ?? 0)"
                              data-stock="@med.Stock">
 
                         <div class="product-card__image" aria-hidden="true">
@@ -136,7 +132,6 @@
                                 {
                                     <span class="badge badge--stock-@med.StockCssClass">@med.StockStatus</span>
                                 }
-                                <span class="badge badge--potency badge--disabled" title="Not available yet">Potency: N/A</span>
                             </div>
 
                             <div class="product-card__footer">
@@ -183,10 +178,6 @@
                 <span class="modal__value" id="modalManufacturer"></span>
             </div>
             <div>
-                <span class="modal__label">Strength</span>
-                <span class="modal__value" id="modalStrength"></span>
-            </div>
-            <div>
                 <span class="modal__label">Form</span>
                 <span class="modal__value" id="modalForm"></span>
             </div>
@@ -199,8 +190,16 @@
                 <span class="modal__value" id="modalSubCategory"></span>
             </div>
             <div>
+                <span class="modal__label">Pack / Unit</span>
+                <span class="modal__value" id="modalUnit"></span>
+            </div>
+            <div>
                 <span class="modal__label">In stock</span>
                 <span class="modal__value" id="modalStock"></span>
+            </div>
+            <div>
+                <span class="modal__label">Expiry date</span>
+                <span class="modal__value" id="modalExpiry"></span>
             </div>
             <div>
                 <span class="modal__label">Price</span>
@@ -209,12 +208,12 @@
         </div>
 
         <div class="modal__section">
-            <h4>About</h4>
-            <p id="modalAbout"></p>
+            <h4>Description</h4>
+            <p id="modalDescription"></p>
         </div>
 
         <div class="modal__section">
-            <h4>Dosage</h4>
+            <h4>Dosage / Directions for use</h4>
             <p id="modalDosage"></p>
         </div>
 
@@ -240,16 +239,17 @@
         m.Id,
         m.Name,
         m.Composition,
-        m.Strength,
         m.Manufacturer,
         m.ProductType,
         m.Category,
         m.SubCategory,
+        m.Unit,
         m.Price,
         m.Stock,
+        m.ExpiryDate,
         m.RequiresRx,
         StockStatus = m.StockStatus,
-        m.About,
+        m.Description,
         m.Dosage,
         m.SideEffects
     })))

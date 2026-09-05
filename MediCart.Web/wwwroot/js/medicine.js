@@ -13,10 +13,6 @@
     var clearFiltersBtn = document.getElementById("clearFilters");
     var medicineData = JSON.parse(document.getElementById("medicineData").textContent);
 
-    // Some filter groups (e.g. "subCategory") are split across several
-    // separate containers in the DOM — one nested under each category —
-    // all sharing the same data-filter-group value. querySelectorAll
-    // (not querySelector) picks up every one of them.
     function getChecked(groupName) {
         var groups = document.querySelectorAll('[data-filter-group="' + groupName + '"]');
         var values = [];
@@ -38,7 +34,7 @@
         cards.forEach(function (card) {
             var cardProductTypeId = card.dataset.productTypeId;
             var cardCategoryId = card.dataset.categoryId;
-            var cardSubCategoryId = card.dataset.subcategoryId; // "" if the medicine has no subcategory
+            var cardSubCategoryId = card.dataset.subcategoryId;
             var cardPrice = parseFloat(card.dataset.price);
 
             var matchesProductType = productTypeIds.length === 0 || productTypeIds.indexOf(cardProductTypeId) !== -1;
@@ -64,8 +60,7 @@
         visibleCards.sort(function (a, b) {
             if (sortBy === "price-asc") return parseFloat(a.dataset.price) - parseFloat(b.dataset.price);
             if (sortBy === "price-desc") return parseFloat(b.dataset.price) - parseFloat(a.dataset.price);
-            if (sortBy === "name-asc") return a.dataset.name.localeCompare(b.dataset.name);
-            return parseInt(b.dataset.popularity, 10) - parseInt(a.dataset.popularity, 10);
+            return a.dataset.name.localeCompare(b.dataset.name); // default: name-asc
         });
 
         visibleCards.forEach(function (card) { grid.appendChild(card); });
@@ -91,30 +86,19 @@
 
     /* ----- Add to cart from card (real server call) ----- */
 
-    // Whether this visitor is logged in as a Customer, and where to send
-    // them to log in if not. Set as data-* attributes on #productGrid
-    // by Views/Medicines/Index.cshtml.
     var isCustomer = grid.dataset.isCustomer === "true";
     var loginUrl = grid.dataset.loginUrl || "/Identity/Account/Login";
 
-    // The anti-forgery token CartController.Add requires.
-    // Emitted on the page by @Html.AntiForgeryToken().
     function getAntiForgeryToken() {
         var input = document.querySelector('input[name="__RequestVerificationToken"]');
         return input ? input.value : "";
     }
 
-    // Sends the visitor to the login page and brings them straight back
-    // to this page (with their filters/scroll lost, but at the right URL)
-    // after they log in.
     function redirectToLogin() {
         var returnUrl = window.location.pathname + window.location.search;
         window.location.href = loginUrl + "?ReturnUrl=" + encodeURIComponent(returnUrl);
     }
 
-    // Calls POST /Cart/Add for real. Returns a Promise that resolves with
-    // the server's JSON ({ newQuantity, newStockQuantity, cartItemCount })
-    // or rejects with a plain error message string.
     function addToCartOnServer(medicineId, quantity) {
         var body = new URLSearchParams();
         body.set("medicineId", medicineId);
@@ -125,11 +109,6 @@
             method: "POST",
             body: body
         }).then(function (res) {
-            // If the session expired mid-browse, ASP.NET Identity redirects
-            // an unauthenticated request to the login page. fetch() follows
-            // that redirect automatically, so we detect it here as a
-            // fallback safety net (the isCustomer check above should
-            // normally catch this before we ever get here).
             if (res.redirected || res.status === 401 || res.status === 403) {
                 redirectToLogin();
                 return Promise.reject(null);
@@ -155,7 +134,6 @@
 
         if (cartButton) {
             cartButton.classList.remove("is-bumped");
-            // force reflow so the animation can restart on repeated clicks
             void cartButton.offsetWidth;
             cartButton.classList.add("is-bumped");
         }
@@ -173,7 +151,6 @@
     grid.addEventListener("click", function (e) {
         var addBtn = e.target.closest(".btn-add");
         if (addBtn && !addBtn.disabled) {
-            // Guest clicking "+" — send to login, never touch the cart.
             if (!isCustomer) {
                 redirectToLogin();
                 return;
@@ -213,23 +190,31 @@
     var addToCartBtn = document.getElementById("modalAddToCart");
     var currentMedicine = null;
 
+    var NOT_AVAILABLE = "Not available yet";
+
+    function severityClass(severity) {
+        var s = (severity || "").toLowerCase();
+        if (s === "mild") return "side-effect--mild";
+        if (s === "moderate") return "side-effect--moderate";
+        if (s === "high" || s === "severe") return "side-effect--high";
+        return "side-effect--mild";
+    }
+
+    function formatExpiry(dateStr) {
+        // dateStr comes from a DateOnly, serialized as "yyyy-MM-dd"
+        var parts = dateStr.split("-");
+        var d = new Date(Date.UTC(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10)));
+        return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric", timeZone: "UTC" });
+    }
+
     function openModal(id) {
         var med = medicineData.find(function (m) { return String(m.Id) === String(id); });
         if (!med) return;
         currentMedicine = med;
 
-        var NOT_AVAILABLE = "Not available yet";
-
         document.getElementById("modalTitle").textContent = med.Name;
-        document.getElementById("modalComposition").textContent = med.Strength
-            ? med.Composition + " " + med.Strength
-            : med.Composition;
+        document.getElementById("modalComposition").textContent = med.Composition;
         document.getElementById("modalManufacturer").textContent = med.Manufacturer;
-
-        var strengthEl = document.getElementById("modalStrength");
-        strengthEl.textContent = med.Strength || NOT_AVAILABLE;
-        strengthEl.classList.toggle("modal__value--muted", !med.Strength);
-
         document.getElementById("modalForm").textContent = med.ProductType;
         document.getElementById("modalCategory").textContent = med.Category;
 
@@ -237,9 +222,32 @@
         subCategoryEl.textContent = med.SubCategory || "None";
         subCategoryEl.classList.toggle("modal__value--muted", !med.SubCategory);
 
+        var unitEl = document.getElementById("modalUnit");
+        unitEl.textContent = med.Unit || NOT_AVAILABLE;
+        unitEl.classList.toggle("modal__value--muted", !med.Unit);
+
         document.getElementById("modalStock").textContent = med.Stock > 0 ? (med.Stock + " units") : "Out of stock";
         document.getElementById("modalPrice").textContent = "\u09F3" + med.Price;
-        document.getElementById("modalAbout").textContent = med.About;
+
+        var expiryEl = document.getElementById("modalExpiry");
+        expiryEl.classList.remove("modal__value--muted", "modal__value--warning", "modal__value--danger");
+        if (med.ExpiryDate) {
+            var expiryDate = new Date(med.ExpiryDate + "T00:00:00Z");
+            var today = new Date();
+            var daysLeft = Math.floor((expiryDate - today) / (1000 * 60 * 60 * 24));
+
+            expiryEl.textContent = formatExpiry(med.ExpiryDate);
+            if (daysLeft < 0) {
+                expiryEl.classList.add("modal__value--danger");
+            } else if (daysLeft <= 90) {
+                expiryEl.classList.add("modal__value--warning");
+            }
+        } else {
+            expiryEl.textContent = NOT_AVAILABLE;
+            expiryEl.classList.add("modal__value--muted");
+        }
+
+        document.getElementById("modalDescription").textContent = med.Description;
 
         var dosageEl = document.getElementById("modalDosage");
         dosageEl.textContent = med.Dosage || NOT_AVAILABLE;
@@ -251,9 +259,10 @@
 
         var sideEffectsBox = document.getElementById("modalSideEffects");
         sideEffectsBox.innerHTML = "";
-        (med.SideEffects || []).forEach(function (effect) {
+        (med.SideEffects || []).forEach(function (se) {
             var span = document.createElement("span");
-            span.textContent = effect;
+            span.textContent = se.Effect;
+            span.className = severityClass(se.Severity);
             sideEffectsBox.appendChild(span);
         });
 
@@ -303,8 +312,6 @@
     addToCartBtn.addEventListener("click", function () {
         if (!currentMedicine || addToCartBtn.disabled) return;
 
-        // Guest clicking "Add to cart" inside the details modal — send to
-        // login, never touch the cart.
         if (!isCustomer) {
             redirectToLogin();
             return;

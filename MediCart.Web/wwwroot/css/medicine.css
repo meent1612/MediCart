@@ -278,11 +278,6 @@
     color: #a13636;
 }
 
-.badge--potency {
-    background: #eee8d8;
-    color: var(--muted);
-}
-
 .badge--disabled {
     opacity: 0.6;
     border: 1px dashed var(--border);
@@ -487,6 +482,16 @@
     color: var(--muted);
 }
 
+.modal__value--warning {
+    color: #91631a;
+    font-weight: 700;
+}
+
+.modal__value--danger {
+    color: #a13636;
+    font-weight: 700;
+}
+
 .modal__section-text--muted {
     font-style: italic;
     color: var(--muted) !important;
@@ -518,11 +523,25 @@
 }
 
 .modal__tags span {
-    background: #f2d9d9;
-    color: #a3512a;
     font-size: 0.78rem;
+    font-weight: 600;
     padding: 4px 11px;
     border-radius: 999px;
+}
+
+.side-effect--mild {
+    background: #dfe9de;
+    color: #2f4a3c;
+}
+
+.side-effect--moderate {
+    background: #f7e6c8;
+    color: #91631a;
+}
+
+.side-effect--high {
+    background: #f2d9d9;
+    color: #a13636;
 }
 
 .modal__cart {

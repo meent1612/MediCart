@@ -48,21 +48,19 @@ namespace MediCart.Web.Controllers
                 SubCategory = m.SubCategory?.Name,
                 Price = m.Price,
                 Stock = m.Stock?.Quantity ?? 0,
+                Unit = m.Unit,
+                ExpiryDate = m.Stock?.ExpiryDate,
                 RequiresRx = m.RequiresPrescription,
-                About = m.Description ?? "",
-                ImageUrl = m.ImageUrl,
-                SideEffects = m.SideEffects.Select(se => se.Effect).ToList(),
-                Strength = null,
+                Description = m.Description ?? "",
                 Dosage = null,
-                Potency = null,
-                Popularity = null,
-                UseTags = new()
+                ImageUrl = m.ImageUrl,
+                SideEffects = m.SideEffects.Select(se => new SideEffectViewModel
+                {
+                    Effect = se.Effect,
+                    Severity = se.Severity
+                }).ToList()
             }).ToList();
 
-            // Full filter option lists straight from the DB — independent of
-            // which medicines happen to be loaded above, so a category/type
-            // with zero matching medicines right now still appears as a
-            // selectable filter (matching zero results, which is correct).
             var categories = await _context.Categories
                 .Include(c => c.SubCategories)
                 .OrderBy(c => c.Name)
@@ -83,11 +81,7 @@ namespace MediCart.Web.Controllers
                 .Select(pt => new ProductTypeFilterOption { Id = pt.Id, Name = pt.Name })
                 .ToListAsync();
 
-            // For logged-in customers, pass a dictionary of MedicineId → quantity
-            // already in their cart so the view can show "in cart" state on each card.
-            // For guests and admins this is an empty dictionary.
             var cartQuantities = new Dictionary<int, int>();
-
             var userId = _userManager.GetUserId(User);
 
             if (userId != null && User.IsInRole("Customer"))

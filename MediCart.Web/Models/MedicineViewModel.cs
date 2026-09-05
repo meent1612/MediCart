@@ -1,44 +1,57 @@
+using System;
 using System.Collections.Generic;
 
 namespace MediCart.Web.Models
 {
+    public class SideEffectViewModel
+    {
+        public string Effect { get; set; } = string.Empty;
+        public string Severity { get; set; } = string.Empty; // "Mild" | "Moderate" | "High"
+    }
+
     public class MedicineViewModel
     {
         public int Id { get; set; }
-        public string Name { get; set; } = "";
-        public string Composition { get; set; } = "";
-        public string Manufacturer { get; set; } = "";
+        public string Name { get; set; } = string.Empty;
+        public string Composition { get; set; } = string.Empty;
+        public string Manufacturer { get; set; } = string.Empty;
 
         public int ProductTypeId { get; set; }
-        public string ProductType { get; set; } = "";   // Tablet, Syrup, Injection, Ointment, Drops
+        public string ProductType { get; set; } = string.Empty;
 
         public int CategoryId { get; set; }
-        public string Category { get; set; } = "";      // Pain relief, Gastric, Fever & cold, Allergy, Vitamins
+        public string Category { get; set; } = string.Empty;
 
         public int? SubCategoryId { get; set; }
-        public string? SubCategory { get; set; }        // null if the medicine has no subcategory assigned
+        public string? SubCategory { get; set; }
 
         public decimal Price { get; set; }
         public int Stock { get; set; }
-        public bool RequiresRx { get; set; }
-        public string About { get; set; } = "";
-        public List<string> SideEffects { get; set; } = new();
-        public string? ImageUrl { get; set; } // from Cloudinary via Medicine.ImageUrl; null = show placeholder icon
+        public string? Unit { get; set; }
+        public DateOnly? ExpiryDate { get; set; }   // <-- DateOnly?, matches Stock.cs
 
-        // TODO(backend): these fields have no matching column in the current
-        // Medicine table. Left nullable on purpose so the UI can show a clear
-        // "not available yet" state instead of faking data. If/when these are
-        // added to the schema, wire them up in MedicinesController.Index().
-        public string? Strength { get; set; }      // e.g. "500mg+65mg" — no column yet
-        public string? Dosage { get; set; }         // separate from Description — no column yet
-        public string? Potency { get; set; }        // Mild/Strong — NOT the same as SensitivityLevel (order-flagging tier)
-        public int? Popularity { get; set; }         // needed for "Most popular" sort — no column yet
-        public List<string> UseTags { get; set; } = new(); // Fever, Acidity, Headache, Cough — no table yet
+        public bool RequiresRx { get; set; }
+        public string Description { get; set; } = string.Empty;
+        public string? Dosage { get; set; }
+
+        public string? ImageUrl { get; set; }
+        public List<SideEffectViewModel> SideEffects { get; set; } = new();
+
+        // SensitivityLevel is intentionally NOT a property here — never map
+        // it onto this ViewModel. Only the Admin ViewModel should read
+        // Medicine.SensitivityLevel.
 
         public string StockStatus =>
-            Stock <= 0 ? "Out of stock" : Stock <= 30 ? "Low stock" : "In stock";
+            Stock <= 0 ? "Out of stock" : Stock <= 10 ? "Low stock" : "In stock";
 
         public string StockCssClass =>
-            Stock <= 0 ? "out" : Stock <= 30 ? "low" : "in";
+            Stock <= 0 ? "out" : Stock <= 10 ? "low" : "in";
+
+        public bool IsExpired =>
+            ExpiryDate.HasValue && ExpiryDate.Value < DateOnly.FromDateTime(DateTime.UtcNow);
+
+        public bool IsExpiringSoon =>
+            ExpiryDate.HasValue && !IsExpired &&
+            ExpiryDate.Value.DayNumber - DateOnly.FromDateTime(DateTime.UtcNow).DayNumber <= 90;
     }
 }
