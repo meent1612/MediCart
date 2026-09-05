@@ -4,6 +4,7 @@
     ViewData["Title"] = "Browse medicines";
     var categories = (List<CategoryFilterOption>)(ViewBag.Categories ?? new List<CategoryFilterOption>());
     var productTypes = (List<ProductTypeFilterOption>)(ViewBag.ProductTypes ?? new List<ProductTypeFilterOption>());
+    bool isAdmin = User.IsInRole("Admin");
 }
 
 @section Styles {
@@ -93,6 +94,7 @@
 
             <div class="product-grid" id="productGrid"
                  data-is-customer="@(User.IsInRole("Customer") ? "true" : "false")"
+                 data-is-admin="@(isAdmin ? "true" : "false")"
                  data-login-url="/Identity/Account/Login">
                 @foreach (var med in Model)
                 {
@@ -139,8 +141,11 @@
 
                                 <div class="product-card__actions">
                                     <button type="button" class="btn-link view-details-btn" data-id="@med.Id">View details</button>
-                                    <button type="button" class="btn-add" data-id="@med.Id" aria-label="Add @med.Name to cart"
-                                            @(med.Stock <= 0 ? "disabled" : "")>+</button>
+                                    @if (!isAdmin)
+                                    {
+                                        <button type="button" class="btn-add" data-id="@med.Id" aria-label="Add @med.Name to cart"
+                                                @(med.Stock <= 0 ? "disabled" : "")>+</button>
+                                    }
                                 </div>
                             </div>
                         </div>
@@ -222,7 +227,7 @@
             <div class="modal__tags" id="modalSideEffects"></div>
         </div>
 
-        <div class="modal__cart">
+        <div class="modal__cart" hidden="@(isAdmin ? "hidden" : null)">
             <div class="qty-stepper">
                 <button type="button" id="modalQtyMinus" aria-label="Decrease quantity">&minus;</button>
                 <input type="number" id="modalQtyInput" value="1" min="1" max="99" aria-label="Quantity" />

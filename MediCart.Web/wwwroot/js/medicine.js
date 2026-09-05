@@ -87,6 +87,7 @@
     /* ----- Add to cart from card (real server call) ----- */
 
     var isCustomer = grid.dataset.isCustomer === "true";
+    var isAdmin = grid.dataset.isAdmin === "true";
     var loginUrl = grid.dataset.loginUrl || "/Identity/Account/Login";
 
     function getAntiForgeryToken() {
@@ -151,6 +152,8 @@
     grid.addEventListener("click", function (e) {
         var addBtn = e.target.closest(".btn-add");
         if (addBtn && !addBtn.disabled) {
+            if (isAdmin) return; // button shouldn't exist for admins; defensive no-op
+
             if (!isCustomer) {
                 redirectToLogin();
                 return;
@@ -201,7 +204,6 @@
     }
 
     function formatExpiry(dateStr) {
-        // dateStr comes from a DateOnly, serialized as "yyyy-MM-dd"
         var parts = dateStr.split("-");
         var d = new Date(Date.UTC(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10)));
         return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric", timeZone: "UTC" });
@@ -270,7 +272,7 @@
         qtyInput.max = med.Stock > 0 ? med.Stock : 1;
         addToCartBtn.textContent = "Add to cart";
         addToCartBtn.classList.remove("added");
-        addToCartBtn.disabled = med.Stock <= 0;
+        addToCartBtn.disabled = isAdmin || med.Stock <= 0;
 
         overlay.hidden = false;
         document.body.style.overflow = "hidden";
@@ -311,6 +313,7 @@
 
     addToCartBtn.addEventListener("click", function () {
         if (!currentMedicine || addToCartBtn.disabled) return;
+        if (isAdmin) return; // section is hidden and button disabled server-side for admins; defensive no-op
 
         if (!isCustomer) {
             redirectToLogin();
