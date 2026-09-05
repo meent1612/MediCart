@@ -25,7 +25,7 @@
         categoryParent.disabled = false;
         categoryFormTitle.textContent = "Add a category";
         categoryFormSubmit.textContent = "Add category";
-        cancelCategoryEdit.hidden = true;
+        cancelCategoryEdit.textContent = "Cancel";
     }
 
     if (categoryForm.dataset.hadError === "true") categoryForm.hidden = false;
@@ -42,7 +42,7 @@
             categoryFormTitle.textContent = kind === "subcategory" ? "Edit subcategory" : "Edit category";
             categoryFormSubmit.textContent = "Save changes";
             categoryForm.action = "/Admin/EditCategory";
-            cancelCategoryEdit.hidden = false;
+            cancelCategoryEdit.textContent = "Cancel edit";
             categoryForm.hidden = false;
             categoryForm.scrollIntoView({ behavior: "smooth", block: "center" });
         });
@@ -75,7 +75,7 @@
         productTypeName.value = "";
         productTypeFormTitle.textContent = "Add a product type";
         productTypeFormSubmit.textContent = "Add type";
-        cancelProductTypeEdit.hidden = true;
+        cancelProductTypeEdit.textContent = "Cancel";
     }
 
     if (productTypeForm.dataset.hadError === "true") productTypeForm.hidden = false;
@@ -87,7 +87,7 @@
             productTypeFormTitle.textContent = "Edit product type";
             productTypeFormSubmit.textContent = "Save changes";
             productTypeForm.action = "/Admin/EditProductType";
-            cancelProductTypeEdit.hidden = false;
+            cancelProductTypeEdit.textContent = "Cancel edit";
             productTypeForm.hidden = false;
             productTypeForm.scrollIntoView({ behavior: "smooth", block: "center" });
         });

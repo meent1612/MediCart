@@ -109,23 +109,22 @@
     cursor: pointer;
 }
 
-/* Use-tag filter has no backing data yet — shown as a disabled placeholder */
-.filter-group--disabled h3 {
-    color: #b8b19b;
+/* Subcategories nested under their parent category checkbox */
+.filter-options--sub {
+    margin: 2px 0 10px 14px;
+    padding-left: 12px;
+    border-left: 1px solid var(--border);
+    gap: 8px;
 }
 
-.filter-options--disabled {
-    background: var(--card);
-    border: 1px dashed var(--border);
-    border-radius: 8px;
-    padding: 12px 14px;
-}
-
-.filter-note {
-    margin: 0;
-    font-size: 0.82rem;
+.filter-check--sub {
+    font-size: 0.85rem;
     color: var(--muted);
-    font-style: italic;
+}
+
+.filter-check--sub input {
+    width: 14px;
+    height: 14px;
 }
 
 #priceRange {
@@ -277,11 +276,6 @@
 .badge--stock-out {
     background: #f2d9d9;
     color: #a13636;
-}
-
-.badge--potency {
-    background: #eee8d8;
-    color: var(--muted);
 }
 
 .badge--disabled {
@@ -488,6 +482,16 @@
     color: var(--muted);
 }
 
+.modal__value--warning {
+    color: #91631a;
+    font-weight: 700;
+}
+
+.modal__value--danger {
+    color: #a13636;
+    font-weight: 700;
+}
+
 .modal__section-text--muted {
     font-style: italic;
     color: var(--muted) !important;
@@ -519,11 +523,25 @@
 }
 
 .modal__tags span {
-    background: #f2d9d9;
-    color: #a3512a;
     font-size: 0.78rem;
+    font-weight: 600;
     padding: 4px 11px;
     border-radius: 999px;
+}
+
+.side-effect--mild {
+    background: #dfe9de;
+    color: #2f4a3c;
+}
+
+.side-effect--moderate {
+    background: #f7e6c8;
+    color: #91631a;
+}
+
+.side-effect--high {
+    background: #f2d9d9;
+    color: #a13636;
 }
 
 .modal__cart {

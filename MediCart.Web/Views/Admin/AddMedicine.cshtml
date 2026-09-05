@@ -57,8 +57,13 @@
                 <input asp-for="Form.GenericName" maxlength="150" placeholder="e.g. Paracetamol + Caffeine" />
             </div>
             <div class="admin-form__field">
-                <label asp-for="Form.Unit">Unit</label>
-                <input asp-for="Form.Unit" maxlength="30" placeholder="e.g. Strip of 10 tablets" />
+                <label asp-for="Form.Unit">Unit &amp; quantity</label>
+                <input asp-for="Form.Unit" maxlength="60" required
+                       placeholder="e.g. 1 strip of 10 tablets" />
+                <small class="admin-form__hint">
+                    Be specific — e.g. "1 packet of 16 pads", "1 bottle of 20 tablets", "1 bottle of 50mL"
+                </small>
+                <span asp-validation-for="Form.Unit" class="admin-form__error"></span>
             </div>
         </div>
         <div class="admin-form__field">
@@ -79,7 +84,7 @@
                     {
                         <span class="image-upload__placeholder" id="imagePreviewPlaceholder">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-5-5L5 21" /></svg>
-                            No image yet
+                            Drag &amp; drop or click
                         </span>
                     }
                     <button type="button" class="image-upload__clear" id="imageClearBtn" aria-label="Remove image" hidden="@(hasImage ? null : "hidden")">&times;</button>
@@ -92,7 +97,7 @@
                     </div>
                     <input type="file" id="imageFileInput" name="Form.ImageFile" accept="image/jpeg,image/png,image/webp" class="visually-hidden" />
                     <span asp-validation-for="Form.ImageFile" class="admin-form__error"></span>
-                    <small class="admin-form__hint">JPG, PNG, or WEBP — under 5MB. Uploading replaces the current image.</small>
+                    <small class="admin-form__hint">JPG, PNG, or WEBP — under 5MB. Drag &amp; drop onto the box, or click Choose image. Uploading replaces the current image.</small>
 
                     <div class="image-upload__divider"><span>or paste an image URL</span></div>
 

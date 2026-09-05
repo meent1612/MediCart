@@ -68,9 +68,22 @@ namespace MediCart.Web.Areas.Identity.Pages.Account
             public bool AgreeToTerms { get; set; }
         }
 
-        public async Task OnGetAsync(string returnUrl = null)
+        public async Task<IActionResult> OnGetAsync(string returnUrl = null)
         {
+            // Already logged in — registering again doesn't make sense.
+            if (_signInManager.IsSignedIn(User))
+            {
+                var currentUser = await _userManager.GetUserAsync(User);
+                if (currentUser != null && await _userManager.IsInRoleAsync(currentUser, "Admin"))
+                {
+                    return RedirectToAction("Dashboard", "Admin", new { area = "" });
+                }
+
+                return LocalRedirect(returnUrl ?? Url.Content("~/"));
+            }
+
             ReturnUrl = returnUrl;
+            return Page();
         }
 
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)

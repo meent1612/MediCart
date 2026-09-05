@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace MediCart.Web.Models
 {
-        public class DropdownOptionViewModel
+    public class DropdownOptionViewModel
     {
         public int Id { get; set; }
         public string Label { get; set; } = "";
@@ -46,10 +46,14 @@ namespace MediCart.Web.Models
 
         [StringLength(100)]
         public string? Manufacturer { get; set; }
-                [StringLength(150)]
+
+        [StringLength(150)]
         public string? GenericName { get; set; }
 
-        [StringLength(30)]
+        [Required(ErrorMessage = "Describe the unit and quantity (e.g. 1 strip of 10 tablets)")]
+        [StringLength(60, MinimumLength = 3, ErrorMessage = "Unit must be between 3 and 60 characters")]
+        [RegularExpression(@"^\d+.*[a-zA-Z].*$",
+            ErrorMessage = "Start with a quantity and include the unit, e.g. \"1 strip of 10 tablets\"")]
         public string? Unit { get; set; }
 
         [StringLength(1000)]

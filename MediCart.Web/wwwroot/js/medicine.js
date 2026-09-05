@@ -14,30 +14,36 @@
     var medicineData = JSON.parse(document.getElementById("medicineData").textContent);
 
     function getChecked(groupName) {
-        var group = document.querySelector('[data-filter-group="' + groupName + '"]');
-        if (!group) return [];
-        return Array.prototype.slice.call(group.querySelectorAll("input:checked")).map(function (i) { return i.value; });
+        var groups = document.querySelectorAll('[data-filter-group="' + groupName + '"]');
+        var values = [];
+        groups.forEach(function (group) {
+            Array.prototype.slice.call(group.querySelectorAll("input:checked")).forEach(function (i) {
+                values.push(i.value);
+            });
+        });
+        return values;
     }
 
     function applyFilters() {
-        var types = getChecked("productType");
-        var categories = getChecked("category");
-        var tags = getChecked("useTag");
+        var productTypeIds = getChecked("productType");
+        var categoryIds = getChecked("category");
+        var subCategoryIds = getChecked("subCategory");
         var maxPrice = parseFloat(priceRange.value);
         var visibleCount = 0;
 
         cards.forEach(function (card) {
-            var cardType = card.dataset.productType;
-            var cardCategory = card.dataset.category;
-            var cardTags = card.dataset.useTags ? card.dataset.useTags.split(",") : [];
+            var cardProductTypeId = card.dataset.productTypeId;
+            var cardCategoryId = card.dataset.categoryId;
+            var cardSubCategoryId = card.dataset.subcategoryId;
             var cardPrice = parseFloat(card.dataset.price);
 
-            var matchesType = types.length === 0 || types.indexOf(cardType) !== -1;
-            var matchesCategory = categories.length === 0 || categories.indexOf(cardCategory) !== -1;
-            var matchesTag = tags.length === 0 || tags.some(function (t) { return cardTags.indexOf(t) !== -1; });
+            var matchesProductType = productTypeIds.length === 0 || productTypeIds.indexOf(cardProductTypeId) !== -1;
+            var matchesCategory = categoryIds.length === 0 || categoryIds.indexOf(cardCategoryId) !== -1;
+            var matchesSubCategory = subCategoryIds.length === 0 ||
+                (cardSubCategoryId !== "" && subCategoryIds.indexOf(cardSubCategoryId) !== -1);
             var matchesPrice = cardPrice <= maxPrice;
 
-            var visible = matchesType && matchesCategory && matchesTag && matchesPrice;
+            var visible = matchesProductType && matchesCategory && matchesSubCategory && matchesPrice;
             card.style.display = visible ? "" : "none";
             if (visible) visibleCount++;
         });
@@ -54,8 +60,7 @@
         visibleCards.sort(function (a, b) {
             if (sortBy === "price-asc") return parseFloat(a.dataset.price) - parseFloat(b.dataset.price);
             if (sortBy === "price-desc") return parseFloat(b.dataset.price) - parseFloat(a.dataset.price);
-            if (sortBy === "name-asc") return a.dataset.name.localeCompare(b.dataset.name);
-            return parseInt(b.dataset.popularity, 10) - parseInt(a.dataset.popularity, 10);
+            return a.dataset.name.localeCompare(b.dataset.name); // default: name-asc
         });
 
         visibleCards.forEach(function (card) { grid.appendChild(card); });
@@ -79,27 +84,60 @@
         applyFilters();
     });
 
-    /* ----- Add to cart from card ----- */
-    var cartCount = 0;
+    /* ----- Add to cart from card (real server call) ----- */
 
-    function bumpCart(qty) {
-        cartCount += qty;
+    var isCustomer = grid.dataset.isCustomer === "true";
+    var isAdmin = grid.dataset.isAdmin === "true";
+    var loginUrl = grid.dataset.loginUrl || "/Identity/Account/Login";
+
+    function getAntiForgeryToken() {
+        var input = document.querySelector('input[name="__RequestVerificationToken"]');
+        return input ? input.value : "";
+    }
+
+    function redirectToLogin() {
+        var returnUrl = window.location.pathname + window.location.search;
+        window.location.href = loginUrl + "?ReturnUrl=" + encodeURIComponent(returnUrl);
+    }
+
+    function addToCartOnServer(medicineId, quantity) {
+        var body = new URLSearchParams();
+        body.set("medicineId", medicineId);
+        body.set("quantity", quantity);
+        body.set("__RequestVerificationToken", getAntiForgeryToken());
+
+        return fetch("/Cart/Add", {
+            method: "POST",
+            body: body
+        }).then(function (res) {
+            if (res.redirected || res.status === 401 || res.status === 403) {
+                redirectToLogin();
+                return Promise.reject(null);
+            }
+
+            return res.json().then(function (data) {
+                if (!res.ok) {
+                    return Promise.reject(data.error || "Could not add this to your cart.");
+                }
+                return data;
+            });
+        });
+    }
+
+    function updateCartBadge(cartItemCount) {
         var cartButton = document.querySelector(".cart-button");
         var cartBadge = document.querySelector(".cart-button__badge");
 
         if (cartBadge) {
-            cartBadge.textContent = cartCount;
+            cartBadge.textContent = cartItemCount;
             cartBadge.classList.add("is-visible");
         }
 
         if (cartButton) {
             cartButton.classList.remove("is-bumped");
-            // force reflow so the animation can restart on repeated clicks
             void cartButton.offsetWidth;
             cartButton.classList.add("is-bumped");
         }
-
-        showToast(qty === 1 ? "Added to cart" : qty + " items added to cart");
     }
 
     function showToast(message) {
@@ -114,9 +152,29 @@
     grid.addEventListener("click", function (e) {
         var addBtn = e.target.closest(".btn-add");
         if (addBtn && !addBtn.disabled) {
-            bumpCart(1);
-            addBtn.classList.add("added");
-            setTimeout(function () { addBtn.classList.remove("added"); }, 350);
+            if (isAdmin) return; // button shouldn't exist for admins; defensive no-op
+
+            if (!isCustomer) {
+                redirectToLogin();
+                return;
+            }
+
+            var medicineId = addBtn.dataset.id;
+            addBtn.disabled = true;
+
+            addToCartOnServer(medicineId, 1).then(function (data) {
+                updateCartBadge(data.cartItemCount);
+                addBtn.classList.add("added");
+                showToast("Added to cart");
+                setTimeout(function () {
+                    addBtn.classList.remove("added");
+                    addBtn.disabled = false;
+                }, 350);
+            }).catch(function (errorMessage) {
+                addBtn.disabled = false;
+                if (errorMessage) showToast(errorMessage);
+            });
+
             return;
         }
 
@@ -135,28 +193,63 @@
     var addToCartBtn = document.getElementById("modalAddToCart");
     var currentMedicine = null;
 
+    var NOT_AVAILABLE = "Not available yet";
+
+    function severityClass(severity) {
+        var s = (severity || "").toLowerCase();
+        if (s === "mild") return "side-effect--mild";
+        if (s === "moderate") return "side-effect--moderate";
+        if (s === "high" || s === "severe") return "side-effect--high";
+        return "side-effect--mild";
+    }
+
+    function formatExpiry(dateStr) {
+        var parts = dateStr.split("-");
+        var d = new Date(Date.UTC(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10)));
+        return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric", timeZone: "UTC" });
+    }
+
     function openModal(id) {
         var med = medicineData.find(function (m) { return String(m.Id) === String(id); });
         if (!med) return;
         currentMedicine = med;
 
-        var NOT_AVAILABLE = "Not available yet";
-
         document.getElementById("modalTitle").textContent = med.Name;
-        document.getElementById("modalComposition").textContent = med.Strength
-            ? med.Composition + " " + med.Strength
-            : med.Composition;
+        document.getElementById("modalComposition").textContent = med.Composition;
         document.getElementById("modalManufacturer").textContent = med.Manufacturer;
-
-        var strengthEl = document.getElementById("modalStrength");
-        strengthEl.textContent = med.Strength || NOT_AVAILABLE;
-        strengthEl.classList.toggle("modal__value--muted", !med.Strength);
-
         document.getElementById("modalForm").textContent = med.ProductType;
         document.getElementById("modalCategory").textContent = med.Category;
+
+        var subCategoryEl = document.getElementById("modalSubCategory");
+        subCategoryEl.textContent = med.SubCategory || "None";
+        subCategoryEl.classList.toggle("modal__value--muted", !med.SubCategory);
+
+        var unitEl = document.getElementById("modalUnit");
+        unitEl.textContent = med.Unit || NOT_AVAILABLE;
+        unitEl.classList.toggle("modal__value--muted", !med.Unit);
+
         document.getElementById("modalStock").textContent = med.Stock > 0 ? (med.Stock + " units") : "Out of stock";
         document.getElementById("modalPrice").textContent = "\u09F3" + med.Price;
-        document.getElementById("modalAbout").textContent = med.About;
+
+        var expiryEl = document.getElementById("modalExpiry");
+        expiryEl.classList.remove("modal__value--muted", "modal__value--warning", "modal__value--danger");
+        if (med.ExpiryDate) {
+            var expiryDate = new Date(med.ExpiryDate + "T00:00:00Z");
+            var today = new Date();
+            var daysLeft = Math.floor((expiryDate - today) / (1000 * 60 * 60 * 24));
+
+            expiryEl.textContent = formatExpiry(med.ExpiryDate);
+            if (daysLeft < 0) {
+                expiryEl.classList.add("modal__value--danger");
+            } else if (daysLeft <= 90) {
+                expiryEl.classList.add("modal__value--warning");
+            }
+        } else {
+            expiryEl.textContent = NOT_AVAILABLE;
+            expiryEl.classList.add("modal__value--muted");
+        }
+
+        document.getElementById("modalDescription").textContent = med.Description;
 
         var dosageEl = document.getElementById("modalDosage");
         dosageEl.textContent = med.Dosage || NOT_AVAILABLE;
@@ -168,9 +261,10 @@
 
         var sideEffectsBox = document.getElementById("modalSideEffects");
         sideEffectsBox.innerHTML = "";
-        (med.SideEffects || []).forEach(function (effect) {
+        (med.SideEffects || []).forEach(function (se) {
             var span = document.createElement("span");
-            span.textContent = effect;
+            span.textContent = se.Effect;
+            span.className = severityClass(se.Severity);
             sideEffectsBox.appendChild(span);
         });
 
@@ -178,7 +272,7 @@
         qtyInput.max = med.Stock > 0 ? med.Stock : 1;
         addToCartBtn.textContent = "Add to cart";
         addToCartBtn.classList.remove("added");
-        addToCartBtn.disabled = med.Stock <= 0;
+        addToCartBtn.disabled = isAdmin || med.Stock <= 0;
 
         overlay.hidden = false;
         document.body.style.overflow = "hidden";
@@ -219,11 +313,26 @@
 
     addToCartBtn.addEventListener("click", function () {
         if (!currentMedicine || addToCartBtn.disabled) return;
+        if (isAdmin) return; // section is hidden and button disabled server-side for admins; defensive no-op
+
+        if (!isCustomer) {
+            redirectToLogin();
+            return;
+        }
+
         var qty = parseInt(qtyInput.value, 10) || 1;
-        bumpCart(qty);
-        addToCartBtn.textContent = "Added";
-        addToCartBtn.classList.add("added");
-        setTimeout(closeModal, 500);
+        addToCartBtn.disabled = true;
+
+        addToCartOnServer(currentMedicine.Id, qty).then(function (data) {
+            updateCartBadge(data.cartItemCount);
+            addToCartBtn.textContent = "Added";
+            addToCartBtn.classList.add("added");
+            showToast(qty === 1 ? "Added to cart" : qty + " items added to cart");
+            setTimeout(closeModal, 500);
+        }).catch(function (errorMessage) {
+            addToCartBtn.disabled = false;
+            if (errorMessage) showToast(errorMessage);
+        });
     });
 
     /* initial render */

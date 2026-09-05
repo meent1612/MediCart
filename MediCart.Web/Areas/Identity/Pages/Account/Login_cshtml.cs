@@ -49,8 +49,20 @@ namespace MediCart.Web.Areas.Identity.Pages.Account
             public bool RememberMe { get; set; }
         }
 
-        public async Task OnGetAsync(string returnUrl = null)
+        public async Task<IActionResult> OnGetAsync(string returnUrl = null)
         {
+            // Already logged in — no reason to show the login form again.
+            if (_signInManager.IsSignedIn(User))
+            {
+                var currentUser = await _userManager.GetUserAsync(User);
+                if (currentUser != null && await _userManager.IsInRoleAsync(currentUser, "Admin"))
+                {
+                    return RedirectToAction("Dashboard", "Admin", new { area = "" });
+                }
+
+                return LocalRedirect(returnUrl ?? Url.Content("~/"));
+            }
+
             if (!string.IsNullOrEmpty(ErrorMessage))
             {
                 ModelState.AddModelError(string.Empty, ErrorMessage);
@@ -61,6 +73,7 @@ namespace MediCart.Web.Areas.Identity.Pages.Account
             await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
 
             ReturnUrl = returnUrl;
+            return Page();
         }
 
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)

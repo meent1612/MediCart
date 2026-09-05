@@ -1,11 +1,17 @@
 @model List<MediCart.Web.Models.MedicineViewModel>
+@using MediCart.Web.Models
 @{
     ViewData["Title"] = "Browse medicines";
+    var categories = (List<CategoryFilterOption>)(ViewBag.Categories ?? new List<CategoryFilterOption>());
+    var productTypes = (List<ProductTypeFilterOption>)(ViewBag.ProductTypes ?? new List<ProductTypeFilterOption>());
+    bool isAdmin = User.IsInRole("Admin");
 }
 
 @section Styles {
     <link rel="stylesheet" href="~/css/medicine.css" asp-append-version="true" />
 }
+
+@Html.AntiForgeryToken()
 
 <div class="container browse">
 
@@ -24,11 +30,11 @@
             <div class="filter-group">
                 <h3>Product type</h3>
                 <div class="filter-options" data-filter-group="productType">
-                    @foreach (var type in Model.Select(m => m.ProductType).Distinct().OrderBy(t => t))
+                    @foreach (var pt in productTypes)
                     {
                         <label class="filter-check">
-                            <input type="checkbox" value="@type" />
-                            <span>@type</span>
+                            <input type="checkbox" value="@pt.Id" />
+                            <span>@pt.Name</span>
                         </label>
                     }
                 </div>
@@ -37,29 +43,35 @@
             <div class="filter-group">
                 <h3>Category</h3>
                 <div class="filter-options" data-filter-group="category">
-                    @foreach (var cat in Model.Select(m => m.Category).Distinct().OrderBy(c => c))
+                    @foreach (var cat in categories)
                     {
                         <label class="filter-check">
-                            <input type="checkbox" value="@cat" />
-                            <span>@cat</span>
+                            <input type="checkbox" value="@cat.Id" />
+                            <span>@cat.Name</span>
                         </label>
-                    }
-                </div>
-            </div>
 
-            <div class="filter-group filter-group--disabled">
-                <h3>Use tag</h3>
-                <div class="filter-options filter-options--disabled" data-filter-group="useTag">
-                    <p class="filter-note">Not available yet</p>
+                        @if (cat.SubCategories.Any())
+                        {
+                            <div class="filter-options filter-options--sub" data-filter-group="subCategory">
+                                @foreach (var sub in cat.SubCategories)
+                                {
+                                    <label class="filter-check filter-check--sub">
+                                        <input type="checkbox" value="@sub.Id" />
+                                        <span>@sub.Name</span>
+                                    </label>
+                                }
+                            </div>
+                        }
+                    }
                 </div>
             </div>
 
             <div class="filter-group">
                 <h3>Price range</h3>
-                <input type="range" id="priceRange" min="0" max="500" step="5" value="500" />
+                <input type="range" id="priceRange" min="0" max="10000" step="100" value="10000" />
                 <div class="filter-price-labels">
                     <span>৳0</span>
-                    <span id="priceRangeValue">৳500</span>
+                    <span id="priceRangeValue">৳10000</span>
                 </div>
             </div>
         </aside>
@@ -73,7 +85,6 @@
                 <label class="sort">
                     Sort:
                     <select id="sortSelect">
-                        <option value="popular" disabled>Most popular (unavailable)</option>
                         <option value="name-asc" selected>Name: A to Z</option>
                         <option value="price-asc">Price: low to high</option>
                         <option value="price-desc">Price: high to low</option>
@@ -81,17 +92,19 @@
                 </label>
             </div>
 
-            <div class="product-grid" id="productGrid">
+            <div class="product-grid" id="productGrid"
+                 data-is-customer="@(User.IsInRole("Customer") ? "true" : "false")"
+                 data-is-admin="@(isAdmin ? "true" : "false")"
+                 data-login-url="/Identity/Account/Login">
                 @foreach (var med in Model)
                 {
                     <article class="product-card"
                              data-id="@med.Id"
                              data-name="@med.Name.ToLower()"
-                             data-product-type="@med.ProductType"
-                             data-category="@med.Category"
-                             data-use-tags="@string.Join(",", med.UseTags)"
+                             data-product-type-id="@med.ProductTypeId"
+                             data-category-id="@med.CategoryId"
+                             data-subcategory-id="@(med.SubCategoryId.HasValue ? med.SubCategoryId.Value.ToString() : "")"
                              data-price="@med.Price"
-                             data-popularity="@(med.Popularity ?? 0)"
                              data-stock="@med.Stock">
 
                         <div class="product-card__image" aria-hidden="true">
@@ -121,7 +134,6 @@
                                 {
                                     <span class="badge badge--stock-@med.StockCssClass">@med.StockStatus</span>
                                 }
-                                <span class="badge badge--potency badge--disabled" title="Not available yet">Potency: N/A</span>
                             </div>
 
                             <div class="product-card__footer">
@@ -129,8 +141,11 @@
 
                                 <div class="product-card__actions">
                                     <button type="button" class="btn-link view-details-btn" data-id="@med.Id">View details</button>
-                                    <button type="button" class="btn-add" data-id="@med.Id" aria-label="Add @med.Name to cart"
-                                            @(med.Stock <= 0 ? "disabled" : "")>+</button>
+                                    @if (!isAdmin)
+                                    {
+                                        <button type="button" class="btn-add" data-id="@med.Id" aria-label="Add @med.Name to cart"
+                                                @(med.Stock <= 0 ? "disabled" : "")>+</button>
+                                    }
                                 </div>
                             </div>
                         </div>
@@ -168,10 +183,6 @@
                 <span class="modal__value" id="modalManufacturer"></span>
             </div>
             <div>
-                <span class="modal__label">Strength</span>
-                <span class="modal__value" id="modalStrength"></span>
-            </div>
-            <div>
                 <span class="modal__label">Form</span>
                 <span class="modal__value" id="modalForm"></span>
             </div>
@@ -180,8 +191,20 @@
                 <span class="modal__value" id="modalCategory"></span>
             </div>
             <div>
+                <span class="modal__label">Subcategory</span>
+                <span class="modal__value" id="modalSubCategory"></span>
+            </div>
+            <div>
+                <span class="modal__label">Pack / Unit</span>
+                <span class="modal__value" id="modalUnit"></span>
+            </div>
+            <div>
                 <span class="modal__label">In stock</span>
                 <span class="modal__value" id="modalStock"></span>
+            </div>
+            <div>
+                <span class="modal__label">Expiry date</span>
+                <span class="modal__value" id="modalExpiry"></span>
             </div>
             <div>
                 <span class="modal__label">Price</span>
@@ -190,12 +213,12 @@
         </div>
 
         <div class="modal__section">
-            <h4>About</h4>
-            <p id="modalAbout"></p>
+            <h4>Description</h4>
+            <p id="modalDescription"></p>
         </div>
 
         <div class="modal__section">
-            <h4>Dosage</h4>
+            <h4>Dosage / Directions for use</h4>
             <p id="modalDosage"></p>
         </div>
 
@@ -204,7 +227,7 @@
             <div class="modal__tags" id="modalSideEffects"></div>
         </div>
 
-        <div class="modal__cart">
+        <div class="modal__cart" hidden="@(isAdmin ? "hidden" : null)">
             <div class="qty-stepper">
                 <button type="button" id="modalQtyMinus" aria-label="Decrease quantity">&minus;</button>
                 <input type="number" id="modalQtyInput" value="1" min="1" max="99" aria-label="Quantity" />
@@ -221,15 +244,17 @@
         m.Id,
         m.Name,
         m.Composition,
-        m.Strength,
         m.Manufacturer,
         m.ProductType,
         m.Category,
+        m.SubCategory,
+        m.Unit,
         m.Price,
         m.Stock,
+        m.ExpiryDate,
         m.RequiresRx,
         StockStatus = m.StockStatus,
-        m.About,
+        m.Description,
         m.Dosage,
         m.SideEffects
     })))

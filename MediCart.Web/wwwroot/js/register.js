@@ -16,7 +16,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const stamp = document.getElementById("registerStamp")
 
   const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  const phonePattern = /^[0-9+\-\s]{7,15}$/
+  const namePattern = /^[A-Za-z][A-Za-z .'-]{1,}[A-Za-z]$/
+  const phonePattern = /^01[3-9][0-9]{8}$/
 
   // ---------------------------------------------------------------------
   // Helpers
@@ -73,8 +74,8 @@ document.addEventListener("DOMContentLoaded", () => {
       return
     }
 
-    if (value.length < 2) {
-      setFieldState(wrapper, hint, "invalid", "Enter your full name")
+    if (value.length < 3 || !namePattern.test(value)) {
+      setFieldState(wrapper, hint, "invalid", "Enter a valid full name (letters only)")
       return
     }
 
@@ -96,7 +97,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (!phonePattern.test(value)) {
-      setFieldState(wrapper, hint, "invalid", "Use digits only, e.g. 01XXXXXXXXX")
+      setFieldState(wrapper, hint, "invalid", "Enter a valid 11-digit number, e.g. 017XXXXXXXX")
       return
     }
 
@@ -212,8 +213,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const handleSubmit = (event) => {
     const checks = [
-      { input: fullNameField, valid: fullNameField.value.trim().length >= 2, message: "Enter your full name" },
-      { input: phoneField, valid: phonePattern.test(phoneField.value.trim()), message: "Enter a valid phone number" },
+      { input: fullNameField, valid: namePattern.test(fullNameField.value.trim()), message: "Enter a valid full name (letters only)" },
+      { input: phoneField, valid: phonePattern.test(phoneField.value.trim()), message: "Enter a valid 11-digit phone number" },
       { input: emailField, valid: emailPattern.test(emailField.value.trim()), message: "Enter a valid email address" },
       { input: passwordField, valid: passwordField.value.length >= 8, message: "Use at least 8 characters" },
       { input: confirmField, valid: confirmField.value === passwordField.value && confirmField.value.length > 0, message: "Passwords don't match" },

@@ -1,23 +1,51 @@
-using System.Collections.Generic;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using MediCart.Web.Data;
 using MediCart.Web.Models;
+using MediCart.Web.Services;
 
 namespace MediCart.Web.Controllers
 {
+    // Only logged-in customers should ever reach the checkout page.
+    // This also stops a guest from skipping the Add-to-cart guard by
+    // typing /Checkout straight into the address bar.
+    [Authorize(Roles = "Customer")]
     public class CheckoutController : Controller
     {
-        public IActionResult Index()
+        private readonly ICartService _cartService;
+        private readonly UserManager<ApplicationUser> _userManager;
+
+        public CheckoutController(
+            ICartService cartService,
+            UserManager<ApplicationUser> userManager)
         {
-            // TODO(backend): pull the real cart (session/DB) instead of this
-            // seed list once cart persistence is shared across pages.
+            _cartService = cartService;
+            _userManager = userManager;
+        }
+
+        public async Task<IActionResult> Index()
+        {
+            var userId = _userManager.GetUserId(User)!;
+            var cartItems = await _cartService.GetCartAsync(userId);
+
+            // Nothing to check out — send them back to the cart instead of
+            // showing an empty checkout page.
+            if (cartItems.Count == 0)
+            {
+                return RedirectToAction("Index", "Cart");
+            }
+
             var model = new CheckoutViewModel
             {
-                Items = new List<CheckoutLineItemViewModel>
+                Items = cartItems.Select(ci => new CheckoutLineItemViewModel
                 {
-                    new CheckoutLineItemViewModel { Id = 1, Name = "Seclo 20", Quantity = 2, UnitPrice = 60, RequiresRx = true },
-                    new CheckoutLineItemViewModel { Id = 2, Name = "Ambrox Syrup", Quantity = 1, UnitPrice = 85, RequiresRx = false },
-                    new CheckoutLineItemViewModel { Id = 3, Name = "Napa Extra", Quantity = 3, UnitPrice = 30, RequiresRx = false },
-                }
+                    Id = ci.MedicineId,
+                    Name = ci.Name,
+                    Quantity = ci.Quantity,
+                    UnitPrice = ci.UnitPrice,
+                    RequiresRx = ci.RequiresRx
+                }).ToList()
             };
 
             return View(model);

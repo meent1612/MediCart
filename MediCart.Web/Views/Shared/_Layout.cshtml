@@ -1,4 +1,4 @@
-@using Microsoft.AspNetCore.Identity
+﻿@using Microsoft.AspNetCore.Identity
 @using MediCart.Web.Data
 @inject UserManager<ApplicationUser> UserManager
 @{
@@ -11,20 +11,19 @@
 
     string displayName = "";
     string profileUrl = "~/UserProfile";
+    bool isAdmin = false;
     if (User.Identity != null && User.Identity.IsAuthenticated)
     {
         var currentUser = await UserManager.GetUserAsync(User);
         displayName = currentUser?.FullName ?? User.Identity.Name ?? "Account";
 
-        // TODO(backend): once role seeding/assignment is confirmed working,
-        // double check the role name here matches exactly what's assigned
-        // (e.g. "Admin") — a typo here would silently send admins to the
-        // wrong profile page instead of erroring.
         if (currentUser != null && await UserManager.IsInRoleAsync(currentUser, "Admin"))
         {
             profileUrl = "~/Admin/Profile";
+            isAdmin = true;
         }
     }
+    bool showCartIcon = !isAdmin;
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -55,20 +54,35 @@
                 <ul class="navbar__links">
                     <li><a href="~/" aria-current="@(IsCurrent("Home", "Index") ? "page" : null)">Home</a></li>
                     <li><a href="~/Medicines" aria-current="@(IsCurrent("Medicines", "Index") ? "page" : null)">Browse medicines</a></li>
-                    
-                    <li><a href="~/Home/About" aria-current="@(IsCurrent("Home", "About") ? "page" : null)">About us</a></li>
-                    <li><a href="~/Home/Contact" aria-current="@(IsCurrent("Home", "Contact") ? "page" : null)">Contact</a></li>
+
+                    @if (isAdmin)
+                    {
+                        <li>
+                            <a href="~/Admin/Dashboard" class="navbar__admin-link" aria-current="@(IsCurrent("Admin", "Dashboard") ? "page" : null)">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 3 7v6c0 5 4 9 9 9s9-4 9-9V7l-9-5Z" /><path d="m9 12 2 2 4-4" /></svg>
+                                MediCart Admin
+                            </a>
+                        </li>
+                    }
+                    else
+                    {
+                        <li><a href="~/Home/About" aria-current="@(IsCurrent("Home", "About") ? "page" : null)">About us</a></li>
+                        <li><a href="~/Home/Contact" aria-current="@(IsCurrent("Home", "Contact") ? "page" : null)">Contact</a></li>
+                    }
                 </ul>
             </nav>
 
             <div class="navbar__actions">
-                <a href="~/Cart" class="cart-button" aria-label="View cart" aria-current="@(IsCurrent("Cart", "Index") ? "page" : null)">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" />
-                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-                    </svg>
-                    <span class="cart-button__badge">0</span>
-                </a>
+                @if (showCartIcon)
+                {
+                    <a href="~/Cart" class="cart-button" aria-label="View cart" aria-current="@(IsCurrent("Cart", "Index") ? "page" : null)">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" />
+                            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                        </svg>
+                        <span class="cart-button__badge">0</span>
+                    </a>
+                }
 
                 @if (User.Identity != null && User.Identity.IsAuthenticated)
                 {
@@ -103,10 +117,19 @@
         <ul class="mobile-nav__links">
             <li><a href="~/">Home</a></li>
             <li><a href="~/Medicines">Browse medicines</a></li>
-            <li><a href="~/Medicines/Categories">Categories</a></li>
-            <li><a href="~/Home/About">About us</a></li>
-            <li><a href="~/Home/Contact">Contact</a></li>
-            <li><a href="~/Cart">Cart</a></li>
+            @if (isAdmin)
+            {
+                <li><a href="~/Admin/Dashboard" class="navbar__admin-link">MediCart Admin</a></li>
+            }
+            else
+            {
+                <li><a href="~/Home/About">About us</a></li>
+                <li><a href="~/Home/Contact">Contact</a></li>
+            }
+            @if (showCartIcon)
+            {
+                <li><a href="~/Cart">Cart</a></li>
+            }
             @if (User.Identity != null && User.Identity.IsAuthenticated)
             {
                 <li><a href="@Url.Content(profileUrl)">@displayName</a></li>
@@ -146,16 +169,22 @@
             <div>
                 <h4>Shop</h4>
                 <ul>
+                    <li><a href="~/">Home</a></li>
                     <li><a href="~/Medicines">Browse medicines</a></li>
-                    <li><a href="~/Medicines/Categories">Categories</a></li>
-                    <li><a asp-area="Identity" asp-page="/Account/Register">Create an account</a></li>
+                    @if (User.Identity == null || !User.Identity.IsAuthenticated)
+                    {
+                        <li><a asp-area="Identity" asp-page="/Account/Register">Create an account</a></li>
+                    }
                 </ul>
             </div>
             <div>
                 <h4>Support</h4>
                 <ul>
                     <li><a href="~/Home/Contact">Contact us</a></li>
-                    <li><a asp-area="Identity" asp-page="/Account/Login">Log in</a></li>
+                    @if (User.Identity == null || !User.Identity.IsAuthenticated)
+                    {
+                        <li><a asp-area="Identity" asp-page="/Account/Login">Log in</a></li>
+                    }
                 </ul>
             </div>
             <div>
