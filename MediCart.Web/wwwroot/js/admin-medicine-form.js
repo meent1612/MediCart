@@ -214,7 +214,43 @@
             }
         });
     }
+    var categorySelect = document.getElementById("Form_CategoryId");
+    var subCategorySelect = document.getElementById("Form_SubCategoryId");
 
+    function loadSubCategories(categoryId, preselectId) {
+        subCategorySelect.innerHTML = '<option value="">— None —</option>';
+        if (!categoryId) return;
+
+        fetch("/Admin/GetSubCategories?categoryId=" + encodeURIComponent(categoryId))
+            .then(function (res) {
+                if (!res.ok) throw new Error("Failed to load subcategories");
+                return res.json();
+            })
+            .then(function (subCategories) {
+                subCategories.forEach(function (sc) {
+                    var opt = document.createElement("option");
+                    opt.value = sc.id;
+                    opt.textContent = sc.label;
+                    if (preselectId && String(sc.id) === String(preselectId)) {
+                        opt.selected = true;
+                    }
+                    subCategorySelect.appendChild(opt);
+                });
+            })
+            .catch(function () {});
+    }
+
+    if (categorySelect && subCategorySelect) {
+        var initialSelectedSubCategory = subCategorySelect.dataset.selected || "";
+
+        categorySelect.addEventListener("change", function () {
+            loadSubCategories(categorySelect.value, null);
+        });
+
+        if (categorySelect.value) {
+            loadSubCategories(categorySelect.value, initialSelectedSubCategory);
+        }
+    }
     /* ---------------------------------------------------------------------
        Dismissible / auto-dismissing alerts
        ------------------------------------------------------------------ */
