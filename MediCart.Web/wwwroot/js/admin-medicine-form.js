@@ -54,7 +54,7 @@
     }
 
     /* ---------------------------------------------------------------------
-       Image preview (file upload or pasted URL)
+       Image preview (file upload, drag-and-drop, or pasted URL)
        ------------------------------------------------------------------ */
     var previewBox = document.getElementById("imagePreviewBox");
     var clearBtn = document.getElementById("imageClearBtn");
@@ -87,7 +87,7 @@
         var span = document.createElement("span");
         span.className = "image-upload__placeholder";
         span.id = "imagePreviewPlaceholder";
-        span.innerHTML = PLACEHOLDER_ICON + "No image yet";
+        span.innerHTML = PLACEHOLDER_ICON + "Drag &amp; drop or click";
         previewBox.insertBefore(span, clearBtn || null);
 
         if (clearBtn) clearBtn.hidden = true;
@@ -122,7 +122,46 @@
         reader.readAsDataURL(file);
     });
 
-    clearBtn?.addEventListener("click", function () {
+    // Dropping a file directly onto the preview box behaves exactly like
+    // choosing one via the file input — same preview, same filename label.
+    if (previewBox && imageFileInput) {
+        ["dragover", "dragenter"].forEach(function (evt) {
+            previewBox.addEventListener(evt, function (e) {
+                e.preventDefault();
+                previewBox.classList.add("is-dragover");
+            });
+        });
+
+        ["dragleave", "drop"].forEach(function (evt) {
+            previewBox.addEventListener(evt, function () {
+                previewBox.classList.remove("is-dragover");
+            });
+        });
+
+        previewBox.addEventListener("drop", function (e) {
+            e.preventDefault();
+            var file = e.dataTransfer.files && e.dataTransfer.files[0];
+            if (!file) return;
+
+            imageFileInput.files = e.dataTransfer.files;
+            if (imageUrlInput) imageUrlInput.value = ""; // dropped file takes priority over a pasted URL
+            if (imageFileName) imageFileName.textContent = file.name;
+
+            var reader = new FileReader();
+            reader.onload = function (ev) { showPreviewImage(ev.target.result); };
+            reader.readAsDataURL(file);
+        });
+
+        // Clicking the empty preview box opens the file picker too —
+        // makes the whole box feel like one clickable dropzone.
+        previewBox.addEventListener("click", function (e) {
+            if (e.target === clearBtn) return;
+            imageFileInput.click();
+        });
+    }
+
+    clearBtn?.addEventListener("click", function (e) {
+        e.stopPropagation();
         if (imageFileInput) imageFileInput.value = "";
         if (imageUrlInput) imageUrlInput.value = "";
         if (imageFileName) imageFileName.textContent = "No file chosen";
