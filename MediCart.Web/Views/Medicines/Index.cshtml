@@ -7,6 +7,10 @@
     <link rel="stylesheet" href="~/css/medicine.css" asp-append-version="true" />
 }
 
+@* Hidden token required by CartController's [ValidateAntiForgeryToken].
+   medicine.js reads this and sends it back with every Add-to-cart request. *@
+@Html.AntiForgeryToken()
+
 <div class="container browse">
 
     <nav class="breadcrumb" aria-label="Breadcrumb">
@@ -81,7 +85,9 @@
                 </label>
             </div>
 
-            <div class="product-grid" id="productGrid">
+            <div class="product-grid" id="productGrid"
+                 data-is-customer="@(User.IsInRole("Customer") ? "true" : "false")"
+                 data-login-url="/Identity/Account/Login">
                 @foreach (var med in Model)
                 {
                     <article class="product-card"

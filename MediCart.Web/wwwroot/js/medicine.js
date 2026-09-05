@@ -79,16 +79,67 @@
         applyFilters();
     });
 
-    /* ----- Add to cart from card ----- */
-    var cartCount = 0;
+    /* ----- Add to cart from card (real server call) ----- */
 
-    function bumpCart(qty) {
-        cartCount += qty;
+    // Whether this visitor is logged in as a Customer, and where to send
+    // them to log in if not. Set as data-* attributes on #productGrid
+    // by Views/Medicines/Index.cshtml.
+    var isCustomer = grid.dataset.isCustomer === "true";
+    var loginUrl = grid.dataset.loginUrl || "/Identity/Account/Login";
+
+    // The anti-forgery token CartController.Add requires.
+    // Emitted on the page by @Html.AntiForgeryToken().
+    function getAntiForgeryToken() {
+        var input = document.querySelector('input[name="__RequestVerificationToken"]');
+        return input ? input.value : "";
+    }
+
+    // Sends the visitor to the login page and brings them straight back
+    // to this page (with their filters/scroll lost, but at the right URL)
+    // after they log in.
+    function redirectToLogin() {
+        var returnUrl = window.location.pathname + window.location.search;
+        window.location.href = loginUrl + "?ReturnUrl=" + encodeURIComponent(returnUrl);
+    }
+
+    // Calls POST /Cart/Add for real. Returns a Promise that resolves with
+    // the server's JSON ({ newQuantity, newStockQuantity, cartItemCount })
+    // or rejects with a plain error message string.
+    function addToCartOnServer(medicineId, quantity) {
+        var body = new URLSearchParams();
+        body.set("medicineId", medicineId);
+        body.set("quantity", quantity);
+        body.set("__RequestVerificationToken", getAntiForgeryToken());
+
+        return fetch("/Cart/Add", {
+            method: "POST",
+            body: body
+        }).then(function (res) {
+            // If the session expired mid-browse, ASP.NET Identity redirects
+            // an unauthenticated request to the login page. fetch() follows
+            // that redirect automatically, so we detect it here as a
+            // fallback safety net (the isCustomer check above should
+            // normally catch this before we ever get here).
+            if (res.redirected || res.status === 401 || res.status === 403) {
+                redirectToLogin();
+                return Promise.reject(null);
+            }
+
+            return res.json().then(function (data) {
+                if (!res.ok) {
+                    return Promise.reject(data.error || "Could not add this to your cart.");
+                }
+                return data;
+            });
+        });
+    }
+
+    function updateCartBadge(cartItemCount) {
         var cartButton = document.querySelector(".cart-button");
         var cartBadge = document.querySelector(".cart-button__badge");
 
         if (cartBadge) {
-            cartBadge.textContent = cartCount;
+            cartBadge.textContent = cartItemCount;
             cartBadge.classList.add("is-visible");
         }
 
@@ -98,8 +149,6 @@
             void cartButton.offsetWidth;
             cartButton.classList.add("is-bumped");
         }
-
-        showToast(qty === 1 ? "Added to cart" : qty + " items added to cart");
     }
 
     function showToast(message) {
@@ -114,9 +163,28 @@
     grid.addEventListener("click", function (e) {
         var addBtn = e.target.closest(".btn-add");
         if (addBtn && !addBtn.disabled) {
-            bumpCart(1);
-            addBtn.classList.add("added");
-            setTimeout(function () { addBtn.classList.remove("added"); }, 350);
+            // Guest clicking "+" — send to login, never touch the cart.
+            if (!isCustomer) {
+                redirectToLogin();
+                return;
+            }
+
+            var medicineId = addBtn.dataset.id;
+            addBtn.disabled = true;
+
+            addToCartOnServer(medicineId, 1).then(function (data) {
+                updateCartBadge(data.cartItemCount);
+                addBtn.classList.add("added");
+                showToast("Added to cart");
+                setTimeout(function () {
+                    addBtn.classList.remove("added");
+                    addBtn.disabled = false;
+                }, 350);
+            }).catch(function (errorMessage) {
+                addBtn.disabled = false;
+                if (errorMessage) showToast(errorMessage);
+            });
+
             return;
         }
 
@@ -219,11 +287,27 @@
 
     addToCartBtn.addEventListener("click", function () {
         if (!currentMedicine || addToCartBtn.disabled) return;
+
+        // Guest clicking "Add to cart" inside the details modal — send to
+        // login, never touch the cart.
+        if (!isCustomer) {
+            redirectToLogin();
+            return;
+        }
+
         var qty = parseInt(qtyInput.value, 10) || 1;
-        bumpCart(qty);
-        addToCartBtn.textContent = "Added";
-        addToCartBtn.classList.add("added");
-        setTimeout(closeModal, 500);
+        addToCartBtn.disabled = true;
+
+        addToCartOnServer(currentMedicine.Id, qty).then(function (data) {
+            updateCartBadge(data.cartItemCount);
+            addToCartBtn.textContent = "Added";
+            addToCartBtn.classList.add("added");
+            showToast(qty === 1 ? "Added to cart" : qty + " items added to cart");
+            setTimeout(closeModal, 500);
+        }).catch(function (errorMessage) {
+            addToCartBtn.disabled = false;
+            if (errorMessage) showToast(errorMessage);
+        });
     });
 
     /* initial render */
