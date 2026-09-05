@@ -5,6 +5,7 @@ namespace MediCart.Web.Models
         public int Id { get; set; }
         public string Name { get; set; } = "";
         public string CategoryName { get; set; } = "";
+        public string? SubCategoryName { get; set; }
         public string ProductTypeName { get; set; } = "";
         public string? Manufacturer { get; set; }
         public decimal Price { get; set; }
@@ -13,7 +14,7 @@ namespace MediCart.Web.Models
         public string? SensitivityLevel { get; set; } // low | mid | high | null
         public bool RequiresPrescription { get; set; }
 
-        public bool IsLowStock => StockQuantity <= 10; // matches the low-stock threshold used in Report 01/02
+        public bool IsLowStock => StockQuantity <= 10;
         public bool IsExpiringSoon => ExpiryDate <= DateOnly.FromDateTime(DateTime.UtcNow.AddDays(30));
         public bool IsExpired => ExpiryDate < DateOnly.FromDateTime(DateTime.UtcNow);
     }
@@ -27,6 +28,7 @@ namespace MediCart.Web.Models
         // Reflects what was actually applied, so the filter bar can show current state
         public string? Search { get; set; }
         public int? CategoryId { get; set; }
+        public int? SubCategoryId { get; set; }
         public int? ProductTypeId { get; set; }
 
         public int TotalCount { get; set; }
