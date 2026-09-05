@@ -11,6 +11,7 @@
 
     string displayName = "";
     string profileUrl = "~/UserProfile";
+    bool isAdmin = false;
     if (User.Identity != null && User.Identity.IsAuthenticated)
     {
         var currentUser = await UserManager.GetUserAsync(User);
@@ -23,8 +24,14 @@
         if (currentUser != null && await UserManager.IsInRoleAsync(currentUser, "Admin"))
         {
             profileUrl = "~/Admin/Profile";
+            isAdmin = true;
         }
     }
+    // Cart is Customer-only (CartController enforces [Authorize(Roles = "Customer")]).
+    // Guests see the icon and get redirected to Login automatically by that attribute.
+    // Admins are already authenticated, so they'd hit an Access Denied page instead of
+    // a login redirect — simplest fix is to just not show them the icon at all.
+    bool showCartIcon = !isAdmin;
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -62,13 +69,16 @@
             </nav>
 
             <div class="navbar__actions">
-                <a href="~/Cart" class="cart-button" aria-label="View cart" aria-current="@(IsCurrent("Cart", "Index") ? "page" : null)">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" />
-                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-                    </svg>
-                    <span class="cart-button__badge">0</span>
-                </a>
+                @if (showCartIcon)
+                {
+                    <a href="~/Cart" class="cart-button" aria-label="View cart" aria-current="@(IsCurrent("Cart", "Index") ? "page" : null)">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" />
+                            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                        </svg>
+                        <span class="cart-button__badge">0</span>
+                    </a>
+                }
 
                 @if (User.Identity != null && User.Identity.IsAuthenticated)
                 {
@@ -106,7 +116,10 @@
             <li><a href="~/Medicines/Categories">Categories</a></li>
             <li><a href="~/Home/About">About us</a></li>
             <li><a href="~/Home/Contact">Contact</a></li>
-            <li><a href="~/Cart">Cart</a></li>
+            @if (showCartIcon)
+            {
+                <li><a href="~/Cart">Cart</a></li>
+            }
             @if (User.Identity != null && User.Identity.IsAuthenticated)
             {
                 <li><a href="@Url.Content(profileUrl)">@displayName</a></li>
