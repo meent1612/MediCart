@@ -4,12 +4,10 @@
     Layout = "_AdminLayout";
     var hasActiveFilters = !string.IsNullOrWhiteSpace(Model.Search) || Model.CategoryId.HasValue || Model.SubCategoryId.HasValue || Model.ProductTypeId.HasValue;
 }
-
 @section Styles {
     <link rel="stylesheet" href="~/css/admin-categories.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/admin-medicines.css" asp-append-version="true" />
 }
-
 @if (TempData["MedicineSuccess"] != null)
 {
     <div class="admin-alert admin-alert--success" data-alert data-auto-dismiss="true">
@@ -26,18 +24,15 @@
         <button type="button" class="admin-alert__dismiss" aria-label="Dismiss message">&times;</button>
     </div>
 }
-
 <div class="admin-panel__head">
     <h2>Medicines <span class="admin-count-pill">@Model.TotalCount</span></h2>
     <a asp-action="AddMedicine" class="btn btn--pine btn--sm">+ Add medicine</a>
 </div>
-
 <form method="get" asp-action="Medicines" class="medicine-filter-bar" id="medicineFilterForm">
     <div class="admin-search medicine-filter-search-wrap">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
         <input type="text" name="search" id="medicineSearchInput" value="@Model.Search" placeholder="Search by name…" autocomplete="off" />
     </div>
-
     <select name="categoryId" id="filterCategory">
         <option value="">All categories</option>
         @foreach (var opt in Model.CategoryOptions)
@@ -45,11 +40,9 @@
             <option value="@opt.Id" selected="@(Model.CategoryId == opt.Id ? "selected" : null)">@opt.Label</option>
         }
     </select>
-
     <select name="subCategoryId" id="filterSubCategory" data-selected="@Model.SubCategoryId">
         <option value="">All subcategories</option>
     </select>
-
     <select name="productTypeId" id="filterProductType">
         <option value="">All product types</option>
         @foreach (var opt in Model.ProductTypeOptions)
@@ -57,16 +50,13 @@
             <option value="@opt.Id" selected="@(Model.ProductTypeId == opt.Id ? "selected" : null)">@opt.Label</option>
         }
     </select>
-
     <button type="submit" class="btn btn--outline btn--sm">Filter</button>
     @if (hasActiveFilters)
     {
         <a asp-action="Medicines" class="btn-link">Clear filters</a>
     }
 </form>
-
 <p class="medicine-results-count" id="resultsCount" aria-live="polite">@Model.TotalCount medicine@(Model.TotalCount == 1 ? "" : "s") found</p>
-
 <div class="admin-table-wrap" id="medicineTableWrap">
     <table class="admin-table" id="medicineTable">
         <thead>
@@ -77,6 +67,7 @@
                     </span>
                 </th>
                 <th>Category</th>
+                <th>Sub-category</th>
                 <th>Type</th>
                 <th>Manufacturer</th>
                 <th class="sort-th" data-sort-key="price" data-sort-type="number" tabindex="0" role="button" aria-sort="none">
@@ -120,11 +111,15 @@
                             <div class="admin-table__sub"><span class="tag tag--rx">Rx</span></div>
                         }
                     </td>
-                    <td data-label="Category">
-                        @med.CategoryName
+                    <td data-label="Category">@med.CategoryName</td>
+                    <td data-label="Sub-category">
                         @if (!string.IsNullOrEmpty(med.SubCategoryName))
                         {
-                            <div class="admin-table__sub">@med.SubCategoryName</div>
+                            @med.SubCategoryName
+                        }
+                        else
+                        {
+                            <span class="admin-table__muted">—</span>
                         }
                     </td>
                     <td data-label="Type">@med.ProductTypeName</td>
@@ -172,7 +167,7 @@
             @if (!Model.Medicines.Any())
             {
                 <tr>
-                    <td colspan="9" class="admin-table__empty">
+                    <td colspan="10" class="admin-table__empty">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8v8l9 5 9-5Z" /><path d="M3 8l9 5 9-5M12 13v8" /></svg>
                         <p>No medicines match your filters.</p>
                         @if (hasActiveFilters)
@@ -185,7 +180,6 @@
         </tbody>
     </table>
 </div>
-
 <div class="modal-overlay" id="deleteModalOverlay" aria-hidden="true">
     <div class="modal-card" role="alertdialog" aria-modal="true" aria-labelledby="deleteModalTitle" aria-describedby="deleteModalDesc">
         <h3 id="deleteModalTitle">Delete medicine?</h3>
@@ -196,7 +190,6 @@
         </div>
     </div>
 </div>
-
 @section Scripts {
     <script src="~/js/admin-medicines.js" asp-append-version="true"></script>
 }
