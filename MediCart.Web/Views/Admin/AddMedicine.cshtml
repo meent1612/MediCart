@@ -105,7 +105,7 @@
         <div class="admin-form__section-label">Classification &amp; inventory</div>
 
         <div class="admin-form__row">
-                        <div class="admin-form__field">
+            <div class="admin-form__field">
                 <label asp-for="Form.CategoryId">Category</label>
                 <select asp-for="Form.CategoryId" required>
                     <option value="">— Select category —</option>
@@ -116,16 +116,6 @@
                 </select>
                 <span asp-validation-for="Form.CategoryId" class="admin-form__error"></span>
             </div>
-            <div class="admin-form__field">
-                <label asp-for="Form.SubCategoryId">Subcategory (optional)</label>
-                <select asp-for="Form.SubCategoryId" data-selected="@Model.Form.SubCategoryId">
-                    <option value="">— None —</option>
-                </select>
-                <span asp-validation-for="Form.SubCategoryId" class="admin-form__error"></span>
-            </div>
-        </div>
-
-        <div class="admin-form__row">
             <div class="admin-form__field">
                 <label asp-for="Form.ProductTypeId">Product type</label>
                 <select asp-for="Form.ProductTypeId" required>
@@ -181,7 +171,10 @@
         <div class="admin-form__field">
             <div class="admin-form__side-effects-head">
                 <label>Side effects</label>
-                <button type="button" class="btn-link" id="addSideEffectBtn">+ Add side effect</button>
+                <button type="button" class="btn btn--outline btn--sm" id="addSideEffectBtn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14" /></svg>
+                    Add side effect
+                </button>
             </div>
 
             <p class="admin-form__empty-hint" id="sideEffectsEmpty" hidden="@(Model.Form.SideEffects.Count > 0 ? "hidden" : null)">
@@ -225,7 +218,10 @@
                     Delete medicine
                 </button>
             }
-            <button type="submit" class="btn btn--pine">@(isEdit ? "Save changes" : "Add medicine")</button>
+            <div class="admin-form__actions-right">
+                <a asp-action="Medicines" class="btn btn--outline">@(isEdit ? "Cancel edit" : "Cancel")</a>
+                <button type="submit" class="btn btn--pine">@(isEdit ? "Save changes" : "Add medicine")</button>
+            </div>
         </div>
     </form>
 </section>
