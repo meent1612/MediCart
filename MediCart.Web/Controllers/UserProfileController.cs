@@ -73,7 +73,8 @@ namespace MediCart.Web.Controllers
                 .OrderByDescending(o => o.CreatedAt)
                 .Select(o => new OrderHistoryItem
                 {
-                    OrderId = "MC-" + (10000 + o.Id),          // formatted display code
+                    RealOrderId = o.Id,
+                    OrderId = "MC-" + (10000 + o.Id),
                     Date = o.CreatedAt,
                     ItemCount = o.OrderItems.Sum(i => i.Quantity),
                     Total = o.TotalAmount,

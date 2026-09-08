@@ -22,7 +22,8 @@ namespace MediCart.Web.Models
 
     public class OrderHistoryItem
     {
-        public string OrderId { get; set; } = string.Empty;
+        public int RealOrderId { get; set; }        // actual DB Id — used for the "View" link
+        public string OrderId { get; set; } = string.Empty;   // display code e.g. "MC-10005"
         public DateTime Date { get; set; }
         public int ItemCount { get; set; }
         public decimal Total { get; set; }
