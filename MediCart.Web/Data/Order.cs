@@ -21,5 +21,6 @@ namespace MediCart.Web.Data
         public City City { get; set; } = null!;
         public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
         public Prescription? Prescription { get; set; }
+        public ICollection<Payment> Payments { get; set; } = new List<Payment>();
     }
 }

@@ -244,4 +244,3 @@ FROM (VALUES
 WHERE NOT EXISTS (
     SELECT 1 FROM "ProductTypes" p WHERE p."Name" = v."Name"
 );
-ON CONFLICT DO NOTHING;
