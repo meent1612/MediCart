@@ -100,7 +100,7 @@ using (var scope = app.Services.CreateScope())
         new { FullName = "Shayma Aust", PhoneNumber = "01798221612", Email = "shayma.cse.20230104043@aust.edu" },
 
         new { FullName = "Sakina Anwar", PhoneNumber = "01716367488", Email = "sakinaanwar667@gmail.com" },
-        new { FullName = "Farhad Pann", PhoneNumber = "01791719326", Email = "farhadpannadadijan@gmail.com" },
+        new { FullName = "Farhad Panna", PhoneNumber = "01791719326", Email = "farhadpannadadijan@gmail.com" },
     };
 
     foreach (var c in customers)
