@@ -31,7 +31,12 @@
         <section class="cart-items" id="cartItems">
             @foreach (var item in Model)
             {
-                <article class="cart-item" data-id="@item.Id" data-price="@item.UnitPrice" data-requires-rx="@item.RequiresRx.ToString().ToLower()">
+                <article class="cart-item"
+                    data-id="@item.Id"
+                    data-medicine-id="@item.MedicineId"
+                    data-price="@item.UnitPrice"
+                    data-requires-rx="@item.RequiresRx.ToString().ToLower()"
+                    data-available-stock="@item.AvailableStock">
                     <div class="cart-item__icon" aria-hidden="true">
                         @if (item.IconType == "bottle")
                         {
@@ -52,7 +57,15 @@
                     <div class="cart-item__body">
                         <h3>@item.Name</h3>
                         <p class="cart-item__desc">@item.Description</p>
-                        @if (item.RequiresRx)
+                        @if (item.IsCriticalExpiry)
+                        {
+                            <span class="badge badge--danger">Expiring very soon</span>
+                        }
+                        else if (item.IsWarningExpiry)
+                        {
+                            <span class="badge badge--warning">Expiring within 30 days</span>
+                        }
+                        else if (item.RequiresRx)
                         {
                             <span class="badge badge--rx">Rx required</span>
                         }
@@ -64,7 +77,11 @@
 
                     <div class="qty-stepper">
                         <button type="button" class="qty-minus" aria-label="Decrease quantity">&minus;</button>
-                        <input type="number" class="qty-input" value="@item.Quantity" min="1" max="99" aria-label="Quantity" />
+                        <input type="number" class="qty-input"
+                            value="@item.Quantity"
+                            min="1"
+                            max="@(item.Quantity + item.AvailableStock)"
+                            aria-label="Quantity" />
                         <button type="button" class="qty-plus" aria-label="Increase quantity">+</button>
                     </div>
 

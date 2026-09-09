@@ -1,6 +1,6 @@
 @model MediCart.Web.Models.OrderConfirmationViewModel
 @{
-    ViewData["Title"] = "Order tracking";
+    ViewData["Title"] = "Order " + Model.OrderNumber;
 }
 
 @section Styles {
@@ -9,32 +9,16 @@
 
 <div class="container confirmation-page">
 
-    <ol class="step-tracker">
-        <li class="step-tracker__step step-tracker__step--done">
-            <span class="step-tracker__circle">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
-            </span>
-            <span class="step-tracker__label">Cart</span>
-        </li>
-        <li class="step-tracker__step step-tracker__step--done">
-            <span class="step-tracker__circle">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
-            </span>
-            <span class="step-tracker__label">Checkout</span>
-        </li>
-        <li class="step-tracker__step step-tracker__step--active">
-            <span class="step-tracker__circle">3</span>
-            <span class="step-tracker__label">Confirmation</span>
-        </li>
-    </ol>
-
     <div class="tracking-card">
         <div class="tracking-card__head">
             <div>
                 <h1>Order tracking</h1>
                 <p class="tracking-card__meta">
                     ORDER #@Model.OrderNumber &middot; Placed @Model.PlacedAt
-                    <button type="button" class="copy-order-btn" id="copyOrderBtn" data-order="@Model.OrderNumber" aria-label="Copy order number">Copy</button>
+                    <button type="button" class="copy-order-btn" id="copyOrderBtn"
+                            data-order="@Model.OrderNumber" aria-label="Copy order number">
+                        Copy
+                    </button>
                 </p>
             </div>
             <span class="status-badge">@Model.StatusLabel</span>
@@ -48,7 +32,11 @@
                     <span class="tracking-progress__circle">
                         @if (stage.IsDone)
                         {
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                 stroke-width="2.4" stroke-linecap="round"
+                                 stroke-linejoin="round">
+                                <path d="M20 6 9 17l-5-5" />
+                            </svg>
                         }
                         else
                         {
@@ -79,7 +67,7 @@
             @if (!string.IsNullOrWhiteSpace(Model.AdminNote))
             {
                 <section class="info-card">
-                    <h3>Admin review note</h3>
+                    <h3>Admin note</h3>
                     <p>@Model.AdminNote</p>
                 </section>
             }
