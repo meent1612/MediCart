@@ -182,6 +182,113 @@
 
 .hero__actions { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
 
+/* ---- Baymax Hero Interactive Overlay (Meet Baymax) --------------------- */
+.hero__baymax-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 25;
+    overflow: hidden;
+    border-radius: inherit;
+    display: none;
+}
+
+.hero__baymax-overlay.is-active {
+    display: block;
+}
+
+.hero__baymax-walker {
+    position: absolute;
+    bottom: 12px;
+    left: 0;
+    height: 260px;
+    width: 260px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    transform: translateX(-120%);
+    transform-origin: bottom left;
+    will-change: transform, opacity;
+    pointer-events: none;
+    visibility: hidden;
+    opacity: 0;
+}
+
+.hero__baymax-lottie {
+    width: 260px;
+    height: 230px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hero__baymax-lottie svg {
+    width: 100% !important;
+    height: 100% !important;
+    overflow: visible;
+}
+
+.hero__baymax-bubble {
+    position: absolute;
+    top: 4px;
+    left: 50%;
+    transform: translateX(-50%) scale(0.65);
+    background: var(--white, #ffffff);
+    color: var(--pine-900, #263830);
+    font-family: var(--font-display, "Fraunces", Georgia, serif);
+    font-size: 15px;
+    font-weight: 600;
+    padding: 6px 18px;
+    border-radius: var(--radius-pill, 999px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.22), 0 3px 8px rgba(0, 0, 0, 0.10);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.24s cubic-bezier(0.34, 1.56, 0.64, 1),
+                transform 0.24s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+}
+
+.hero__baymax-bubble::after {
+    content: "";
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid var(--white, #ffffff);
+}
+
+.hero__baymax-bubble.is-visible {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+}
+
+#meetBaymaxBtn:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+@media (max-width: 767px) {
+    .hero__baymax-walker {
+        height: 220px;
+        width: 220px;
+        bottom: 8px;
+    }
+    .hero__baymax-bubble {
+        top: 4px;
+    }
+}
+
+
 /* Floating order-review card */
 .review-card {
     position: relative;

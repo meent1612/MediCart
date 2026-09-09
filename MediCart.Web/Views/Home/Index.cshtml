@@ -47,6 +47,14 @@
         <span class="hero__capsule hero__capsule--a" aria-hidden="true"></span>
         <span class="hero__capsule hero__capsule--b" aria-hidden="true"></span>
 
+        <!-- Baymax Hero Overlay (Meet Baymax interaction - unmounted at rest) -->
+        <div id="baymaxHeroOverlay" class="hero__baymax-overlay" style="display: none;" aria-hidden="true">
+            <div id="baymaxHeroWalker" class="hero__baymax-walker">
+                <div id="baymaxSpeechBubble" class="hero__baymax-bubble">Hi!</div>
+                <div id="baymaxHeroLottie" class="hero__baymax-lottie"></div>
+            </div>
+        </div>
+
         <div class="hero__grid">
             <div>
                 <p class="eyebrow">Admin-verified ordering</p>
@@ -78,6 +86,10 @@
 
                 <div class="hero__actions">
                     <a href="~/Medicines" class="btn btn--outline-light">Browse full catalogue &rarr;</a>
+                    <button type="button" id="meetBaymaxBtn" class="btn btn--ghost" style="color: rgba(255,255,255,0.85); border: 1px solid rgba(255,255,255,0.3);">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                        Meet Baymax
+                    </button>
                 </div>
             </div>
 

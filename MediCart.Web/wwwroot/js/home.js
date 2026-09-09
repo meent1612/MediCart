@@ -164,4 +164,157 @@
             reviewCard.style.transform = "";
         });
     }
+
+    /* ---- "Meet Baymax" Hero Animation Sequence --------------------------- */
+    const meetBaymaxBtn = document.getElementById("meetBaymaxBtn");
+    const baymaxOverlay = document.getElementById("baymaxHeroOverlay");
+    const baymaxWalker = document.getElementById("baymaxHeroWalker");
+    const baymaxBubble = document.getElementById("baymaxSpeechBubble");
+    const baymaxAnimContainer = document.getElementById("baymaxHeroLottie");
+
+    let heroBaymaxAnim = null;
+    let isGreetingRunning = false;
+
+    function initHeroBaymax() {
+        if (!meetBaymaxBtn || !baymaxWalker || !baymaxAnimContainer) return;
+        if (baymaxOverlay) baymaxOverlay.style.display = "none";
+        if (typeof lottie === "undefined") return;
+
+        try {
+            heroBaymaxAnim = lottie.loadAnimation({
+                container: baymaxAnimContainer,
+                renderer: "svg",
+                loop: false,
+                autoplay: false,
+                path: "/animations/loading.json"
+            });
+            heroBaymaxAnim.setSpeed(1.6);
+        } catch (err) {
+            console.warn("Could not load hero Baymax animation:", err);
+        }
+
+        meetBaymaxBtn.addEventListener("click", function () {
+            if (isGreetingRunning) return;
+            isGreetingRunning = true;
+            meetBaymaxBtn.disabled = true;
+
+            if (baymaxOverlay) {
+                baymaxOverlay.style.display = "block";
+            }
+
+            const isMobile = window.matchMedia("(max-width: 767px)").matches;
+            const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+            // Coordinates: desktop lands at x = 22vw; mobile lands at x = 12vw scaled to 55%
+            const targetX = isMobile ? "12vw" : "22vw";
+            const scaleStr = isMobile ? " scale(0.55)" : "";
+            const landedTransform = `translateX(${targetX})${scaleStr}`;
+            const offscreenTransform = `translateX(-120%)${scaleStr}`;
+
+            if (heroBaymaxAnim) {
+                heroBaymaxAnim.goToAndStop(0, true);
+                heroBaymaxAnim.setSpeed(1.6);
+            }
+
+            if (prefersReducedMotion) {
+                // Reduced motion: skip walk, fade in, hold, fade out
+                baymaxWalker.style.transition = "none";
+                baymaxWalker.style.transform = landedTransform;
+                baymaxWalker.style.opacity = "0";
+                baymaxWalker.style.visibility = "visible";
+
+                if (heroBaymaxAnim) {
+                    heroBaymaxAnim.play();
+                }
+
+                requestAnimationFrame(() => {
+                    baymaxWalker.style.transition = "opacity 0.3s ease";
+                    baymaxWalker.style.opacity = "1";
+                });
+
+                // Speech bubble "Hi!"
+                setTimeout(() => {
+                    baymaxBubble?.classList.add("is-visible");
+                }, 350);
+
+                setTimeout(() => {
+                    baymaxBubble?.classList.remove("is-visible");
+                }, 1700);
+
+                setTimeout(() => {
+                    baymaxWalker.style.transition = "opacity 0.3s ease";
+                    baymaxWalker.style.opacity = "0";
+                }, 2100);
+
+                setTimeout(() => {
+                    baymaxWalker.style.visibility = "hidden";
+                    baymaxWalker.style.opacity = "";
+                    baymaxWalker.style.transform = offscreenTransform;
+                    if (baymaxOverlay) baymaxOverlay.style.display = "none";
+                    if (heroBaymaxAnim) {
+                        heroBaymaxAnim.goToAndStop(0, true);
+                    }
+                    meetBaymaxBtn.disabled = false;
+                    isGreetingRunning = false;
+                }, 2500);
+
+                return;
+            }
+
+            // Normal motion sequence:
+            // 1. Starts off-screen to the LEFT of the viewport, hidden.
+            baymaxWalker.style.transition = "none";
+            baymaxWalker.style.transform = offscreenTransform;
+            baymaxWalker.style.opacity = "1";
+            baymaxWalker.style.visibility = "visible";
+
+            // 2. Slides in from left edge to x = 22% (or 12% on mobile) over ~0.7s, ease-out.
+            // Lottie plays during the whole sequence at speed ~1.6.
+            if (heroBaymaxAnim) {
+                heroBaymaxAnim.play();
+            }
+
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    baymaxWalker.style.transition = "transform 0.7s cubic-bezier(0.16, 1, 0.3, 1)";
+                    baymaxWalker.style.transform = landedTransform;
+                });
+            });
+
+            // 3. Holds at that position for ~1.1s (the "hi" beat). Speech bubble fades+scales in "Hi!"
+            setTimeout(() => {
+                baymaxBubble?.classList.add("is-visible");
+            }, 700);
+
+            // Speech bubble fades out before he leaves (~1.55s)
+            setTimeout(() => {
+                baymaxBubble?.classList.remove("is-visible");
+            }, 1550);
+
+            // 4. Slides back out to the left, off-screen, over ~0.7s, ease-in (~1.8s to ~2.5s)
+            setTimeout(() => {
+                baymaxWalker.style.transition = "transform 0.7s cubic-bezier(0.7, 0, 0.84, 0)";
+                baymaxWalker.style.transform = offscreenTransform;
+            }, 1800);
+
+            // Total ≈ 2.5s: unmounts and Lottie resets to frame 0
+            setTimeout(() => {
+                baymaxWalker.style.visibility = "hidden";
+                baymaxWalker.style.transition = "none";
+                baymaxWalker.style.transform = offscreenTransform;
+                if (baymaxOverlay) baymaxOverlay.style.display = "none";
+                if (heroBaymaxAnim) {
+                    heroBaymaxAnim.goToAndStop(0, true);
+                }
+                meetBaymaxBtn.disabled = false;
+                isGreetingRunning = false;
+            }, 2500);
+        });
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initHeroBaymax);
+    } else {
+        initHeroBaymax();
+    }
 })();
