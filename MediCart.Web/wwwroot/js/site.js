@@ -46,4 +46,21 @@
             closeMobileNav();
         }
     });
+
+    // Load real cart count from server for logged-in customers.
+    var cartBadge = document.getElementById("cartBadge");
+    if (cartBadge) {
+        fetch("/Cart/Count")
+            .then(function (res) { return res.json(); })
+            .then(function (d) {
+                if (d.cartItemCount > 0) {
+                    cartBadge.textContent = d.cartItemCount;
+                    cartBadge.classList.add("is-visible");
+                }
+            })
+            .catch(function () {
+                // Silently fail — badge stays at 0.
+            });
+    }
+
 })();
