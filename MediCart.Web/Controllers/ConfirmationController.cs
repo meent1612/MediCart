@@ -22,6 +22,7 @@ namespace MediCart.Web.Controllers
         }
 
         // GET /Confirmation/{id}
+        [Route("Confirmation/{id:int}")]
         public async Task<IActionResult> Index(int id)
         {
             var userId = _userManager.GetUserId(User)!;
