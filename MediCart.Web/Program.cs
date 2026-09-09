@@ -51,10 +51,10 @@ using (var scope = app.Services.CreateScope())
 
     var admins = new[]
     {
-        new { FullName = "Rahnuma Azra Mahjabin", Email = "rahnuma@medicart.com" },
-        new { FullName = "Farzana Mim",           Email = "farzana@medicart.com" },
-        new { FullName = "Shayma Sharmeen",        Email = "shayma@medicart.com" },
-        new { FullName = "Zumaina Tahsin",         Email = "zumaina@medicart.com" },
+        new { FullName = "Rahnuma Azra Mahjabin", Email = "rahnuma.medicart@gmail.com" },
+        new { FullName = "Farzana Mim",           Email = "farzana.medicart@gmail.com" },
+        new { FullName = "Shayma Sharmeen",        Email = "shayma.medicart@gmail.com" },
+        new { FullName = "Zumaina Tahsin",         Email = "zumaina.medicart@gmail.com" },
     };
 
     foreach (var a in admins)
@@ -86,7 +86,21 @@ using (var scope = app.Services.CreateScope())
 
     var customers = new[]
     {
-        new { FullName = "Ashfia Newaz", PhoneNumber = "01554154449", Email = "ashfia@gmail.com" },
+        new { FullName = "Zumaina Tahsin",   PhoneNumber = "01836329304", Email = "zumainatahsincat@gmail.com"   },
+        new { FullName = "Zumaina Aust", PhoneNumber = "01836329304", Email = "zumaina.cse.20220204020@aust.edu" },
+        new { FullName = "Zumaina T", PhoneNumber = "01836329304", Email = "zumaina.t.22@gmail.com"  },
+
+        new { FullName = "Rahnuma Azra Mahjabin", PhoneNumber = "01909023568", Email = "mahjabin3619@gmail.com" },
+        new { FullName = "Rahnuma Aust", PhoneNumber = "01909023568", Email = "rahnuma.cse.20230104028@aust.edu" },
+
+        new { FullName = "Farzana Mim", PhoneNumber = "01761666732", Email = "farzanamim2535@gmail.com" },
+        new { FullName = "Farzana Aust", PhoneNumber = "01761666732", Email = "farzana.cse.20230104032@aust.edu" },
+        
+        new { FullName = "Shayma Sharmeen", PhoneNumber = "01798221612", Email = "sshayma1612@gmail.com" },
+        new { FullName = "Shayma Aust", PhoneNumber = "01798221612", Email = "shayma.cse.20230104043@aust.edu" },
+
+        new { FullName = "Sakina Anwar", PhoneNumber = "01716367488", Email = "sakinaanwar667@gmail.com" },
+        new { FullName = "Farhad Panna", PhoneNumber = "01791719326", Email = "farhadpannadadijan@gmail.com" },
     };
 
     foreach (var c in customers)
