@@ -66,7 +66,11 @@ namespace MediCart.Web.Controllers
                             Id = c.Id,
                             Name = c.Name
                         }).ToList()
-                }));
+                }),
+                new System.Text.Json.JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+                });
 
             var model = new CheckoutViewModel
             {
