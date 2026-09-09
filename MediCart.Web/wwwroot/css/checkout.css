@@ -317,3 +317,88 @@
         display: none;
     }
 }
+
+/* ----- Checkout timer banner ----- */
+.checkout-timer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--misty-100);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 10px 16px;
+    font-size: 0.88rem;
+    color: var(--slate-700);
+    margin-bottom: 20px;
+}
+
+.checkout-timer.is-warning {
+    background: var(--amber-100);
+    border-color: var(--amber-700);
+    color: var(--amber-700);
+}
+
+/* ----- Timer expired modal ----- */
+.timer-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.timer-modal-backdrop[hidden] {
+    display: none;
+}
+
+.timer-modal {
+    background: var(--white);
+    border-radius: var(--radius-md);
+    padding: 32px 28px;
+    max-width: 380px;
+    width: 90%;
+    text-align: center;
+}
+
+.timer-modal h3 {
+    margin: 0 0 10px;
+    font-size: 1.1rem;
+    color: var(--ink-900);
+}
+
+.timer-modal p {
+    font-size: 0.9rem;
+    color: var(--slate-500);
+    margin: 0 0 22px;
+}
+
+/* ----- bKash OTP flow ----- */
+.bkash-otp-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 14px;
+}
+
+.otp-hint {
+    font-size: 0.8rem;
+    color: var(--slate-500);
+}
+
+.otp-timer {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--slate-500);
+    margin-left: 6px;
+}
+
+.bkash-verified {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--success-700);
+    font-size: 0.85rem;
+    margin: 10px 0 0;
+}
