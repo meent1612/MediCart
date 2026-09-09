@@ -59,6 +59,9 @@ namespace MediCart.Web.Models
         [StringLength(1000)]
         public string? Description { get; set; }
 
+        [StringLength(1000)]
+        public string? Dosage { get; set; }
+        
         [Required(ErrorMessage = "Enter a price")]
         [Range(0.01, 100000, ErrorMessage = "Enter a price between 0.01 and 100,000")]
         public decimal Price { get; set; }
