@@ -71,6 +71,11 @@
                 <p>@Model.Phone</p>
             </section>
 
+            <section class="info-card">
+                <h3>Payment</h3>
+                <p>@Model.PaymentMethod</p>
+            </section>
+
             @if (!string.IsNullOrWhiteSpace(Model.AdminNote))
             {
                 <section class="info-card">
