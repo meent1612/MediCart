@@ -14,15 +14,15 @@
     {
         return (name ?? "").Trim().ToLowerInvariant() switch
         {
-            "tablet" => "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\"><rect x=\"3\" y=\"9\" width=\"18\" height=\"6\" rx=\"3\" transform=\"rotate(-45 12 12)\" /><path d=\"M9.5 14.5 14.5 9.5\" /></svg>",
-            "syrup" => "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M9 2h6M10 2v6.34a2 2 0 0 1-.4 1.2L6.3 15a4 4 0 0 0-.8 2.4V20a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2v-2.6a4 4 0 0 0-.8-2.4l-3.3-5.46a2 2 0 0 1-.4-1.2V2\" /></svg>",
-            "injection" => "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m18 2 4 4M17 7l-9 9-4 4-1-1 4-4 9-9zM12 6l6 6M9 9l6 6\" /></svg>",
-            "ointment" => "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"6\" y=\"8\" width=\"12\" height=\"13\" rx=\"2\" /><path d=\"M9 8V5a3 3 0 0 1 6 0v3\" /></svg>",
-            "drops" => "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11Z\" /></svg>",
-            "capsule" => "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\"><rect x=\"2\" y=\"9\" width=\"20\" height=\"6\" rx=\"3\" /><path d=\"M12 9v6\" /></svg>",
-            "cream" => "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 3c3 3 5 5.5 5 9a5 5 0 0 1-10 0c0-3.5 2-6 5-9Z\" /><path d=\"M8 21h8\" /></svg>",
-            "inhaler" or "spray" => "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M8 6h5a3 3 0 0 1 3 3v2H8z\" /><path d=\"M8 11v8a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2v-8\" /><path d=\"M17 8h2M17 11h3\" /></svg>",
-            _ => "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\"><rect x=\"3\" y=\"9\" width=\"18\" height=\"6\" rx=\"3\" transform=\"rotate(-45 12 12)\" /><path d=\"M9.5 14.5 14.5 9.5\" /></svg>"
+            "tablet" => "<svg viewBox=\"0 0 24 24\" width=\"24\" height=\"24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\"><rect x=\"3\" y=\"9\" width=\"18\" height=\"6\" rx=\"3\" transform=\"rotate(-45 12 12)\" /><path d=\"M9.5 14.5 14.5 9.5\" /></svg>",
+            "syrup" => "<svg viewBox=\"0 0 24 24\" width=\"24\" height=\"24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M9 2h6M10 2v6.34a2 2 0 0 1-.4 1.2L6.3 15a4 4 0 0 0-.8 2.4V20a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2v-2.6a4 4 0 0 0-.8-2.4l-3.3-5.46a2 2 0 0 1-.4-1.2V2\" /></svg>",
+            "injection" => "<svg viewBox=\"0 0 24 24\" width=\"24\" height=\"24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m18 2 4 4M17 7l-9 9-4 4-1-1 4-4 9-9zM12 6l6 6M9 9l6 6\" /></svg>",
+            "ointment" => "<svg viewBox=\"0 0 24 24\" width=\"24\" height=\"24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"6\" y=\"8\" width=\"12\" height=\"13\" rx=\"2\" /><path d=\"M9 8V5a3 3 0 0 1 6 0v3\" /></svg>",
+            "drops" => "<svg viewBox=\"0 0 24 24\" width=\"24\" height=\"24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11Z\" /></svg>",
+            "capsule" => "<svg viewBox=\"0 0 24 24\" width=\"24\" height=\"24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\"><rect x=\"2\" y=\"9\" width=\"20\" height=\"6\" rx=\"3\" /><path d=\"M12 9v6\" /></svg>",
+            "cream" => "<svg viewBox=\"0 0 24 24\" width=\"24\" height=\"24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 3c3 3 5 5.5 5 9a5 5 0 0 1-10 0c0-3.5 2-6 5-9Z\" /><path d=\"M8 21h8\" /></svg>",
+            "inhaler" or "spray" => "<svg viewBox=\"0 0 24 24\" width=\"24\" height=\"24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M8 6h5a3 3 0 0 1 3 3v2H8z\" /><path d=\"M8 11v8a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2v-8\" /><path d=\"M17 8h2M17 11h3\" /></svg>",
+            _ => "<svg viewBox=\"0 0 24 24\" width=\"24\" height=\"24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\"><rect x=\"3\" y=\"9\" width=\"18\" height=\"6\" rx=\"3\" transform=\"rotate(-45 12 12)\" /><path d=\"M9.5 14.5 14.5 9.5\" /></svg>"
         };
     }
 
@@ -122,20 +122,40 @@
          ============================================================ -->
     <section class="stats-strip reveal" aria-label="MediCart at a glance">
         <div class="stats-strip__item">
-            <span class="stats-strip__number" data-count-to="1200" data-suffix="+">0</span>
-            <span class="stats-strip__label">Medicines listed</span>
+            <span class="stats-strip__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="9" width="18" height="6" rx="3" transform="rotate(-45 12 12)" /><path d="M9.5 14.5 14.5 9.5" /></svg>
+            </span>
+            <div class="stats-strip__content">
+                <span class="stats-strip__number" data-count-to="1200" data-suffix="+">0</span>
+                <span class="stats-strip__label">Medicines listed</span>
+            </div>
         </div>
         <div class="stats-strip__item">
-            <span class="stats-strip__number" data-count-to="15000" data-suffix="+">0</span>
-            <span class="stats-strip__label">Orders fulfilled</span>
+            <span class="stats-strip__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/></svg>
+            </span>
+            <div class="stats-strip__content">
+                <span class="stats-strip__number" data-count-to="15000" data-suffix="+">0</span>
+                <span class="stats-strip__label">Orders fulfilled</span>
+            </div>
         </div>
         <div class="stats-strip__item">
-            <span class="stats-strip__number" data-count-to="100" data-suffix="%">0</span>
-            <span class="stats-strip__label">Orders pharmacist-reviewed</span>
+            <span class="stats-strip__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+            </span>
+            <div class="stats-strip__content">
+                <span class="stats-strip__number" data-count-to="100" data-suffix="%">0</span>
+                <span class="stats-strip__label">Orders pharmacist-reviewed</span>
+            </div>
         </div>
         <div class="stats-strip__item">
-            <span class="stats-strip__number" data-count-to="24" data-suffix="/7">0</span>
-            <span class="stats-strip__label">Order tracking</span>
+            <span class="stats-strip__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </span>
+            <div class="stats-strip__content">
+                <span class="stats-strip__number" data-count-to="24" data-suffix="/7">0</span>
+                <span class="stats-strip__label">Order tracking</span>
+            </div>
         </div>
     </section>
 
