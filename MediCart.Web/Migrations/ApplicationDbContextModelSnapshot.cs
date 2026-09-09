@@ -306,6 +306,9 @@ namespace MediCart.Web.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
+                    b.Property<string>("Dosage")
+                        .HasColumnType("text");
+
                     b.Property<string>("GenericName")
                         .HasColumnType("text");
 

@@ -71,6 +71,12 @@
             <textarea asp-for="Form.Description" rows="3" maxlength="1000" placeholder="What this medicine is used for..."></textarea>
         </div>
 
+        <div class="admin-form__field">
+            <label asp-for="Form.Dosage">Dosage / Directions for use</label>
+            <textarea asp-for="Form.Dosage" rows="3" maxlength="1000" placeholder="e.g. Adults: 1 tablet once daily at bedtime. Children (6–14 years): 5mg chewable tablet once daily."></textarea>
+            <small class="admin-form__hint">Leave blank if not applicable (e.g. medical devices, supplements).</small>
+        </div>
+
         <div class="admin-form__section-label">Image</div>
 
         <div class="admin-form__field">

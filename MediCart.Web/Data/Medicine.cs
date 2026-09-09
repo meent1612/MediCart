@@ -12,6 +12,7 @@ namespace MediCart.Web.Data
         public decimal Price { get; set; }
         public string? Unit { get; set; }
         public string? Description { get; set; }
+        public string? Dosage { get; set; }
         public bool RequiresPrescription { get; set; } = false;
         public string? SensitivityLevel { get; set; }
         public string? ImageUrl { get; set; }

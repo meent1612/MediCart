@@ -715,6 +715,11 @@ namespace MediCart.Web.Controllers
                         ? null
                         : form.Description.Trim(),
 
+                Dosage =
+                    string.IsNullOrWhiteSpace(form.Dosage)
+                        ? null
+                        : form.Dosage.Trim(),
+
                 ImageUrl =
                     string.IsNullOrWhiteSpace(finalImageUrl)
                         ? null
@@ -800,6 +805,7 @@ namespace MediCart.Web.Controllers
                 GenericName = medicine.GenericName,
                 Unit = medicine.Unit,
                 Description = medicine.Description,
+                Dosage = medicine.Dosage,
                 ImageUrl = medicine.ImageUrl,
                 SensitivityLevel = medicine.SensitivityLevel,
 
@@ -981,6 +987,11 @@ namespace MediCart.Web.Controllers
                 string.IsNullOrWhiteSpace(form.Description)
                     ? null
                     : form.Description.Trim();
+
+            medicine.Dosage =                        // ← ADD THIS BLOCK
+                string.IsNullOrWhiteSpace(form.Dosage)
+                    ? null
+                    : form.Dosage.Trim();
 
             medicine.ImageUrl =
                 string.IsNullOrWhiteSpace(finalImageUrl)
