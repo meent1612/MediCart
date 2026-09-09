@@ -473,6 +473,9 @@
             // Build multipart form for prescription file upload
             placeOrderBtn.disabled = true;
             placeOrderBtn.textContent = "Placing order…";
+            if (window.showLoading) {
+                window.showLoading("Placing your order & notifying our pharmacist…");
+            }
 
             var divisionId = parseInt(divisionSelect.value, 10);
             var cityId     = parseInt(citySelect.value, 10);
@@ -495,6 +498,7 @@
             }).then(function (res) {
                 return res.json().then(function (d) {
                     if (!res.ok) {
+                        if (window.hideLoading) window.hideLoading();
                         placeOrderBtn.disabled = false;
                         placeOrderBtn.textContent = "Place order";
                         showToast(d.error || "Could not place order. Please try again.");
@@ -504,6 +508,7 @@
                     window.location.href = "/Confirmation/" + d.orderId;
                 });
             }).catch(function () {
+                if (window.hideLoading) window.hideLoading();
                 placeOrderBtn.disabled = false;
                 placeOrderBtn.textContent = "Place order";
                 showToast("Something went wrong. Please try again.");

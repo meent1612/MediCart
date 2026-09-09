@@ -247,6 +247,9 @@ document.addEventListener("DOMContentLoaded", () => {
     // loading state on the button so the click feels acknowledged.
     submitButton.dataset.loading = "true"
     submitButton.disabled = true
+    if (window.showLoading) {
+      window.showLoading("Creating your MediCart account…")
+    }
   }
 
   form.addEventListener("submit", handleSubmit)

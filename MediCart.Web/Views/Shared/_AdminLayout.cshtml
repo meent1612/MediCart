@@ -40,6 +40,7 @@
 
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/loader.css" asp-append-version="true" />
     @await RenderSectionAsync("Styles", required: false)
 </head>
 <body class="admin-body">
@@ -131,8 +132,12 @@
         <span class="toast__text"></span>
     </div>
 
+    <partial name="_LoaderPartial" />
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/lottie/lottie.min.js" asp-append-version="true"></script>
     <script src="~/js/admin.js" asp-append-version="true"></script>
+    <script src="~/js/loader.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
