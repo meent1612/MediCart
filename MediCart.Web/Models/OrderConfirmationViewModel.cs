@@ -1,6 +1,3 @@
-using System.Collections.Generic;
-using System.Linq;
-
 namespace MediCart.Web.Models
 {
     public class OrderTrackingStage
@@ -12,6 +9,7 @@ namespace MediCart.Web.Models
 
     public class OrderConfirmationViewModel
     {
+        public int RealOrderId { get; set; }
         public string OrderNumber { get; set; } = "";
         public string PlacedAt { get; set; } = "";
         public string StatusLabel { get; set; } = "";
@@ -21,6 +19,7 @@ namespace MediCart.Web.Models
         public string DeliveryAddress { get; set; } = "";
         public string Phone { get; set; } = "";
         public string? AdminNote { get; set; }
+        public string? PaymentMethod { get; set; }
 
         public List<CheckoutLineItemViewModel> Items { get; set; } = new();
         public decimal DeliveryCharge { get; set; }

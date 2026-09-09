@@ -68,7 +68,7 @@
                                         <td>@order.ItemCount item@(order.ItemCount != 1 ? "s" : "")</td>
                                         <td class="up-table__mono">৳ @order.Total.ToString("N0")</td>
                                         <td><span class="@statusClass">@order.Status</span></td>
-                                        <td><a href="#" class="up-table__view">View →</a></td>
+                                        <td><a href="/Orders/Detail/@order.RealOrderId" class="up-table__view">View →</a></td>
                                     </tr>
                                 }
                             </tbody>
