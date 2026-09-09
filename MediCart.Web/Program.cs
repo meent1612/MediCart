@@ -24,6 +24,8 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
 builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<MediCart.Web.Services.IImageUploadService, MediCart.Web.Services.CloudinaryImageService>();
 builder.Services.AddScoped<MediCart.Web.Services.ICartService, MediCart.Web.Services.CartService>();
+builder.Services.AddScoped<MediCart.Web.Services.IOrderService, MediCart.Web.Services.OrderService>();
+builder.Services.AddScoped<MediCart.Web.Services.IEmailService, MediCart.Web.Services.EmailService>();
 builder.Services.AddHostedService<MediCart.Web.Services.CartExpiryBackgroundService>();
 
 var app = builder.Build();

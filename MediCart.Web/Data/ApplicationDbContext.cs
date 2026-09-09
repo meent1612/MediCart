@@ -22,7 +22,8 @@ namespace MediCart.Web.Data
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<ContactMessage> ContactMessages { get; set; }
         public DbSet<AuditLog> AuditLogs { get; set; }
-
+        public DbSet<OtpCode> OtpCodes { get; set; }
+        public DbSet<Payment> Payments { get; set; }
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
@@ -33,24 +34,24 @@ namespace MediCart.Web.Data
                 .IsUnique();
 
             // SubCategory — required FK to Category
-builder.Entity<SubCategory>()
-    .HasOne(sc => sc.Category)
-    .WithMany(c => c.SubCategories)
-    .HasForeignKey(sc => sc.CategoryId)
-    .OnDelete(DeleteBehavior.Restrict);
+            builder.Entity<SubCategory>()
+                .HasOne(sc => sc.Category)
+                .WithMany(c => c.SubCategories)
+                .HasForeignKey(sc => sc.CategoryId)
+                .OnDelete(DeleteBehavior.Restrict);
 
-// Medicine — required Category FK, optional SubCategory FK
-builder.Entity<Medicine>()
-    .HasOne(m => m.Category)
-    .WithMany(c => c.Medicines)
-    .HasForeignKey(m => m.CategoryId)
-    .OnDelete(DeleteBehavior.Restrict);
+            // Medicine — required Category FK, optional SubCategory FK
+            builder.Entity<Medicine>()
+                .HasOne(m => m.Category)
+                .WithMany(c => c.Medicines)
+                .HasForeignKey(m => m.CategoryId)
+                .OnDelete(DeleteBehavior.Restrict);
 
-builder.Entity<Medicine>()
-    .HasOne(m => m.SubCategory)
-    .WithMany(sc => sc.Medicines)
-    .HasForeignKey(m => m.SubCategoryId)
-    .OnDelete(DeleteBehavior.Restrict);
+            builder.Entity<Medicine>()
+                .HasOne(m => m.SubCategory)
+                .WithMany(sc => sc.Medicines)
+                .HasForeignKey(m => m.SubCategoryId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             // Medicine — decimal column + check constraint
             builder.Entity<Medicine>()
@@ -113,6 +114,31 @@ builder.Entity<Medicine>()
                 .WithMany()
                 .HasForeignKey(a => a.AdminId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+                // OtpCode — index on Email for fast lookup
+                builder.Entity<OtpCode>()
+                    .HasIndex(o => o.Email);
+
+                // Payment — FK to Order and User + check constraint on Status
+                builder.Entity<Payment>()
+                    .Property(p => p.Amount)
+                    .HasColumnType("numeric(10,2)");
+
+                builder.Entity<Payment>()
+                    .ToTable(t => t.HasCheckConstraint("CK_Payment_Status",
+                        "\"Status\" IN ('pending','completed','failed')"));
+
+                builder.Entity<Payment>()
+                    .HasOne(p => p.Order)
+                    .WithMany()
+                    .HasForeignKey(p => p.OrderId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                builder.Entity<Payment>()
+                    .HasOne(p => p.User)
+                    .WithMany()
+                    .HasForeignKey(p => p.UserId)
+                    .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }
