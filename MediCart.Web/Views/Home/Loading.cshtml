@@ -1,0 +1,28 @@
+@{
+    ViewData["Title"] = "Loading MediCart";
+}
+
+@section Styles {
+    <style>
+        .site-header, .site-footer {
+            display: none !important;
+        }
+    </style>
+}
+
+<div class="loading-page-container" style="min-height: 80vh;"></div>
+
+@section Scripts {
+    <script>
+        // Dedicated loading route — when Baymax animation finishes, land on the homepage
+        document.addEventListener("DOMContentLoaded", function () {
+            if (window.MediCartLoadingScreen) {
+                window.MediCartLoadingScreen.start({
+                    onComplete: function () {
+                        window.location.href = "/";
+                    }
+                });
+            }
+        });
+    </script>
+}

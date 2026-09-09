@@ -1,0 +1,30 @@
+@{
+    var currentPath = (ViewContext.HttpContext.Request.Path.Value ?? "").ToLowerInvariant().TrimEnd('/');
+    bool isIntroRoute = string.IsNullOrEmpty(currentPath) || currentPath == "/home" || currentPath == "/home/index" || currentPath == "/loading" || currentPath == "/home/loading";
+}
+
+<!-- Full-screen Baymax Website Loading Screen (Landing on Homepage) -->
+<div id="siteLoadingScreen" class="site-loading-screen @(isIntroRoute ? "" : "is-hidden")" role="dialog" aria-modal="true" aria-label="Loading MediCart">
+    <div class="site-loading-wrapper">
+        <div id="baymaxIntroAnimation" class="site-loading-anim"></div>
+        <div class="site-loading-track" aria-hidden="true">
+            <div id="siteLoadingProgress" class="site-loading-bar"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Contextual Action Loader Modal (Used during order submission, login, etc.) -->
+<div id="medicartLoader" class="medicart-loader-overlay" aria-hidden="true" role="status" aria-live="polite">
+    <div class="medicart-loader-card">
+        <div class="medicart-loader-badge">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14" /></svg>
+            <span>Care Companion</span>
+        </div>
+        <div id="baymaxLoadingAnimation" class="medicart-loader-anim"></div>
+        <h3 class="medicart-loader-title">MediCart</h3>
+        <p class="medicart-loader-status" id="medicartLoaderStatus">Your personal healthcare companion is preparing your request&hellip;</p>
+        <div class="medicart-loader-bar">
+            <div class="medicart-loader-bar-fill"></div>
+        </div>
+    </div>
+</div>

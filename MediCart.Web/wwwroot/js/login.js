@@ -85,6 +85,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     submitButton.dataset.loading = "true"
     submitButton.disabled = true
+    if (window.showLoading) {
+      window.showLoading("Logging you in…")
+    }
   })
 
   // ---------------------------------------------------------------------
