@@ -388,10 +388,17 @@
 }
 
 .otp-timer {
+    display: inline-block;
     font-family: var(--font-mono);
     font-size: 0.78rem;
-    color: var(--slate-500);
-    margin-left: 6px;
+    font-weight: 700;
+    color: var(--pine-800);
+    background: var(--misty-100);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-pill);
+    padding: 2px 8px;
+    margin-left: 8px;
+    vertical-align: middle;
 }
 
 .bkash-verified {
