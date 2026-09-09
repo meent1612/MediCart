@@ -349,6 +349,10 @@
     justify-content: center;
 }
 
+.timer-modal-backdrop[hidden] {
+    display: none;
+}
+
 .timer-modal {
     background: var(--white);
     border-radius: var(--radius-md);
