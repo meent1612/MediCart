@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MediCart.Web.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260909060404_InitialCreate")]
+    [Migration("20260909120325_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -307,6 +307,9 @@ namespace MediCart.Web.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Dosage")
                         .HasColumnType("text");
 
                     b.Property<string>("GenericName")

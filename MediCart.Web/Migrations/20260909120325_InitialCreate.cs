@@ -336,6 +336,7 @@ namespace MediCart.Web.Migrations
                     Price = table.Column<decimal>(type: "numeric(10,2)", nullable: false),
                     Unit = table.Column<string>(type: "text", nullable: true),
                     Description = table.Column<string>(type: "text", nullable: true),
+                    Dosage = table.Column<string>(type: "text", nullable: true),
                     RequiresPrescription = table.Column<bool>(type: "boolean", nullable: false),
                     SensitivityLevel = table.Column<string>(type: "text", nullable: true),
                     ImageUrl = table.Column<string>(type: "text", nullable: true),
