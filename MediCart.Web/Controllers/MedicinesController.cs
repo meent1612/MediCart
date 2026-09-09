@@ -52,7 +52,7 @@ namespace MediCart.Web.Controllers
                 ExpiryDate = m.Stock?.ExpiryDate,
                 RequiresRx = m.RequiresPrescription,
                 Description = m.Description ?? "",
-                Dosage = null,
+                Dosage = m.Dosage,
                 ImageUrl = m.ImageUrl,
                 SideEffects = m.SideEffects.Select(se => new SideEffectViewModel
                 {
