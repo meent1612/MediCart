@@ -205,8 +205,8 @@
             const isMobile = window.matchMedia("(max-width: 767px)").matches;
             const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-            // Coordinates: desktop lands at x = 22vw; mobile lands at x = 12vw scaled to 55%
-            const targetX = isMobile ? "12vw" : "22vw";
+            // Coordinates: desktop lands at x = 32vw (clear of button row & chips); mobile lands at x = 17vw scaled to 55%
+            const targetX = isMobile ? "17vw" : "32vw";
             const scaleStr = isMobile ? " scale(0.55)" : "";
             const landedTransform = `translateX(${targetX})${scaleStr}`;
             const offscreenTransform = `translateX(-120%)${scaleStr}`;

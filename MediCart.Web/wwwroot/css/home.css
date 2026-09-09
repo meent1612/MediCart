@@ -231,7 +231,7 @@
 
 .hero__baymax-bubble {
     position: absolute;
-    top: 4px;
+    top: 38px;
     left: 50%;
     transform: translateX(-50%) scale(0.65);
     background: var(--white, #ffffff);
@@ -284,7 +284,7 @@
         bottom: 8px;
     }
     .hero__baymax-bubble {
-        top: 4px;
+        top: 26px;
     }
 }
 
@@ -372,7 +372,16 @@
 
 /* ---- Section shell -------------------------------------------------------- */
 .section { padding-block: 88px; }
-.section--alt { background: var(--misty-100); border-radius: var(--radius-lg); padding-block: 56px; }
+.section--alt {
+    background: var(--misty-100);
+    border-radius: var(--radius-lg);
+    padding: 56px 32px;
+}
+@media (max-width: 600px) {
+    .section--alt {
+        padding: 40px 18px;
+    }
+}
 .section--alt .section__head { margin-bottom: 32px; }
 .section__head { max-width: 60ch; margin-bottom: 40px; }
 .section__head p { margin: 10px 0 0; color: var(--slate-500); font-size: 15px; line-height: 1.6; }
@@ -963,12 +972,16 @@
 }
 /* ---- Shop by category ------------------------------------------------- */
 .shop-category-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 18px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
 }
 
 .shop-category-card {
+    flex: 0 1 240px;
+    width: 240px;
+    max-width: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -1030,11 +1043,22 @@
     font-size: 14px;
     color: var(--slate-500);
     padding: 20px 0;
-    grid-column: 1 / -1;
+    width: 100%;
+    text-align: center;
 }
 
-@media (max-width: 900px) { .shop-category-grid { grid-template-columns: repeat(3, 1fr); } }
-@media (max-width: 560px) { .shop-category-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px) {
+    .shop-category-card {
+        flex: 1 1 calc(50% - 14px);
+        min-width: 140px;
+    }
+}
+@media (max-width: 380px) {
+    .shop-category-card {
+        flex: 1 1 100%;
+        max-width: 280px;
+    }
+}
 
 /* Reuse the scroll-choreography pattern already defined for .category-card */
 @media (prefers-reduced-motion: no-preference) {
