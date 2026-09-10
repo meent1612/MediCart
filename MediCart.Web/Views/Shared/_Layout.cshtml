@@ -32,9 +32,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>@ViewData["Title"] - MediCart</title>
 
+    <link rel="icon" type="image/svg+xml" href="~/images/favicon.svg" asp-append-version="true" />
+    <link rel="alternate icon" href="~/favicon.ico" />
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=Plus+Jakarta+Sans:ital,wght@0,400..700;1,400..700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
 
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/loader.css" asp-append-version="true" />
@@ -44,11 +47,8 @@
 
     <header class="site-header">
         <div class="container navbar">
-            <a href="~/" class="navbar__logo">
-                <svg class="navbar__logo-mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
-                    <path d="M12 5v14M5 12h14" />
-                </svg>
-                MediCart
+            <a href="~/" class="navbar__logo" aria-label="MediCart Home">
+                <img src="~/images/medicart_logo_final.svg" asp-append-version="true" alt="MediCart" class="navbar__logo-img" width="150" height="102" />
             </a>
 
             <nav aria-label="Primary">
@@ -110,7 +110,9 @@
     <!-- Mobile drawer -->
     <nav class="mobile-nav" aria-hidden="true" aria-label="Mobile">
         <div class="mobile-nav__top">
-            <span class="navbar__logo" style="color:#fff;">MediCart</span>
+            <a href="~/" class="mobile-nav__logo" aria-label="MediCart Home">
+                <img src="~/images/medicart_logo_light.svg" asp-append-version="true" alt="MediCart" class="mobile-nav__logo-img" width="140" height="95" />
+            </a>
             <button type="button" class="mobile-nav__close" aria-label="Close menu">
                 <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
             </button>
@@ -159,8 +161,9 @@
         <div class="container site-footer__top">
             <div>
                 <div class="site-footer__brand">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14" /></svg>
-                    MediCart
+                    <a href="~/" class="site-footer__brand-link" aria-label="MediCart Home">
+                        <img src="~/images/medicart_logo_light.svg" asp-append-version="true" alt="MediCart" class="site-footer__logo-img" width="140" height="95" />
+                    </a>
                 </div>
                 <p class="site-footer__blurb">
                     An admin-verified online pharmacy — every order reviewed by a
