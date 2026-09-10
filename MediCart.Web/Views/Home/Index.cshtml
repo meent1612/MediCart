@@ -44,6 +44,27 @@
          ============================================================ -->
     <section class="hero">
         <div class="hero__noise" aria-hidden="true"></div>
+        <div class="hero__glow" aria-hidden="true"></div>
+        <div class="hero__wave-glow" aria-hidden="true">
+            <svg viewBox="0 0 1440 540" fill="none" preserveAspectRatio="none">
+                <defs>
+                    <linearGradient id="heroWaveGrad1" x1="0%" y1="100%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="#ADACB5" stop-opacity="0.75" />
+                        <stop offset="35%" stop-color="#D8D5DB" stop-opacity="0.95" />
+                        <stop offset="65%" stop-color="#F2F1F4" stop-opacity="0.85" />
+                        <stop offset="100%" stop-color="#ADACB5" stop-opacity="0.45" />
+                    </linearGradient>
+                    <linearGradient id="heroWaveGrad2" x1="15%" y1="0%" x2="85%" y2="100%">
+                        <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.8" />
+                        <stop offset="45%" stop-color="#D8D5DB" stop-opacity="0.9" />
+                        <stop offset="85%" stop-color="#ADACB5" stop-opacity="0.5" />
+                        <stop offset="100%" stop-color="#2D3142" stop-opacity="0" />
+                    </linearGradient>
+                </defs>
+                <path d="M-80 380 C 220 440, 410 240, 740 270 C 1040 300, 1190 160, 1520 220 L 1520 560 L -80 560 Z" fill="url(#heroWaveGrad1)" />
+                <path d="M-60 320 C 280 260, 520 390, 840 250 C 1120 130, 1340 230, 1500 170 L 1500 560 L -60 560 Z" fill="url(#heroWaveGrad2)" opacity="0.65" />
+            </svg>
+        </div>
         <span class="hero__capsule hero__capsule--a" aria-hidden="true"></span>
         <span class="hero__capsule hero__capsule--b" aria-hidden="true"></span>
 
@@ -56,7 +77,7 @@
         </div>
 
         <div class="hero__grid">
-            <div>
+            <div class="hero__content">
                 <p class="eyebrow">Admin-verified ordering</p>
                 <div class="hero__pulse" aria-hidden="true">
                     <svg viewBox="0 0 220 32" fill="none" preserveAspectRatio="none">
@@ -73,7 +94,7 @@
                 <form id="heroSearchForm" class="hero__search" method="get" action="~/Medicines" role="search">
                     <label for="heroSearchInput" class="visually-hidden">Search for a medicine</label>
                     <input type="search" id="heroSearchInput" name="search" class="hero__search-input" placeholder="Search for a medicine" autocomplete="off" />
-                    <button type="submit" class="btn btn--amber">Search</button>
+                    <button type="submit" class="btn btn--search-hero">Search</button>
                 </form>
 
                 <div class="hero__chips" aria-label="Popular searches">
@@ -93,7 +114,7 @@
                 </div>
             </div>
 
-            <div>
+            <div class="hero__card-wrap">
                 <div class="review-card">
                     <span class="review-card__label">Order #MC-1042</span>
                     <p class="review-card__order">Napa Extra &times; 2, Seclo 20mg &times; 1</p>
