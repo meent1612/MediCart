@@ -32,7 +32,7 @@
             var forceIntro = urlParams.get("intro") === "1" || urlParams.get("replay") === "1";
 
             // Check if we should display the intro
-            if (isHomePage || isLoadingPage || forceIntro) {
+            if ((isHomePage || isLoadingPage || forceIntro) && urlParams.get("nointro") !== "1") {
                 this.start({
                     redirectToHome: isLoadingPage
                 });

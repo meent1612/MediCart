@@ -1,19 +1,19 @@
 /* ===== Browse medicines page ===== */
 
 :root {
-    --pine: #2f4a3c;
-    --pine-dark: #23392e;
-    --cream: #faf3e4;
-    --card: #f4efe2;
-    --amber: #d98324;
-    --ink: #24211b;
-    --muted: #6f6a5d;
-    --border: #e3dcc9;
+    --pine: #2D3142;
+    --pine-dark: #1E2230;
+    --cream: #F7F6F8;
+    --card: #FFFFFF;
+    --amber: #2D3142;
+    --ink: #2D3142;
+    --muted: #ADACB5;
+    --border: #D8D5DB;
 }
 
 .browse {
     padding: 32px 0 72px;
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-body);
     color: var(--ink);
 }
 
@@ -172,7 +172,7 @@
 }
 
 .sort select {
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-body);
     padding: 8px 12px;
     border-radius: 8px;
     border: 1px solid var(--border);
@@ -199,7 +199,7 @@
 
 .product-card:hover {
     transform: translateY(-3px);
-    box-shadow: 0 12px 24px rgba(47, 74, 60, 0.12);
+    box-shadow: 0 12px 24px rgba(45, 49, 66, 0.10);
 }
 
 .product-card__image {
@@ -207,7 +207,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #eae4d3;
+    background: #F2F1F4;
     color: var(--pine);
 }
 
@@ -259,23 +259,24 @@
 }
 
 .badge--rx {
-    background: #f7ded1;
-    color: #a3512a;
+    background: #F6E2E1;
+    color: #A83A3A;
 }
 
 .badge--stock-in {
-    background: #dfe9de;
-    color: #2f4a3c;
+    background: #F2F1F4;
+    color: #2D3142;
+    border: 1px solid #D8D5DB;
 }
 
 .badge--stock-low {
-    background: #f7e6c8;
-    color: #91631a;
+    background: #D8D5DB;
+    color: #2D3142;
 }
 
 .badge--stock-out {
-    background: #f2d9d9;
-    color: #a13636;
+    background: #F6E2E1;
+    color: #A83A3A;
 }
 
 .badge--disabled {
@@ -342,7 +343,7 @@
 }
 
 .btn-add:disabled {
-    background: #c9c2ac;
+    background: #D8D5DB;
     cursor: not-allowed;
 }
 
@@ -366,7 +367,7 @@
 .modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(36, 33, 27, 0.55);
+    background: rgba(45, 49, 66, 0.55);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -483,12 +484,12 @@
 }
 
 .modal__value--warning {
-    color: #91631a;
+    color: var(--danger-700, #A83A3A);
     font-weight: 700;
 }
 
 .modal__value--danger {
-    color: #a13636;
+    color: var(--danger-700, #A83A3A);
     font-weight: 700;
 }
 
@@ -530,18 +531,19 @@
 }
 
 .side-effect--mild {
-    background: #dfe9de;
-    color: #2f4a3c;
+    background: #F2F1F4;
+    color: #2D3142;
+    border: 1px solid #D8D5DB;
 }
 
 .side-effect--moderate {
-    background: #f7e6c8;
-    color: #91631a;
+    background: #D8D5DB;
+    color: #2D3142;
 }
 
 .side-effect--high {
-    background: #f2d9d9;
-    color: #a13636;
+    background: #F6E2E1;
+    color: #A83A3A;
 }
 
 .modal__cart {

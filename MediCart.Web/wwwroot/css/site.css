@@ -1,47 +1,66 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=Plus+Jakarta+Sans:ital,wght@0,400..700;1,400..700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
 /* ==========================================================================
    MediCart — Site-wide design tokens & shared chrome (navbar / footer)
-   Matches the palette + type system established in Login/Register:
-   deep pine teal + muted amber, Fraunces / Inter / IBM Plex Mono.
    ========================================================================== */
 
 :root {
-    /* ---- Brand color ramp -------------------------------------------- */
-    /* Sampled directly from the built Login/Register pages so Home matches exactly */
-    --pine-900: #263830;
-    --pine-800: #384E41;   /* primary — matches Login brand panel + button */
-    --pine-700: #4A6255;
-    --pine-600: #5C7669;
+    /* ---- Brand color ramp (Gunmetal, French Gray, Platinum) ----------- */
+    --gunmetal-950: #181A24;
+    --gunmetal-900: #1E2230;  /* deep footer / toast / dark panels */
+    --gunmetal-800: #2D3142;  /* primary brand — matches wordmark & mark */
+    --gunmetal-700: #3A3F54;
+    --gunmetal-600: #494F67;
 
-    --amber-700: #9C6521;
-    --amber-600: #B97A2C;  /* accent / CTA */
-    --amber-500: #CC8F44;
-    --amber-100: #F3E2C4;
+    --french-gray-600: #71707E;
+    --french-gray-500: #8C8B97;
+    --french-gray-400: #ADACB5;  /* primary French Gray */
+    --french-gray-300: #C2C1C8;
+    --french-gray-200: #D0CFD5;
 
-    --beige-50:  #FDF0D7;  /* page background — matches Login form-panel cream */
-    --beige-100: #F7E6C4;
+    --platinum-300: #C7C4CB;
+    --platinum-200: #D8D5DB;  /* primary Platinum */
+    --platinum-100: #E6E4E8;
+    --platinum-50:  #F2F1F4;  /* card / alt background */
+    --canvas:        #F7F6F8;  /* site background */
 
-    --sage-100:  #E7EBE0;
-    --sage-200:  #D7DECE;
+    /* Token aliases cascading to all legacy components */
+    --pine-900: var(--gunmetal-900);
+    --pine-800: var(--gunmetal-800);
+    --pine-700: var(--gunmetal-700);
+    --pine-600: var(--gunmetal-600);
 
-    --misty-100: #F1ECDC;  /* section alt background */
-    --misty-200: #E7DFC8;
+    --amber-700: var(--gunmetal-800);
+    --amber-600: var(--gunmetal-800);
+    --amber-500: var(--platinum-200);
+    --amber-100: var(--platinum-100);
 
-    --ink-900:  #1A231E;   /* headings */
-    --slate-700:#3C463D;   /* body copy */
-    --slate-500:#6C7669;
-    --slate-300:#A9B2A2;
+    --beige-50:  var(--canvas);
+    --beige-100: var(--platinum-100);
 
-    --line: #E7DFCA;
+    --sage-100:  var(--platinum-50);
+    --sage-200:  var(--platinum-200);
+    --sage-300:  var(--french-gray-400);
+
+    --misty-100: var(--platinum-50);
+    --misty-200: var(--platinum-200);
+
+    --ink-900:   var(--gunmetal-800);
+    --slate-700: #3E4357;
+    --slate-500: #6B6F82;
+    --slate-300: var(--french-gray-400);
+
+    --line: var(--platinum-200);
     --white: #FFFFFF;
 
-    --danger-100:#F7DAD2;
-    --danger-700:#A8462F;
-    --success-100:#DCEEE0;
-    --success-700:#2E7D4F;
+    --danger-100: #F6E2E1;
+    --danger-700: #A83A3A;
+    --success-100: var(--platinum-50);
+    --success-700: var(--gunmetal-800);
 
     /* ---- Type ---------------------------------------------------------- */
     --font-display: "Fraunces", Georgia, serif;
-    --font-body: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-body: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     --font-mono: "IBM Plex Mono", "Courier New", monospace;
 
     /* ---- Shape / elevation --------------------------------------------- */
@@ -50,9 +69,12 @@
     --radius-lg: 22px;
     --radius-pill: 999px;
 
-    --shadow-sm: 0 1px 2px rgba(38, 56, 48, 0.08);
-    --shadow-md: 0 10px 28px rgba(38, 56, 48, 0.12);
-    --shadow-lg: 0 24px 56px rgba(38, 56, 48, 0.20);
+    --shadow-sm: 0 1px 2px rgba(45, 49, 66, 0.05);
+    --shadow-md: 0 10px 28px rgba(45, 49, 66, 0.09);
+    --shadow-lg: 0 24px 56px rgba(45, 49, 66, 0.16);
+
+    /* ---- Layout / chrome ---------------------------------------------- */
+    --navbar-height: 108px;
 
     --ease: cubic-bezier(.22,.9,.32,1);
 }
@@ -87,6 +109,9 @@ a { color: inherit; text-decoration: none; }
     margin-inline: auto;
     padding-inline: 24px;
 }
+@media (max-width: 600px) {
+    .container { padding-inline: 16px; }
+}
 
 .eyebrow {
     display: inline-flex;
@@ -108,10 +133,12 @@ a { color: inherit; text-decoration: none; }
 }
 
 h1, h2, h3 { font-family: var(--font-display); color: var(--ink-900); line-height: 1.15; margin: 0; }
+p { font-family: var(--font-body); }
+button, input, select, textarea { font-family: var(--font-body); }
 em { font-style: italic; color: var(--pine-800); }
 
 :focus-visible {
-    outline: 2px solid var(--amber-600);
+    outline: 2px solid var(--gunmetal-800);
     outline-offset: 3px;
     border-radius: 4px;
 }
@@ -164,14 +191,19 @@ em { font-style: italic; color: var(--pine-800); }
     position: sticky;
     top: 0;
     z-index: 100;
-    background: rgba(253, 240, 215, .88);
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid transparent;
-    transition: border-color .25s var(--ease), box-shadow .25s var(--ease);
+    background: rgba(247, 246, 248, 0.72);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.40);
+    box-shadow: 0 4px 24px rgba(45, 49, 66, 0.08);
+    transition: border-color .25s var(--ease), box-shadow .25s var(--ease), background .25s var(--ease);
 }
 .site-header.is-scrolled {
-    border-color: var(--line);
-    box-shadow: 0 2px 18px rgba(38,56,48,.08);
+    background: rgba(247, 246, 248, 0.82);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(216, 213, 219, 0.75);
+    box-shadow: 0 8px 30px rgba(45, 49, 66, 0.12);
 }
 
 .navbar {
@@ -179,23 +211,30 @@ em { font-style: italic; color: var(--pine-800); }
     align-items: center;
     justify-content: space-between;
     gap: 20px;
-    padding-block: 16px;
+    padding-block: 6px;
 }
 
 .navbar__logo {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    font-family: var(--font-display);
-    font-weight: 600;
-    font-size: 21px;
-    color: var(--pine-800);
     flex-shrink: 0;
+    text-decoration: none;
 }
-.navbar__logo-mark {
-    width: 22px;
-    height: 22px;
-    color: var(--pine-800);
+.navbar__logo-img {
+    width: 150px;
+    max-width: 100%;
+    height: auto;
+    display: block;
+    transition: transform .2s var(--ease), opacity .2s var(--ease);
+}
+.navbar__logo-img:hover {
+    transform: scale(1.02);
+}
+
+@media (max-width: 600px) {
+    .navbar__logo-img {
+        width: 130px;
+    }
 }
 
 .navbar__admin-link {
@@ -203,7 +242,7 @@ em { font-style: italic; color: var(--pine-800); }
     align-items: center;
     gap: 6px;
     font-weight: 600;
-    color: var(--pine, #3f5b4d); /* swap for your actual pine/sage token name */
+    color: var(--gunmetal-800);
 }
 
 .navbar__admin-link:hover {
@@ -234,7 +273,7 @@ em { font-style: italic; color: var(--pine-800); }
     left: 0; right: 100%;
     bottom: -2px;
     height: 2px;
-    background: var(--amber-600);
+    background: var(--gunmetal-800);
     border-radius: 2px;
     transition: right .22s var(--ease);
 }
@@ -268,7 +307,7 @@ em { font-style: italic; color: var(--pine-800); }
     height: 17px;
     padding: 0 4px;
     border-radius: 999px;
-    background: var(--amber-600);
+    background: var(--gunmetal-800);
     color: var(--white);
     font-family: var(--font-mono);
     font-size: 10px;
@@ -329,6 +368,16 @@ em { font-style: italic; color: var(--pine-800); }
 }
 .mobile-nav__actions { margin-top: auto; display: flex; flex-direction: column; gap: 12px; }
 
+.mobile-nav__logo {
+    display: inline-flex;
+    align-items: center;
+}
+.mobile-nav__logo-img {
+    width: 140px;
+    height: auto;
+    display: block;
+}
+
 /* ==========================================================================
    Footer
    ========================================================================== */
@@ -343,8 +392,21 @@ em { font-style: italic; color: var(--pine-800); }
     gap: 40px;
     padding-block: 56px 40px;
 }
-.site-footer__brand { display: flex; align-items: center; gap: 8px; color: var(--white); font-family: var(--font-display); font-size: 20px; margin-bottom: 14px; }
-.site-footer__brand svg { width: 20px; height: 20px; }
+.site-footer__brand {
+    margin-bottom: 14px;
+}
+.site-footer__brand-link {
+    display: inline-block;
+    transition: opacity .18s var(--ease);
+}
+.site-footer__brand-link:hover {
+    opacity: 0.88;
+}
+.site-footer__logo-img {
+    width: 140px;
+    height: auto;
+    display: block;
+}
 .site-footer__blurb { font-size: 14px; line-height: 1.6; max-width: 32ch; }
 .site-footer h4 {
     font-family: var(--font-mono);
