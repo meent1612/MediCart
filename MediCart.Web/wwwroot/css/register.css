@@ -4,31 +4,30 @@
    ========================================================================== */
 
 :root {
-  /* Brand palette (from the shared "for therapists" palette, repurposed) */
-  --slate: #384e41;      /* deep, grounded — headings, primary CTA, dark panel */
-  --misty: #8aa27f;      /* mid green — accents, active states, links */
-  --sage: #cad6c8;       /* soft green — borders, dividers, quiet fills */
-  --beige: #fdf0d7;      /* warm paper — page background, badges */
-  --cream: #fffdf9;      /* near-white — cards, inputs */
-  --ink: #253027;        /* body text, derived from slate for legibility */
-  --ink-soft: #5b6a5f;   /* secondary text */
+  /* Brand palette: Gunmetal, French Gray, Platinum */
+  --slate: #2D3142;      /* deep, grounded — headings, primary CTA, dark panel */
+  --misty: #ADACB5;      /* mid gray — accents, active states, links */
+  --sage: #D8D5DB;       /* soft platinum — borders, dividers, quiet fills */
+  --beige: #F7F6F8;      /* light canvas — page background, badges */
+  --cream: #FFFFFF;      /* pure white — cards, inputs */
+  --ink: #2D3142;        /* body text */
+  --ink-soft: #71707E;   /* secondary text */
 
-  /* Semantic (kept outside the brand family on purpose — errors need to
-     read as errors, not as another shade of green) */
+  /* Semantic */
   --error: #a3453a;
   --error-bg: #f8e9e6;
 
   /* Type */
   --font-display: "Fraunces", "Iowan Old Style", serif;
-  --font-body: "Inter", "Segoe UI", sans-serif;
+  --font-body: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
 
   /* Rhythm */
   --radius-sm: 8px;
   --radius-md: 14px;
   --radius-lg: 28px;
-  --shadow-card: 0 24px 60px -24px rgba(56, 78, 65, 0.35);
-  --shadow-soft: 0 2px 10px rgba(56, 78, 65, 0.08);
+  --shadow-card: 0 24px 60px -24px rgba(45, 49, 66, 0.25);
+  --shadow-soft: 0 2px 10px rgba(45, 49, 66, 0.06);
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -69,28 +68,23 @@ body.register-body {
   position: absolute;
   inset: 0;
   opacity: 0.5;
-  background-image: radial-gradient(circle at 18% 20%, rgba(202, 214, 200, 0.14), transparent 40%),
-    radial-gradient(circle at 85% 75%, rgba(202, 214, 200, 0.12), transparent 45%);
+  background-image: radial-gradient(circle at 18% 20%, rgba(216, 213, 219, 0.14), transparent 40%),
+    radial-gradient(circle at 85% 75%, rgba(216, 213, 219, 0.12), transparent 45%);
   pointer-events: none;
 }
 
 .register__logo {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  font-family: var(--font-display);
-  font-size: 1.35rem;
-  font-weight: 600;
-  color: var(--cream);
   text-decoration: none;
   z-index: 1;
   width: fit-content;
 }
 
-.register__logo-mark {
-  width: 26px;
-  height: 26px;
-  color: var(--sage);
+.register__logo-img {
+  width: 140px;
+  height: auto;
+  display: block;
 }
 
 .register__brand-body {
@@ -558,7 +552,7 @@ body.register-body {
 }
 
 .register__submit:hover {
-  background: #2c3f34;
+  background: #1E2230;
 }
 
 .register__submit:active {

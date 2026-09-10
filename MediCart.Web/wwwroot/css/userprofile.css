@@ -18,13 +18,18 @@
     align-items: start;
 }
 
-/* ----- Sidebar ----- */
+/* ----- Sidebar (iOS Glassmorphism) ----- */
 .up-sidebar {
-    background: var(--white);
-    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.70);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(255, 255, 255, 0.50);
     border-radius: var(--radius-lg);
     padding: 28px 22px;
     text-align: center;
+    position: sticky;
+    top: 118px;
+    box-shadow: 0 10px 30px rgba(45, 49, 66, 0.07);
 }
 
 .up-sidebar__identity {

@@ -12,7 +12,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--beige-50, #FDF0D7);
+    background: var(--canvas, #F7F6F8);
     opacity: 1;
     visibility: visible;
     transition: opacity 0.3s ease, visibility 0.3s ease;
@@ -55,7 +55,7 @@
 .site-loading-track {
     width: min(380px, 85vw);
     height: 6px;
-    background: rgba(38, 56, 48, 0.12);
+    background: rgba(45, 49, 66, 0.12);
     border-radius: 999px;
     overflow: hidden;
     position: relative;
@@ -65,7 +65,7 @@
 .site-loading-bar {
     height: 100%;
     width: 0%;
-    background: linear-gradient(90deg, var(--pine-800, #384E41), var(--amber-600, #B97A2C));
+    background: linear-gradient(90deg, #2D3142, #ADACB5, #D8D5DB);
     border-radius: 999px;
     will-change: width;
 }
@@ -80,7 +80,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(26, 35, 30, 0.45);
+    background: rgba(45, 49, 66, 0.45);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     opacity: 0;
@@ -97,10 +97,10 @@
 }
 
 .medicart-loader-card {
-    background: rgba(253, 240, 215, 0.96);
+    background: rgba(247, 246, 248, 0.96);
     border: 1px solid rgba(255, 255, 255, 0.8);
-    box-shadow: 0 24px 60px rgba(26, 35, 30, 0.25), 
-                0 4px 16px rgba(38, 56, 48, 0.12);
+    box-shadow: 0 24px 60px rgba(45, 49, 66, 0.25), 
+                0 4px 16px rgba(45, 49, 66, 0.12);
     border-radius: 24px;
     padding: 24px 32px 20px;
     text-align: center;
@@ -140,8 +140,8 @@
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    color: var(--pine-800, #384E41);
-    background: rgba(56, 78, 65, 0.1);
+    color: var(--gunmetal-800, #2D3142);
+    background: rgba(45, 49, 66, 0.08);
     padding: 4px 12px;
     border-radius: 999px;
     margin-bottom: 8px;
@@ -150,7 +150,7 @@
 .medicart-loader-badge svg {
     width: 12px;
     height: 12px;
-    color: var(--amber-600, #B97A2C);
+    color: var(--gunmetal-800, #2D3142);
 }
 
 .medicart-loader-title {
@@ -158,14 +158,14 @@
     font-family: var(--font-display, "Fraunces", Georgia, serif);
     font-size: 20px;
     font-weight: 600;
-    color: var(--ink-900, #1A231E);
+    color: var(--gunmetal-800, #2D3142);
 }
 
 .medicart-loader-status {
     margin: 6px 0 16px;
-    font-family: var(--font-body, "Inter", sans-serif);
+    font-family: var(--font-body, "Plus Jakarta Sans", sans-serif);
     font-size: 13.5px;
-    color: var(--slate-700, #3C463D);
+    color: var(--slate-700, #3E4357);
     line-height: 1.4;
     min-height: 20px;
 }
@@ -174,7 +174,7 @@
     width: 130px;
     height: 4px;
     border-radius: 999px;
-    background: rgba(38, 56, 48, 0.12);
+    background: rgba(45, 49, 66, 0.12);
     overflow: hidden;
     position: relative;
 }
@@ -184,7 +184,7 @@
     top: 0;
     bottom: 0;
     width: 45%;
-    background: linear-gradient(90deg, var(--pine-800, #384E41), var(--amber-600, #B97A2C));
+    background: linear-gradient(90deg, #2D3142, #ADACB5);
     border-radius: 999px;
     animation: medicartLoaderShimmer 1.4s infinite ease-in-out;
 }

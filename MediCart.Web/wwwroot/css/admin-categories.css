@@ -12,7 +12,7 @@
     padding: 22px 24px 26px;
     transition: box-shadow 0.2s ease;
 }
-.admin-panel:hover { box-shadow: 0 8px 24px rgba(35, 57, 46, 0.06); }
+.admin-panel:hover { box-shadow: 0 8px 24px rgba(45, 49, 66, 0.06); }
 
 .admin-panel__head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
 .admin-panel__head h2 { font-size: 1.15rem; margin: 0; }
@@ -46,13 +46,13 @@
     border-radius: var(--radius-sm);
     font-size: 13.5px;
     font-family: inherit;
-    background: var(--cream, #faf3e4);
+    background: var(--canvas, #F7F6F8);
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 .admin-search input:focus {
     outline: none;
     border-color: var(--pine-600, var(--pine-800));
-    box-shadow: 0 0 0 3px rgba(47, 74, 60, 0.12);
+    box-shadow: 0 0 0 3px rgba(45, 49, 66, 0.12);
 }
 
 /* ----- Table ----- */
@@ -96,7 +96,7 @@
 .btn-link--danger { color: var(--danger-700); }
 
 /* ----- Category tree ----- */
-.cat-row--parent:hover, .cat-row--child:hover { background: var(--cream, #faf3e4); }
+.cat-row--parent:hover, .cat-row--child:hover { background: var(--platinum-50, #F2F1F4); }
 .cat-row--child.cat-row--collapsed-hidden,
 .cat-row.cat-row--search-hidden { display: none; }
 
@@ -108,7 +108,7 @@
     width: 20px;
     height: 20px;
     border: none;
-    background: var(--cream, #f4efe2);
+    background: var(--platinum-50, #F2F1F4);
     border-radius: 5px;
     display: flex;
     align-items: center;
@@ -153,11 +153,11 @@
     font-family: var(--font-mono);
     font-size: 12px;
     font-weight: 600;
-    background: var(--cream, #f4efe2);
+    background: var(--platinum-50, #F2F1F4);
     color: var(--slate-500);
 }
 .count-pill--active {
-    background: rgba(47, 74, 60, 0.12);
+    background: rgba(45, 49, 66, 0.12);
     color: var(--pine-800);
 }
 
@@ -175,7 +175,7 @@
 .admin-form__field textarea:focus {
     outline: none;
     border-color: var(--pine-600, var(--pine-800));
-    box-shadow: 0 0 0 3px rgba(47, 74, 60, 0.12);
+    box-shadow: 0 0 0 3px rgba(45, 49, 66, 0.12);
 }
 
 /* ----- Alerts ----- */
