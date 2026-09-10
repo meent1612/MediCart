@@ -1,0 +1,43 @@
+<svg width="440" height="300" viewBox="0 0 440 300" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;1,9..144,700&amp;display=swap');
+      .brand-text {
+        font-family: 'Fraunces', Georgia, 'Times New Roman', serif;
+        font-weight: 700;
+        font-size: 36px;
+      }
+    </style>
+    <linearGradient id="cartGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3a3f54"/>
+      <stop offset="100%" stop-color="#2D3142"/>
+    </linearGradient>
+
+    <!-- mask that knocks a true transparent plus/cross out of the basket -->
+    <mask id="crossKnockout">
+      <rect x="0" y="0" width="440" height="300" fill="white"/>
+      <g transform="translate(200,155)">
+        <rect x="-11" y="-45" width="22" height="90" rx="6" fill="black"/>
+        <rect x="-45" y="-11" width="90" height="22" rx="6" fill="black"/>
+      </g>
+    </mask>
+  </defs>
+
+  <g mask="url(#crossKnockout)">
+    <!-- basket -->
+    <path d="M100 90 L300 90 L272 220 L128 220 Z" fill="url(#cartGrad)"/>
+    <!-- handle -->
+    <path d="M40 60 L90 60 L108 90" fill="none" stroke="url(#cartGrad)" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- front guard bar -->
+    <path d="M40 60 L24 32" fill="none" stroke="url(#cartGrad)" stroke-width="16" stroke-linecap="round"/>
+  </g>
+
+  <!-- basket ribs, drawn after masking so they stay visible either side of the cross -->
+  <line x1="150" y1="102" x2="140" y2="208" stroke="#2D3142" stroke-width="5" stroke-opacity="0.3" stroke-linecap="round"/>
+  <line x1="250" y1="102" x2="260" y2="208" stroke="#2D3142" stroke-width="5" stroke-opacity="0.3" stroke-linecap="round"/>
+
+  <!-- wordmark -->
+  <text x="220" y="275" text-anchor="middle" class="brand-text" fill="#2D3142">
+    Medi<tspan fill="#ADACB5" font-style="italic">Cart</tspan>
+  </text>
+</svg>
