@@ -61,9 +61,6 @@ namespace MediCart.Web.Services
 
             // Server-side enforcement: if any medicine in the cart requires a
             // prescription, a prescription image must have been uploaded.
-            // This is the authoritative check — CheckoutController does a fast-fail
-            // version of the same rule before this method is even called, but this
-            // check stays here too so any future caller of PlaceOrderAsync can't skip it.
             bool requiresPrescription = cartItems.Any(ci => ci.Medicine.RequiresPrescription);
             if (requiresPrescription && string.IsNullOrWhiteSpace(request.PrescriptionImageUrl))
             {
@@ -83,15 +80,11 @@ namespace MediCart.Web.Services
             decimal deliveryCharge = division.DeliveryCharge;
             decimal totalAmount = subtotal + deliveryCharge;
 
-            // Check sensitivity flagging thresholds
-            // High >= 5 units, Mid >= 15 units, Low >= 30 units
+            // Check sensitivity flagging thresholds — logic lives in
+            // SensitivityFlagHelper so display-time recomputation
+            // (Flagged Orders page) always matches this check exactly.
             bool isFlagged = cartItems.Any(ci =>
-            {
-                var level = ci.Medicine.SensitivityLevel?.ToLower();
-                return level == "high" && ci.Quantity >= 5
-                    || level == "mid"  && ci.Quantity >= 15
-                    || level == "low"  && ci.Quantity >= 30;
-            });
+                SensitivityFlagHelper.IsOverThreshold(ci.Medicine.SensitivityLevel, ci.Quantity));
 
             await using var transaction = await _db.Database.BeginTransactionAsync();
 

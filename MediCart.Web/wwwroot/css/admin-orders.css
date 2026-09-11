@@ -1,0 +1,106 @@
+/* ==========================================================================
+   MediCart — Admin Order Management (Incoming Orders + Order Detail)
+   Extends tokens from site.css; reuses .admin-table / .modal-overlay /
+   .tag / .admin-alert classes already defined in admin-medicines.css
+   ========================================================================== */
+
+.order-filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin: 16px 0 14px;
+}
+
+.order-filter-bar select {
+    font-family: var(--font-body);
+    font-size: 13.5px;
+    padding: 9px 13px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: var(--white);
+    color: var(--ink-900);
+    cursor: pointer;
+}
+.order-filter-bar select:focus {
+    outline: none;
+    border-color: var(--pine-800);
+    box-shadow: 0 0 0 3px rgba(47, 74, 60, .12);
+}
+
+.order-status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 11px;
+    border-radius: var(--radius-pill);
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+.order-status-badge--pending { background: var(--amber-100); color: var(--amber-700); }
+.order-status-badge--processing { background: var(--sage-100); color: var(--pine-800); }
+.order-status-badge--shipped { background: var(--sage-100); color: var(--pine-800); }
+.order-status-badge--delivered { background: var(--success-100); color: var(--success-700); }
+.order-status-badge--rejected { background: var(--danger-100); color: var(--danger-700); }
+
+.order-detail-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+.order-detail-head h2 { margin: 0; font-family: var(--font-display); }
+
+.order-detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    align-items: start;
+    margin-bottom: 24px;
+}
+@media (max-width: 860px) {
+    .order-detail-grid { grid-template-columns: 1fr; }
+}
+
+.prescription-image {
+    max-width: 100%;
+    max-height: 320px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--line);
+    display: block;
+    margin-top: 8px;
+}
+
+.order-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+}
+
+.admin-back-link {
+    display: inline-block;
+    font-size: 13.5px;
+    color: var(--slate-500);
+    margin-top: 8px;
+}
+.admin-back-link:hover { color: var(--pine-800); }
+
+/* ---- Flagged items breakdown (Order Detail + Flagged Orders list) ------- */
+.flagged-items-list {
+    list-style: none;
+    margin: 8px 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+.flagged-items-list li {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    font-size: 13px;
+    color: var(--ink-900);
+}

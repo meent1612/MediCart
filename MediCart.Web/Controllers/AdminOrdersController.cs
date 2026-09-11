@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MediCart.Web.Data;
 using MediCart.Web.Models;
+using MediCart.Web.Services;
 // using Microsoft.AspNetCore.Authorization; // enable once every teammate has tested login with the Admin role
 
 namespace MediCart.Web.Controllers
@@ -36,7 +37,6 @@ namespace MediCart.Web.Controllers
 
             if (string.IsNullOrWhiteSpace(status) || status == "Active")
             {
-                // Default view: orders that still need admin attention.
                 query = query.Where(o => o.Status != "Delivered" && o.Status != "Rejected");
                 status = "Active";
             }
@@ -228,9 +228,39 @@ namespace MediCart.Web.Controllers
             return RedirectToAction(nameof(OrderDetail), new { id });
         }
 
-        // TEMP placeholder — real logic comes in Checkpoint 2 Step 4.
+        // =====================
+        // Flagged Orders
+        // =====================
+
         [HttpGet]
-        public IActionResult FlaggedOrders() => View("ComingSoon");
+        public async Task<IActionResult> FlaggedOrders()
+        {
+            var orders = await _db.Orders
+                .Include(o => o.User)
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Medicine)
+                .Where(o => o.IsFlagged)
+                .OrderByDescending(o => o.CreatedAt)
+                .ToListAsync();
+
+            var rows = orders.Select(o => new AdminFlaggedOrderRowViewModel
+            {
+                Id = o.Id,
+                OrderNumber = "MC-" + (10000 + o.Id),
+                CustomerName = o.User.FullName,
+                Status = o.Status,
+                CreatedAt = o.CreatedAt,
+                FlaggedItems = ComputeFlaggedItems(o.OrderItems)
+            }).ToList();
+
+            var model = new AdminFlaggedOrdersListViewModel
+            {
+                Orders = rows,
+                TotalCount = rows.Count
+            };
+
+            return View(model);
+        }
 
         // =====================
         // Helpers
@@ -258,9 +288,38 @@ namespace MediCart.Web.Controllers
                     Quantity = oi.Quantity,
                     UnitPrice = oi.UnitPrice
                 }).ToList(),
+                FlaggedItems = order.IsFlagged
+                    ? ComputeFlaggedItems(order.OrderItems)
+                    : new List<FlaggedItemViewModel>(),
                 PrescriptionImageUrl = order.Prescription?.ImageUrl,
                 PrescriptionStatus = order.Prescription?.Status
             };
+        }
+
+        // Recomputes every medicine+tier combination in this order that
+        // crosses its sensitivity threshold, using the same rule OrderService
+        // applied at placement time (see SensitivityFlagHelper).
+        private static List<FlaggedItemViewModel> ComputeFlaggedItems(ICollection<OrderItem> items)
+        {
+            var result = new List<FlaggedItemViewModel>();
+
+            foreach (var oi in items)
+            {
+                var level = oi.Medicine.SensitivityLevel;
+
+                if (SensitivityFlagHelper.IsOverThreshold(level, oi.Quantity))
+                {
+                    result.Add(new FlaggedItemViewModel
+                    {
+                        MedicineName = oi.Medicine.Name,
+                        SensitivityLevel = level!.ToLower(),
+                        Quantity = oi.Quantity,
+                        Threshold = SensitivityFlagHelper.GetThreshold(level)!.Value
+                    });
+                }
+            }
+
+            return result;
         }
 
         private void LogAction(string adminId, string action, int orderId)
