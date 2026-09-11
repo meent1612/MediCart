@@ -1,0 +1,147 @@
+@model MediCart.Web.Models.AdminOrderDetailViewModel
+@{
+    ViewData["Title"] = "Order " + Model.OrderNumber;
+    Layout = "_AdminLayout";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin-medicines.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/admin-orders.css" asp-append-version="true" />
+}
+
+@if (TempData["OrderSuccess"] != null)
+{
+    <div class="admin-alert admin-alert--success"><span>@TempData["OrderSuccess"]</span></div>
+}
+@if (TempData["OrderError"] != null)
+{
+    <div class="admin-alert admin-alert--danger"><span>@TempData["OrderError"]</span></div>
+}
+
+<div class="order-detail-head">
+    <div>
+        <h2>@Model.OrderNumber</h2>
+        <p class="admin-table__muted">Placed @Model.CreatedAt.ToLocalTime().ToString("dd MMM yyyy, h:mm tt")</p>
+    </div>
+    <span class="order-status-badge order-status-badge--@Model.Status.ToLower()">@Model.Status</span>
+    @if (Model.IsFlagged)
+    {
+        <span class="tag tag--rx">Flagged</span>
+    }
+</div>
+
+<div class="order-detail-grid">
+    <div>
+        <section class="info-card">
+            <h3>Customer</h3>
+            <p class="info-card__name">@Model.CustomerName</p>
+            <p>@Model.CustomerEmail</p>
+            <p>@Model.Phone</p>
+        </section>
+
+        <section class="info-card">
+            <h3>Delivery address</h3>
+            <p>@Model.DeliveryAddress</p>
+        </section>
+
+        <section class="info-card">
+            <h3>Payment</h3>
+            <p>@Model.PaymentMethod</p>
+        </section>
+
+        @if (!string.IsNullOrWhiteSpace(Model.PrescriptionImageUrl))
+        {
+            <section class="info-card">
+                <h3>Prescription</h3>
+                <a href="@Model.PrescriptionImageUrl" target="_blank" rel="noopener">
+                    <img src="@Model.PrescriptionImageUrl" alt="Prescription" class="prescription-image" />
+                </a>
+                <p class="admin-table__muted">Status: @(Model.PrescriptionStatus ?? "pending")</p>
+            </section>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(Model.RejectionReason))
+        {
+            <section class="info-card">
+                <h3>Rejection reason</h3>
+                <p>@Model.RejectionReason</p>
+            </section>
+        }
+    </div>
+
+    <section class="info-card">
+        <h3>Items</h3>
+        <div class="items-list">
+            @foreach (var item in Model.Items)
+            {
+                <div class="items-list__row">
+                    <span>@item.MedicineName &times; @item.Quantity</span>
+                    <span>৳@item.LineTotal.ToString("0")</span>
+                </div>
+            }
+            <div class="items-list__row">
+                <span>Delivery</span>
+                <span>৳@Model.DeliveryCharge.ToString("0")</span>
+            </div>
+            <div class="items-list__row items-list__row--total">
+                <span>Total</span>
+                <span>৳@Model.Total.ToString("0")</span>
+            </div>
+        </div>
+    </section>
+</div>
+
+<div class="order-actions">
+    @if (Model.CanApprove)
+    {
+        <form method="post" asp-action="Approve" asp-route-id="@Model.Id" style="display:inline;">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn">Approve</button>
+        </form>
+        <button type="button" class="btn btn--danger" id="openRejectModal">Reject</button>
+    }
+    @if (Model.CanMarkShipped)
+    {
+        <form method="post" asp-action="MarkShipped" asp-route-id="@Model.Id" style="display:inline;">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn">Mark as Shipped</button>
+        </form>
+    }
+    @if (Model.CanMarkDelivered)
+    {
+        <form method="post" asp-action="MarkDelivered" asp-route-id="@Model.Id" style="display:inline;">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn">Mark as Delivered</button>
+        </form>
+    }
+    @if (!Model.CanApprove && !Model.CanMarkShipped && !Model.CanMarkDelivered)
+    {
+        <p class="admin-table__muted">No further action available for this order.</p>
+    }
+</div>
+
+<a asp-action="IncomingOrders" class="admin-back-link">&larr; Back to incoming orders</a>
+
+@if (Model.CanReject)
+{
+    <div class="modal-overlay" id="rejectModal">
+        <div class="modal-card">
+            <h3>Reject @Model.OrderNumber</h3>
+            <form method="post" asp-action="Reject" asp-route-id="@Model.Id">
+                @Html.AntiForgeryToken()
+                <div class="admin-form__field">
+                    <label for="reason">Reason for rejection</label>
+                    <textarea id="reason" name="reason" rows="3" required></textarea>
+                </div>
+                <div class="modal-card__actions">
+                    <button type="button" class="btn" id="closeRejectModal">Cancel</button>
+                    <button type="submit" class="btn btn--danger">Reject order</button>
+                </div>
+            </form>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script src="~/js/admin-orders.js" asp-append-version="true"></script>
+}
