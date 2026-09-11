@@ -195,6 +195,26 @@ namespace MediCart.Web.Controllers
             if (divisionId <= 0 || cityId <= 0)
                 return BadRequest(new { error = "Please select a valid division and city." });
 
+            // Fast-fail: if any medicine in the cart requires a prescription,
+            // reject here before attempting a Cloudinary upload or touching the
+            // order pipeline at all. OrderService.PlaceOrderAsync repeats this
+            // check as the authoritative guard (defense-in-depth) in case this
+            // action is ever bypassed or PlaceOrderAsync is called from elsewhere.
+            var cartItems = await _cartService.GetCartAsync(userId);
+
+            if (cartItems.Count == 0)
+                return BadRequest(new { error = "Your cart is empty." });
+
+            bool requiresPrescription = cartItems.Any(ci => ci.RequiresRx);
+
+            if (requiresPrescription && (prescriptionFile == null || prescriptionFile.Length == 0))
+            {
+                return BadRequest(new
+                {
+                    error = "This order contains a medicine that requires a prescription. Please attach one before placing the order."
+                });
+            }
+
             // Upload prescription to Cloudinary if provided.
             string? prescriptionImageUrl = null;
             if (prescriptionFile != null && prescriptionFile.Length > 0)
