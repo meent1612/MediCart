@@ -194,8 +194,68 @@ namespace MediCart.Web.Controllers
         [HttpGet]
         public IActionResult AuditLog() => View("ComingSoon");
 
+
+        // =====================
+        // Contact Messages
+        // =====================
+
         [HttpGet]
-        public IActionResult ContactMessages() => View("ComingSoon");
+        public async Task<IActionResult> ContactMessages()
+        {
+            var messages = await _db.ContactMessages
+                .OrderByDescending(m => m.CreatedAt)
+                .Select(m => new AdminContactMessageRowViewModel
+                {
+                    Id = m.Id,
+                    Name = m.Name,
+                    Email = m.Email,
+                    Message = m.Message,
+                    IsRead = m.IsRead,
+                    CreatedAt = m.CreatedAt
+                })
+                .ToListAsync();
+
+            var model = new AdminContactMessageListViewModel
+            {
+                Messages = messages,
+                UnreadCount = messages.Count(m => !m.IsRead),
+                TotalCount = messages.Count
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> MarkMessageAsRead(int id)
+        {
+            var message = await _db.ContactMessages.FindAsync(id);
+
+            if (message == null)
+            {
+                TempData["MessageError"] = "Message not found.";
+                return RedirectToAction(nameof(ContactMessages));
+            }
+
+            message.IsRead = true;
+
+            var adminId = _userManager.GetUserId(User);
+            if (adminId != null)
+            {
+                _db.AuditLogs.Add(new AuditLog
+                {
+                    AdminId = adminId,
+                    Action = $"Marked contact message #{message.Id} as read",
+                    TableName = "ContactMessages",
+                    RecordId = message.Id,
+                    CreatedAt = DateTime.UtcNow
+                });
+            }
+
+            await _db.SaveChangesAsync();
+
+            return RedirectToAction(nameof(ContactMessages));
+        }
 
 
         // =====================

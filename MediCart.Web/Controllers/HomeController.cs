@@ -17,9 +17,6 @@ public class HomeController : Controller
 
     public async Task<IActionResult> Index()
     {
-        // Full filter option lists straight from the DB — same shape
-        // MedicinesController uses, so the homepage cards link straight
-        // into Medicines with the same query params the filters expect.
         var categories = await _context.Categories
             .Include(c => c.SubCategories)
             .OrderBy(c => c.Name)
@@ -63,18 +60,38 @@ public class HomeController : Controller
        return View();
     }
 
+    // POST /Home/Contact
+    // Guest/Customer submission — no login required (Report 03 §1.12).
+    // ContactMessage entity has no Subject column, so Subject is folded
+    // into the stored Message text rather than dropped.
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult Contact(ContactViewModel model)
+    public async Task<IActionResult> Contact(ContactViewModel model)
     {
-      if (!ModelState.IsValid)
-    {
-        return View(model);
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        var fullMessage = string.IsNullOrWhiteSpace(model.Subject)
+            ? model.Message.Trim()
+            : $"[{model.Subject.Trim()}] {model.Message.Trim()}";
+
+        _context.ContactMessages.Add(new ContactMessage
+        {
+            Name = model.FullName.Trim(),
+            Email = model.Email.Trim(),
+            Message = fullMessage,
+            IsRead = false,
+            CreatedAt = DateTime.UtcNow
+        });
+
+        await _context.SaveChangesAsync();
+
+        TempData["ContactSuccess"] = "Thanks — we've received your message and will get back to you within 24 hours.";
+        return RedirectToAction(nameof(Contact));
     }
 
-    TempData["ContactSuccess"] = "Thanks — we've received your message and will get back to you within 24 hours.";
-     return RedirectToAction(nameof(Contact));
-   }
     public IActionResult Terms()
     {
        return View();

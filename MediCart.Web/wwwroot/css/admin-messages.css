@@ -1,0 +1,16 @@
+/* ==========================================================================
+   MediCart — Admin Contact Messages
+   Extends tokens from site.css; reuses .admin-table / .admin-alert
+   classes already defined in admin-medicines.css
+   ========================================================================== */
+
+.message-row--unread {
+    background: var(--sage-100);
+    font-weight: 600;
+}
+
+.message-cell {
+    max-width: 420px;
+    white-space: normal;
+    word-break: break-word;
+}
