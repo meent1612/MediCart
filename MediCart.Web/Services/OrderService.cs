@@ -59,6 +59,18 @@ namespace MediCart.Web.Services
             if (cartItems.Count == 0)
                 return OrderPlacementResult.Fail("Your cart is empty.");
 
+            // Server-side enforcement: if any medicine in the cart requires a
+            // prescription, a prescription image must have been uploaded.
+            // This is the authoritative check — CheckoutController does a fast-fail
+            // version of the same rule before this method is even called, but this
+            // check stays here too so any future caller of PlaceOrderAsync can't skip it.
+            bool requiresPrescription = cartItems.Any(ci => ci.Medicine.RequiresPrescription);
+            if (requiresPrescription && string.IsNullOrWhiteSpace(request.PrescriptionImageUrl))
+            {
+                return OrderPlacementResult.Fail(
+                    "This order contains a medicine that requires a prescription. Please attach one before placing the order.");
+            }
+
             // Load division for delivery charge
             var division = await _db.Divisions
                 .FirstOrDefaultAsync(d => d.Id == request.DivisionId);
