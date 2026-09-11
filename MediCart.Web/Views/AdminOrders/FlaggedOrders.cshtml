@@ -1,0 +1,56 @@
+@model MediCart.Web.Models.AdminFlaggedOrdersListViewModel
+@{
+    ViewData["Title"] = "Flagged orders";
+    Layout = "_AdminLayout";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin-medicines.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/admin-orders.css" asp-append-version="true" />
+}
+
+<p class="medicine-results-count">@Model.TotalCount flagged order(s)</p>
+
+<div class="admin-table-wrap">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Order</th>
+                <th>Customer</th>
+                <th>Status</th>
+                <th>Flagged items</th>
+                <th>Placed</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Orders.Count == 0)
+            {
+                <tr><td colspan="6" class="admin-table__muted">No flagged orders right now.</td></tr>
+            }
+            @foreach (var order in Model.Orders)
+            {
+                <tr>
+                    <td>@order.OrderNumber</td>
+                    <td>@order.CustomerName</td>
+                    <td><span class="order-status-badge order-status-badge--@order.Status.ToLower()">@order.Status</span></td>
+                    <td>
+                        <ul class="flagged-items-list">
+                            @foreach (var item in order.FlaggedItems)
+                            {
+                                <li>
+                                    <span class="tag tag--sensitivity-@item.SensitivityLevel">@item.SensitivityLevel</span>
+                                    @item.MedicineName &mdash; ordered @item.Quantity (threshold @item.Threshold)
+                                </li>
+                            }
+                        </ul>
+                    </td>
+                    <td>@order.CreatedAt.ToLocalTime().ToString("dd MMM, h:mm tt")</td>
+                    <td>
+                        <a class="btn btn--sm" asp-action="OrderDetail" asp-route-id="@order.Id">View</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
