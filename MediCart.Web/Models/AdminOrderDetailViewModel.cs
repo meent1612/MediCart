@@ -27,6 +27,10 @@ namespace MediCart.Web.Models
 
         public List<AdminOrderItemRowViewModel> Items { get; set; } = new();
 
+        // Every medicine+tier combination that crossed its threshold.
+        // Empty unless IsFlagged is true.
+        public List<FlaggedItemViewModel> FlaggedItems { get; set; } = new();
+
         // Informational only for now — Prescription.Status verification
         // workflow is not wired to Approve (Option 1, decided CP2 Step 2).
         public string? PrescriptionImageUrl { get; set; }
