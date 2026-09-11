@@ -189,12 +189,6 @@ namespace MediCart.Web.Controllers
         public IActionResult Dashboard() => View("ComingSoon");
 
         [HttpGet]
-        public IActionResult IncomingOrders() => View("ComingSoon");
-
-        [HttpGet]
-        public IActionResult FlaggedOrders() => View("ComingSoon");
-
-        [HttpGet]
         public IActionResult StockExpiry() => View("ComingSoon");
 
         [HttpGet]
@@ -215,9 +209,6 @@ namespace MediCart.Web.Controllers
             return View(model);
         }
 
-        // Returns the subcategories belonging to a given category, as JSON.
-        // Used by the Add/Edit Medicine form AND the Medicines filter bar to
-        // populate a dependent dropdown without shipping the entire list up front.
         [HttpGet]
         public async Task<IActionResult> GetSubCategories(int categoryId)
         {
@@ -988,7 +979,7 @@ namespace MediCart.Web.Controllers
                     ? null
                     : form.Description.Trim();
 
-            medicine.Dosage =                        // ← ADD THIS BLOCK
+            medicine.Dosage =
                 string.IsNullOrWhiteSpace(form.Dosage)
                     ? null
                     : form.Dosage.Trim();

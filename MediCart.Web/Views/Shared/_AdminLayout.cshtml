@@ -5,10 +5,6 @@
     var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
     bool IsAction(string action) => string.Equals(currentAction, action, StringComparison.OrdinalIgnoreCase);
 
-    // TODO(backend): once [Authorize(Roles = "Admin")] is wired in on the
-    // Admin controllers, User.Identity.IsAuthenticated will always be true
-    // here. Until then, "Admin" / "A" are shown as a safe fallback for
-    // anyone who reaches this layout without being logged in.
     string adminName = "Admin";
     string adminInitials = "A";
 
@@ -72,11 +68,11 @@
                 </a>
 
                 <span class="admin-nav__label">Orders</span>
-                <a href="~/Admin/IncomingOrders" class="admin-nav__link @(IsAction("IncomingOrders") ? "is-active" : "")">
+                <a href="~/AdminOrders/IncomingOrders" class="admin-nav__link @(IsAction("IncomingOrders") ? "is-active" : "")">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7h18M6 7v12a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V7M9 11h6"/></svg>
                     Incoming orders
                 </a>
-                <a href="~/Admin/FlaggedOrders" class="admin-nav__link @(IsAction("FlaggedOrders") ? "is-active" : "")">
+                <a href="~/AdminOrders/FlaggedOrders" class="admin-nav__link @(IsAction("FlaggedOrders") ? "is-active" : "")">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 21V4a1 1 0 0 1 1-1h10l4 4v9a1 1 0 0 1-1 1H6"/></svg>
                     Flagged orders
                 </a>

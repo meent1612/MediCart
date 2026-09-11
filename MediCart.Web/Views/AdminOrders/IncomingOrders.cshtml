@@ -1,0 +1,82 @@
+@model MediCart.Web.Models.AdminOrderListViewModel
+@{
+    ViewData["Title"] = "Incoming orders";
+    Layout = "_AdminLayout";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin-medicines.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/admin-orders.css" asp-append-version="true" />
+}
+
+@if (TempData["OrderSuccess"] != null)
+{
+    <div class="admin-alert admin-alert--success"><span>@TempData["OrderSuccess"]</span></div>
+}
+@if (TempData["OrderError"] != null)
+{
+    <div class="admin-alert admin-alert--danger"><span>@TempData["OrderError"]</span></div>
+}
+
+<div class="order-filter-bar">
+    <form method="get" asp-action="IncomingOrders">
+        <label for="statusFilter">Status</label>
+        <select id="statusFilter" name="status" onchange="this.form.submit()">
+            <option value="Active" selected="@(Model.StatusFilter == "Active")">Active (needs attention)</option>
+            <option value="All" selected="@(Model.StatusFilter == "All")">All</option>
+            <option value="Pending" selected="@(Model.StatusFilter == "Pending")">Pending</option>
+            <option value="Processing" selected="@(Model.StatusFilter == "Processing")">Processing</option>
+            <option value="Shipped" selected="@(Model.StatusFilter == "Shipped")">Shipped</option>
+            <option value="Delivered" selected="@(Model.StatusFilter == "Delivered")">Delivered</option>
+            <option value="Rejected" selected="@(Model.StatusFilter == "Rejected")">Rejected</option>
+        </select>
+    </form>
+    <span class="medicine-results-count">@Model.TotalCount order(s)</span>
+</div>
+
+<div class="admin-table-wrap">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Order</th>
+                <th>Customer</th>
+                <th>Items</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th>Flags</th>
+                <th>Placed</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Orders.Count == 0)
+            {
+                <tr><td colspan="8" class="admin-table__muted">No orders match this filter.</td></tr>
+            }
+            @foreach (var order in Model.Orders)
+            {
+                <tr>
+                    <td>@order.OrderNumber</td>
+                    <td>@order.CustomerName</td>
+                    <td>@order.ItemCount</td>
+                    <td>৳@order.TotalAmount.ToString("0")</td>
+                    <td><span class="order-status-badge order-status-badge--@order.Status.ToLower()">@order.Status</span></td>
+                    <td>
+                        @if (order.IsFlagged)
+                        {
+                            <span class="tag tag--rx">Flagged</span>
+                        }
+                        @if (order.HasPrescription)
+                        {
+                            <span class="tag tag--sensitivity-low">Rx</span>
+                        }
+                    </td>
+                    <td>@order.CreatedAt.ToLocalTime().ToString("dd MMM, h:mm tt")</td>
+                    <td>
+                        <a class="btn btn--sm" asp-action="OrderDetail" asp-route-id="@order.Id">View</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
