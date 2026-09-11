@@ -49,6 +49,22 @@
             <p>@Model.PaymentMethod</p>
         </section>
 
+        @if (Model.IsFlagged)
+        {
+            <section class="info-card">
+                <h3>Sensitivity flags</h3>
+                <ul class="flagged-items-list">
+                    @foreach (var item in Model.FlaggedItems)
+                    {
+                        <li>
+                            <span class="tag tag--sensitivity-@item.SensitivityLevel">@item.SensitivityLevel</span>
+                            @item.MedicineName &mdash; ordered @item.Quantity (threshold @item.Threshold)
+                        </li>
+                    }
+                </ul>
+            </section>
+        }
+
         @if (!string.IsNullOrWhiteSpace(Model.PrescriptionImageUrl))
         {
             <section class="info-card">
