@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MediCart.Web.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260909120325_InitialCreate")]
+    [Migration("20260912051124_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -231,7 +231,12 @@ namespace MediCart.Web.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("ContactMessages");
                 });
@@ -874,6 +879,16 @@ namespace MediCart.Web.Migrations
                         .IsRequired();
 
                     b.Navigation("Division");
+                });
+
+            modelBuilder.Entity("MediCart.Web.Data.ContactMessage", b =>
+                {
+                    b.HasOne("MediCart.Web.Data.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("MediCart.Web.Data.ExpiryAlert", b =>
