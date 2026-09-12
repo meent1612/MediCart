@@ -29,7 +29,8 @@ namespace MediCart.Web.Controllers
                 FullName = user.FullName,
                 Email = user.Email ?? string.Empty,
                 PhoneNumber = user.PhoneNumber,
-                Orders = await GetOrdersForUser(user.Id)
+                Orders = await GetOrdersForUser(user.Id),
+                Messages = await GetMessagesForUser(user.Id)
             };
 
             return View(model);
@@ -45,6 +46,7 @@ namespace MediCart.Web.Controllers
             if (!ModelState.IsValid)
             {
                 model.Orders = await GetOrdersForUser(user.Id);
+                model.Messages = await GetMessagesForUser(user.Id);
                 return View(model);
             }
 
@@ -62,6 +64,7 @@ namespace MediCart.Web.Controllers
                 ModelState.AddModelError(string.Empty, error.Description);
 
             model.Orders = await GetOrdersForUser(user.Id);
+            model.Messages = await GetMessagesForUser(user.Id);
             return View(model);
         }
 
@@ -79,6 +82,23 @@ namespace MediCart.Web.Controllers
                     ItemCount = o.OrderItems.Sum(i => i.Quantity),
                     Total = o.TotalAmount,
                     Status = o.Status
+                })
+                .ToListAsync();
+        }
+
+        // Only messages sent while logged in have UserId set (see #5) —
+        // guest submissions have no account to attach to, so they never
+        // appear here.
+        private async Task<List<SentMessageItem>> GetMessagesForUser(string userId)
+        {
+            return await _context.ContactMessages
+                .Where(m => m.UserId == userId)
+                .OrderByDescending(m => m.CreatedAt)
+                .Select(m => new SentMessageItem
+                {
+                    Message = m.Message,
+                    CreatedAt = m.CreatedAt,
+                    IsRead = m.IsRead
                 })
                 .ToListAsync();
         }

@@ -184,6 +184,13 @@
     text-align: center;
 }
 
+/* ----- My messages table ----- */
+.up-message-cell {
+    max-width: 480px;
+    white-space: normal;
+    word-break: break-word;
+}
+
 /* ----- Profile details form ----- */
 .up-success {
     display: flex;

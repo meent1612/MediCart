@@ -15,5 +15,8 @@ namespace MediCart.Web.Models
         public List<AdminContactMessageRowViewModel> Messages { get; set; } = new();
         public int UnreadCount { get; set; }
         public int TotalCount { get; set; }
+
+        // "All" | "Unread" | "Read"
+        public string StatusFilter { get; set; } = "Unread";
     }
 }

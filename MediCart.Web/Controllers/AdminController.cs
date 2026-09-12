@@ -199,10 +199,23 @@ namespace MediCart.Web.Controllers
         // Contact Messages
         // =====================
 
-        [HttpGet]
-        public async Task<IActionResult> ContactMessages()
+                [HttpGet]
+        public async Task<IActionResult> ContactMessages(string? status)
         {
-            var messages = await _db.ContactMessages
+            var query = _db.ContactMessages.AsQueryable();
+
+            if (string.IsNullOrWhiteSpace(status) || status == "Unread")
+            {
+                query = query.Where(m => !m.IsRead);
+                status = "Unread";
+            }
+            else if (status == "Read")
+            {
+                query = query.Where(m => m.IsRead);
+            }
+            // "All" — no filter
+
+            var messages = await query
                 .OrderByDescending(m => m.CreatedAt)
                 .Select(m => new AdminContactMessageRowViewModel
                 {
@@ -215,11 +228,15 @@ namespace MediCart.Web.Controllers
                 })
                 .ToListAsync();
 
+            var unreadCount = await _db.ContactMessages.CountAsync(m => !m.IsRead);
+            var totalCount = await _db.ContactMessages.CountAsync();
+
             var model = new AdminContactMessageListViewModel
             {
                 Messages = messages,
-                UnreadCount = messages.Count(m => !m.IsRead),
-                TotalCount = messages.Count
+                UnreadCount = unreadCount,
+                TotalCount = totalCount,
+                StatusFilter = status
             };
 
             return View(model);

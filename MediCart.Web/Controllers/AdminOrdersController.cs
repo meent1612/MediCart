@@ -232,9 +232,11 @@ namespace MediCart.Web.Controllers
         // Flagged Orders
         // =====================
 
-        [HttpGet]
-        public async Task<IActionResult> FlaggedOrders()
+               [HttpGet]
+        public async Task<IActionResult> FlaggedOrders(string? tier)
         {
+            tier ??= "All";
+
             var orders = await _db.Orders
                 .Include(o => o.User)
                 .Include(o => o.OrderItems)
@@ -243,25 +245,33 @@ namespace MediCart.Web.Controllers
                 .OrderByDescending(o => o.CreatedAt)
                 .ToListAsync();
 
-            var rows = orders.Select(o => new AdminFlaggedOrderRowViewModel
-            {
-                Id = o.Id,
-                OrderNumber = "MC-" + (10000 + o.Id),
-                CustomerName = o.User.FullName,
-                Status = o.Status,
-                CreatedAt = o.CreatedAt,
-                FlaggedItems = ComputeFlaggedItems(o.OrderItems)
-            }).ToList();
+            var rows = orders
+                .Select(o => new AdminFlaggedOrderRowViewModel
+                {
+                    Id = o.Id,
+                    OrderNumber = "MC-" + (10000 + o.Id),
+                    CustomerName = o.User.FullName,
+                    Status = o.Status,
+                    CreatedAt = o.CreatedAt,
+                    FlaggedItems = ComputeFlaggedItems(o.OrderItems)
+                })
+                // Only keep orders that have at least one flagged item at the
+                // selected tier — an order can carry flags at more than one
+                // tier, so this is "any match", not "every item matches".
+                .Where(row => tier == "All" ||
+                    row.FlaggedItems.Any(fi =>
+                        string.Equals(fi.SensitivityLevel, tier, StringComparison.OrdinalIgnoreCase)))
+                .ToList();
 
             var model = new AdminFlaggedOrdersListViewModel
             {
                 Orders = rows,
-                TotalCount = rows.Count
+                TotalCount = rows.Count,
+                TierFilter = tier
             };
 
             return View(model);
         }
-
         // =====================
         // Helpers
         // =====================

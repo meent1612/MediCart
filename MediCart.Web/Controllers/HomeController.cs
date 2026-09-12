@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MediCart.Web.Data;
@@ -9,10 +10,12 @@ namespace MediCart.Web.Controllers;
 public class HomeController : Controller
 {
     private readonly ApplicationDbContext _context;
+    private readonly UserManager<ApplicationUser> _userManager;
 
-    public HomeController(ApplicationDbContext context)
+    public HomeController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
     {
         _context = context;
+        _userManager = userManager;
     }
 
     public async Task<IActionResult> Index()
@@ -62,6 +65,8 @@ public class HomeController : Controller
 
     // POST /Home/Contact
     // Guest/Customer submission — no login required (Report 03 §1.12).
+    // If the submitter is logged in, UserId is stamped so it shows up
+    // under their profile's "My messages" (Step 3 follow-up, #5).
     // ContactMessage entity has no Subject column, so Subject is folded
     // into the stored Message text rather than dropped.
     [HttpPost]
@@ -77,13 +82,20 @@ public class HomeController : Controller
             ? model.Message.Trim()
             : $"[{model.Subject.Trim()}] {model.Message.Trim()}";
 
+        string? userId = null;
+        if (User.Identity != null && User.Identity.IsAuthenticated)
+        {
+            userId = _userManager.GetUserId(User);
+        }
+
         _context.ContactMessages.Add(new ContactMessage
         {
             Name = model.FullName.Trim(),
             Email = model.Email.Trim(),
             Message = fullMessage,
             IsRead = false,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            UserId = userId
         });
 
         await _context.SaveChangesAsync();

@@ -4,6 +4,30 @@
    classes already defined in admin-medicines.css
    ========================================================================== */
 
+.message-filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin: 16px 0 14px;
+}
+
+.message-filter-bar select {
+    font-family: var(--font-body);
+    font-size: 13.5px;
+    padding: 9px 13px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: var(--white);
+    color: var(--ink-900);
+    cursor: pointer;
+}
+.message-filter-bar select:focus {
+    outline: none;
+    border-color: var(--pine-800);
+    box-shadow: 0 0 0 3px rgba(47, 74, 60, .12);
+}
+
 .message-row--unread {
     background: var(--sage-100);
     font-weight: 600;
