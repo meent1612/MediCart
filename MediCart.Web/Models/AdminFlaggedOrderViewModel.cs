@@ -1,8 +1,5 @@
 namespace MediCart.Web.Models
 {
-    // One medicine+tier combination that crossed its threshold in an order.
-    // An order can have more than one of these if it contains multiple
-    // sensitive medicines that each independently crossed their own threshold.
     public class FlaggedItemViewModel
     {
         public string MedicineName { get; set; } = "";
@@ -25,5 +22,8 @@ namespace MediCart.Web.Models
     {
         public List<AdminFlaggedOrderRowViewModel> Orders { get; set; } = new();
         public int TotalCount { get; set; }
+
+        // "All" | "High" | "Mid" | "Low"
+        public string TierFilter { get; set; } = "All";
     }
 }
