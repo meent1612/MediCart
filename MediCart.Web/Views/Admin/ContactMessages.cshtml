@@ -9,7 +9,17 @@
     <link rel="stylesheet" href="~/css/admin-messages.css" asp-append-version="true" />
 }
 
-<p class="medicine-results-count">@Model.UnreadCount unread &middot; @Model.TotalCount total</p>
+<div class="message-filter-bar">
+    <form method="get" asp-action="ContactMessages">
+        <label for="statusFilter">Status</label>
+        <select id="statusFilter" name="status" onchange="this.form.submit()">
+            <option value="Unread" selected="@(Model.StatusFilter == "Unread")">Unread</option>
+            <option value="Read" selected="@(Model.StatusFilter == "Read")">Read</option>
+            <option value="All" selected="@(Model.StatusFilter == "All")">All</option>
+        </select>
+    </form>
+    <span class="medicine-results-count">@Model.UnreadCount unread &middot; @Model.TotalCount total</span>
+</div>
 
 <div class="admin-table-wrap">
     <table class="admin-table">
@@ -25,7 +35,7 @@
         <tbody>
             @if (Model.Messages.Count == 0)
             {
-                <tr><td colspan="5" class="admin-table__muted">No messages yet.</td></tr>
+                <tr><td colspan="5" class="admin-table__muted">No messages match this filter.</td></tr>
             }
             @foreach (var msg in Model.Messages)
             {

@@ -68,23 +68,6 @@ namespace MediCart.Web.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "ContactMessages",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Name = table.Column<string>(type: "text", nullable: false),
-                    Email = table.Column<string>(type: "text", nullable: false),
-                    Message = table.Column<string>(type: "text", nullable: false),
-                    IsRead = table.Column<bool>(type: "boolean", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ContactMessages", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Divisions",
                 columns: table => new
                 {
@@ -252,6 +235,30 @@ namespace MediCart.Web.Migrations
                     table.ForeignKey(
                         name: "FK_AuditLogs_AspNetUsers_AdminId",
                         column: x => x.AdminId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ContactMessages",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Email = table.Column<string>(type: "text", nullable: false),
+                    Message = table.Column<string>(type: "text", nullable: false),
+                    IsRead = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UserId = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ContactMessages", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ContactMessages_AspNetUsers_UserId",
+                        column: x => x.UserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -666,6 +673,11 @@ namespace MediCart.Web.Migrations
                 table: "Cities",
                 columns: new[] { "DivisionId", "Name" },
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ContactMessages_UserId",
+                table: "ContactMessages",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ExpiryAlerts_MedicineId",

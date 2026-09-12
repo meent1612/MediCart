@@ -24,6 +24,7 @@
             <nav class="up-nav">
                 <a href="#profile-details" class="up-nav__link">Profile details</a>
                 <a href="#order-history" class="up-nav__link is-active">Order history</a>
+                <a href="#my-messages" class="up-nav__link">My messages</a>
                 <a href="#" class="up-nav__link">Saved address</a>
             </nav>
         </aside>
@@ -78,6 +79,44 @@
                 else
                 {
                     <p class="up-empty">You haven't placed any orders yet.</p>
+                }
+            </section>
+
+            <!-- My messages -->
+            <section class="up-card" id="my-messages">
+                <h2>My messages</h2>
+                <p class="up-card__sub">Messages you've sent us through the Contact page. We reply by email.</p>
+
+                @if (Model.Messages.Any())
+                {
+                    <div class="up-table-wrap">
+                        <table class="up-table">
+                            <thead>
+                                <tr>
+                                    <th>Message</th>
+                                    <th>Sent</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var msg in Model.Messages)
+                                {
+                                    var readClass = msg.IsRead
+                                        ? "up-status up-status--delivered"
+                                        : "up-status up-status--pending";
+                                    <tr>
+                                        <td class="up-message-cell">@msg.Message</td>
+                                        <td>@msg.CreatedAt.ToLocalTime().ToString("dd MMM yyyy")</td>
+                                        <td><span class="@readClass">@(msg.IsRead ? "Read" : "Not yet read")</span></td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <p class="up-empty">You haven't sent any messages yet.</p>
                 }
             </section>
 

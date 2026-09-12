@@ -18,6 +18,10 @@ namespace MediCart.Web.Models
         public string? PhoneNumber { get; set; }
 
         public List<OrderHistoryItem> Orders { get; set; } = new();
+
+        // Contact messages this customer sent while logged in.
+        // Guest submissions (UserId == null) never appear here — see #5.
+        public List<SentMessageItem> Messages { get; set; } = new();
     }
 
     public class OrderHistoryItem
@@ -28,5 +32,12 @@ namespace MediCart.Web.Models
         public int ItemCount { get; set; }
         public decimal Total { get; set; }
         public string Status { get; set; } = string.Empty;
+    }
+
+    public class SentMessageItem
+    {
+        public string Message { get; set; } = string.Empty;
+        public DateTime CreatedAt { get; set; }
+        public bool IsRead { get; set; }
     }
 }

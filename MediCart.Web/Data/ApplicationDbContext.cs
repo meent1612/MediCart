@@ -115,30 +115,40 @@ namespace MediCart.Web.Data
                 .HasForeignKey(a => a.AdminId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-                // OtpCode — index on Email for fast lookup
-                builder.Entity<OtpCode>()
-                    .HasIndex(o => o.Email);
+            // OtpCode — index on Email for fast lookup
+            builder.Entity<OtpCode>()
+                .HasIndex(o => o.Email);
 
-                // Payment — FK to Order and User + check constraint on Status
-                builder.Entity<Payment>()
-                    .Property(p => p.Amount)
-                    .HasColumnType("numeric(10,2)");
+            // Payment — FK to Order and User + check constraint on Status
+            builder.Entity<Payment>()
+                .Property(p => p.Amount)
+                .HasColumnType("numeric(10,2)");
 
-                builder.Entity<Payment>()
-                    .ToTable(t => t.HasCheckConstraint("CK_Payment_Status",
-                        "\"Status\" IN ('pending','completed','failed')"));
+            builder.Entity<Payment>()
+                .ToTable(t => t.HasCheckConstraint("CK_Payment_Status",
+                    "\"Status\" IN ('pending','completed','failed')"));
 
-                builder.Entity<Payment>()
-                    .HasOne(p => p.Order)
-                    .WithMany()
-                    .HasForeignKey(p => p.OrderId)
-                    .OnDelete(DeleteBehavior.Restrict);
+            builder.Entity<Payment>()
+                .HasOne(p => p.Order)
+                .WithMany()
+                .HasForeignKey(p => p.OrderId)
+                .OnDelete(DeleteBehavior.Restrict);
 
-                builder.Entity<Payment>()
-                    .HasOne(p => p.User)
-                    .WithMany()
-                    .HasForeignKey(p => p.UserId)
-                    .OnDelete(DeleteBehavior.Restrict);
+            builder.Entity<Payment>()
+                .HasOne(p => p.User)
+                .WithMany()
+                .HasForeignKey(p => p.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // ContactMessage — optional FK to ApplicationUser. Nullable because
+            // guest submissions have no account. Restrict so deleting a user
+            // never silently deletes their contact history.
+            builder.Entity<ContactMessage>()
+                .HasOne(cm => cm.User)
+                .WithMany()
+                .HasForeignKey(cm => cm.UserId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired(false);
         }
     }
 }

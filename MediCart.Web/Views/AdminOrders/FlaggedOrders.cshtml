@@ -9,7 +9,18 @@
     <link rel="stylesheet" href="~/css/admin-orders.css" asp-append-version="true" />
 }
 
-<p class="medicine-results-count">@Model.TotalCount flagged order(s)</p>
+<div class="order-filter-bar">
+    <form method="get" asp-action="FlaggedOrders">
+        <label for="tierFilter">Tier</label>
+        <select id="tierFilter" name="tier" onchange="this.form.submit()">
+            <option value="All" selected="@(Model.TierFilter == "All")">All</option>
+            <option value="High" selected="@(Model.TierFilter == "High")">High</option>
+            <option value="Mid" selected="@(Model.TierFilter == "Mid")">Mid</option>
+            <option value="Low" selected="@(Model.TierFilter == "Low")">Low</option>
+        </select>
+    </form>
+    <span class="medicine-results-count">@Model.TotalCount flagged order(s)</span>
+</div>
 
 <div class="admin-table-wrap">
     <table class="admin-table">
@@ -26,7 +37,7 @@
         <tbody>
             @if (Model.Orders.Count == 0)
             {
-                <tr><td colspan="6" class="admin-table__muted">No flagged orders right now.</td></tr>
+                <tr><td colspan="6" class="admin-table__muted">No flagged orders match this filter.</td></tr>
             }
             @foreach (var order in Model.Orders)
             {
