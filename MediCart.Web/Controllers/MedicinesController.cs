@@ -23,8 +23,15 @@ namespace MediCart.Web.Controllers
             _cartService = cartService;
         }
 
-        public async Task<IActionResult> Index()
+        [HttpGet]
+        [Route("Medicines")]
+        [Route("Medicines/Index")]
+        [Route("Medicines/Browse")]
+        public async Task<IActionResult> Index([FromQuery] string? category = null, [FromQuery] string? productType = null)
         {
+            ViewBag.SelectedCategory = category;
+            ViewBag.SelectedProductType = productType;
+
             var medicines = await _context.Medicines
                 .Include(m => m.Category)
                 .Include(m => m.SubCategory)

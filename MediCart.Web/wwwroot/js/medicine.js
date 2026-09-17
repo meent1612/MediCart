@@ -268,11 +268,15 @@
             sideEffectsBox.appendChild(span);
         });
 
-        qtyInput.value = 1;
-        qtyInput.max = med.Stock > 0 ? med.Stock : 1;
-        addToCartBtn.textContent = "Add to cart";
-        addToCartBtn.classList.remove("added");
-        addToCartBtn.disabled = isAdmin || med.Stock <= 0;
+        if (qtyInput) {
+            qtyInput.value = 1;
+            qtyInput.max = med.Stock > 0 ? med.Stock : 1;
+        }
+        if (addToCartBtn) {
+            addToCartBtn.textContent = "Add to cart";
+            addToCartBtn.classList.remove("added");
+            addToCartBtn.disabled = isAdmin || med.Stock <= 0;
+        }
 
         overlay.hidden = false;
         document.body.style.overflow = "hidden";
@@ -292,48 +296,83 @@
         if (e.key === "Escape" && !overlay.hidden) closeModal();
     });
 
-    qtyMinus.addEventListener("click", function () {
-        var val = parseInt(qtyInput.value, 10) || 1;
-        if (val > 1) qtyInput.value = val - 1;
-    });
-
-    qtyPlus.addEventListener("click", function () {
-        var val = parseInt(qtyInput.value, 10) || 1;
-        var max = parseInt(qtyInput.max, 10) || 99;
-        if (val < max) qtyInput.value = val + 1;
-    });
-
-    qtyInput.addEventListener("change", function () {
-        var max = parseInt(qtyInput.max, 10) || 99;
-        var val = parseInt(qtyInput.value, 10) || 1;
-        if (val < 1) val = 1;
-        if (val > max) val = max;
-        qtyInput.value = val;
-    });
-
-    addToCartBtn.addEventListener("click", function () {
-        if (!currentMedicine || addToCartBtn.disabled) return;
-        if (isAdmin) return; // section is hidden and button disabled server-side for admins; defensive no-op
-
-        if (!isCustomer) {
-            redirectToLogin();
-            return;
-        }
-
-        var qty = parseInt(qtyInput.value, 10) || 1;
-        addToCartBtn.disabled = true;
-
-        addToCartOnServer(currentMedicine.Id, qty).then(function (data) {
-            updateCartBadge(data.cartItemCount);
-            addToCartBtn.textContent = "Added";
-            addToCartBtn.classList.add("added");
-            showToast(qty === 1 ? "Added to cart" : qty + " items added to cart");
-            setTimeout(closeModal, 500);
-        }).catch(function (errorMessage) {
-            addToCartBtn.disabled = false;
-            if (errorMessage) showToast(errorMessage);
+    if (qtyMinus && qtyInput) {
+        qtyMinus.addEventListener("click", function () {
+            var val = parseInt(qtyInput.value, 10) || 1;
+            if (val > 1) qtyInput.value = val - 1;
         });
-    });
+    }
+
+    if (qtyPlus && qtyInput) {
+        qtyPlus.addEventListener("click", function () {
+            var val = parseInt(qtyInput.value, 10) || 1;
+            var max = parseInt(qtyInput.max, 10) || 99;
+            if (val < max) qtyInput.value = val + 1;
+        });
+    }
+
+    if (qtyInput) {
+        qtyInput.addEventListener("change", function () {
+            var max = parseInt(qtyInput.max, 10) || 99;
+            var val = parseInt(qtyInput.value, 10) || 1;
+            if (val < 1) val = 1;
+            if (val > max) val = max;
+            qtyInput.value = val;
+        });
+    }
+
+    if (addToCartBtn) {
+        addToCartBtn.addEventListener("click", function () {
+            if (!currentMedicine || addToCartBtn.disabled) return;
+            if (isAdmin) return; // section is hidden and button disabled server-side for admins; defensive no-op
+
+            if (!isCustomer) {
+                redirectToLogin();
+                return;
+            }
+
+            var qty = qtyInput ? (parseInt(qtyInput.value, 10) || 1) : 1;
+            addToCartBtn.disabled = true;
+
+            addToCartOnServer(currentMedicine.Id, qty).then(function (data) {
+                updateCartBadge(data.cartItemCount);
+                addToCartBtn.textContent = "Added";
+                addToCartBtn.classList.add("added");
+                showToast(qty === 1 ? "Added to cart" : qty + " items added to cart");
+                setTimeout(closeModal, 500);
+            }).catch(function (errorMessage) {
+                addToCartBtn.disabled = false;
+                if (errorMessage) showToast(errorMessage);
+            });
+        });
+    }
+
+    /* Pre-select filters from URL parameters (?category=..., ?productType=..., ?categoryId=..., ?type=..., ?search=...) */
+    var urlParams = new URLSearchParams(window.location.search);
+    var categoryParam = (urlParams.get("category") || "").toLowerCase().trim();
+    var categoryIdParam = (urlParams.get("categoryId") || "").trim();
+    var productTypeParam = (urlParams.get("productType") || urlParams.get("type") || "").toLowerCase().trim();
+    var searchParam = (urlParams.get("search") || "").toLowerCase().trim();
+
+    if (categoryParam || categoryIdParam) {
+        document.querySelectorAll('[data-filter-group="category"] input, [data-filter-group="subCategory"] input').forEach(function (input) {
+            var name = (input.dataset.name || "").toLowerCase().trim();
+            var val = (input.value || "").trim();
+            if ((categoryParam && name === categoryParam) || (categoryIdParam && val === categoryIdParam)) {
+                input.checked = true;
+            }
+        });
+    }
+
+    if (productTypeParam) {
+        document.querySelectorAll('[data-filter-group="productType"] input').forEach(function (input) {
+            var name = (input.dataset.name || "").toLowerCase().trim();
+            var val = (input.value || "").trim();
+            if (name === productTypeParam || val === productTypeParam) {
+                input.checked = true;
+            }
+        });
+    }
 
     /* initial render */
     priceRangeValue.textContent = "\u09F3" + priceRange.value;
