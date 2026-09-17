@@ -4,44 +4,203 @@
    .tag / .admin-alert classes already defined in admin-medicines.css
    ========================================================================== */
 
+/* Page Header */
+.admin-page-header {
+    margin-bottom: 22px;
+}
+.admin-page-header__title {
+    font-family: var(--font-heading) !important;
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--color-dark);
+    margin: 0 0 4px;
+    line-height: 1.2;
+}
+.admin-page-header__subtitle {
+    font-family: var(--font-body);
+    font-size: 14px;
+    color: var(--color-text);
+    margin: 0;
+}
+
+/* Polished Toolbar Card */
+.admin-toolbar-card {
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 22px;
+    box-shadow: var(--shadow-sm);
+    flex-wrap: wrap;
+}
+
 .order-filter-bar {
     display: flex;
     align-items: center;
     gap: 14px;
     flex-wrap: wrap;
-    margin: 16px 0 14px;
+    margin: 0;
+}
+
+.order-filter-bar label {
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--color-dark);
 }
 
 .order-filter-bar select {
     font-family: var(--font-body);
     font-size: 13.5px;
-    padding: 9px 13px;
+    padding: 8px 14px;
     border: 1px solid var(--line);
     border-radius: var(--radius-sm);
-    background: var(--white);
-    color: var(--ink-900);
+    background: var(--color-bg);
+    color: var(--color-dark);
     cursor: pointer;
+    transition: border-color .15s ease, box-shadow .15s ease;
 }
 .order-filter-bar select:focus {
     outline: none;
-    border-color: var(--pine-800);
-    box-shadow: 0 0 0 3px rgba(47, 74, 60, .12);
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(133, 155, 119, .25);
 }
 
+.admin-toolbar-count {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-text);
+    background: rgba(21, 46, 25, 0.05);
+    padding: 4px 12px;
+    border-radius: var(--radius-pill);
+}
+
+/* Polished Table */
+.admin-table-wrap {
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    margin-bottom: 24px;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-body);
+    font-size: 13.5px;
+}
+
+.admin-table th {
+    background: rgba(21, 46, 25, 0.03);
+    color: var(--color-dark);
+    font-weight: 600;
+    padding: 14px 18px;
+    text-align: left;
+    border-bottom: 1px solid var(--line);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.admin-table td {
+    padding: 16px 18px;
+    border-bottom: 1px solid rgba(91, 109, 94, 0.12);
+    color: var(--color-dark);
+    vertical-align: middle;
+}
+
+.admin-table tbody tr {
+    transition: background-color 0.15s ease;
+}
+
+.admin-table tbody tr:hover {
+    background-color: rgba(236, 203, 217, 0.12);
+}
+
+.admin-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Semantic Status Badges */
 .order-status-badge {
     display: inline-flex;
     align-items: center;
-    padding: 4px 11px;
+    padding: 4px 12px;
     border-radius: var(--radius-pill);
     font-size: 12px;
     font-weight: 600;
     white-space: nowrap;
+    text-transform: capitalize;
 }
-.order-status-badge--pending { background: var(--amber-100); color: var(--amber-700); }
-.order-status-badge--processing { background: var(--sage-100); color: var(--pine-800); }
-.order-status-badge--shipped { background: var(--sage-100); color: var(--pine-800); }
-.order-status-badge--delivered { background: var(--success-100); color: var(--success-700); }
-.order-status-badge--rejected { background: var(--danger-100); color: var(--danger-700); }
+.order-status-badge--processing,
+.order-status-badge--delivered {
+    background: var(--color-success);
+    color: var(--color-dark);
+}
+.order-status-badge--pending {
+    background: var(--color-warning);
+    color: var(--color-dark);
+}
+.order-status-badge--shipped {
+    background: rgba(133, 155, 119, 0.28);
+    color: var(--color-dark);
+}
+.order-status-badge--rejected,
+.order-status-badge--flagged {
+    background: var(--color-danger);
+    color: #ffffff;
+}
+
+/* Action Pill View Button */
+.btn-pill-view {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 15px;
+    border-radius: var(--radius-pill);
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--color-dark);
+    background: transparent;
+    border: 1.5px solid var(--color-primary);
+    text-decoration: none;
+    transition: all 0.16s ease;
+}
+.btn-pill-view:hover {
+    background: var(--color-primary);
+    color: var(--color-dark);
+    box-shadow: var(--shadow-sm);
+}
+
+/* Centered Empty State */
+.admin-empty-state {
+    text-align: center;
+    padding: 56px 24px;
+    color: var(--color-text);
+}
+.admin-empty-state svg {
+    width: 44px;
+    height: 44px;
+    color: var(--color-neutral);
+    margin-bottom: 12px;
+    opacity: 0.85;
+}
+.admin-empty-state h3 {
+    font-family: var(--font-heading);
+    font-size: 18px;
+    color: var(--color-dark);
+    margin: 0 0 6px;
+}
+.admin-empty-state p {
+    margin: 0;
+    font-size: 13.5px;
+}
 
 .order-detail-head {
     display: flex;
