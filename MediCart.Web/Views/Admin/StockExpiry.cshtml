@@ -1,0 +1,130 @@
+@model MediCart.Web.Models.AdminStockExpiryViewModel
+@{
+    ViewData["Title"] = "Stock & expiry";
+    Layout = "_AdminLayout";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin-medicines.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/admin-orders.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/admin-stock.css" asp-append-version="true" />
+}
+
+<div class="admin-page-header">
+    <h2 class="admin-page-header__title">Stock &amp; expiry</h2>
+    <p class="admin-page-header__subtitle">Inventory health, shelf life tracking, and low stock warnings</p>
+</div>
+
+<!-- Filter Toolbar Card -->
+<div class="admin-toolbar-card">
+    <nav class="filter-pills-nav" aria-label="Inventory Filters">
+        <a href="~/Admin/StockExpiry?filter=All" class="filter-pill-btn @(Model.Filter == "All" ? "is-active" : "")">
+            All items
+            <span class="filter-pill-count">@Model.TotalCount</span>
+        </a>
+        <a href="~/Admin/StockExpiry?filter=ExpiringSoon" class="filter-pill-btn @(Model.Filter == "ExpiringSoon" ? "is-active" : "")">
+            Expiring soon (&le; 30d)
+            <span class="filter-pill-count">@Model.ExpiringSoonCount</span>
+        </a>
+        <a href="~/Admin/StockExpiry?filter=LowStock" class="filter-pill-btn @(Model.Filter == "LowStock" ? "is-active" : "")">
+            Low stock (&lt; 10)
+            <span class="filter-pill-count">@Model.LowStockCount</span>
+        </a>
+        <a href="~/Admin/StockExpiry?filter=Critical" class="filter-pill-btn @(Model.Filter == "Critical" ? "is-active" : "")">
+            Critical / Expired
+            <span class="filter-pill-count">@Model.CriticalCount</span>
+        </a>
+    </nav>
+    <span class="admin-toolbar-count">@Model.Items.Count item(s) showing</span>
+</div>
+
+<div class="admin-table-wrap">
+    @if (Model.Items.Count == 0)
+    {
+        <div class="admin-empty-state">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>
+            </svg>
+            <h3>No inventory alerts</h3>
+            <p>No medicines match the selected filter criteria.</p>
+        </div>
+    }
+    else
+    {
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Medicine</th>
+                    <th>Category</th>
+                    <th>Stock</th>
+                    <th>Expiry Date</th>
+                    <th>Status</th>
+                    <th style="text-align: right;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Items)
+                {
+                    <tr>
+                        <td>
+                            <div class="stock-med-cell">
+                                <span class="stock-med-name">@item.MedicineName</span>
+                                @if (!string.IsNullOrWhiteSpace(item.GenericName))
+                                {
+                                    <span class="stock-med-generic">@item.GenericName</span>
+                                }
+                            </div>
+                        </td>
+                        <td>@item.CategoryName</td>
+                        <td>
+                            <div class="stock-qty-cell">
+                                <span class="stock-qty-num">@item.Quantity units</span>
+                                <div class="stock-progress" title="@item.Quantity in stock">
+                                    <div class="stock-progress__bar stock-progress__bar--@item.ProgressColor" style="width: @item.ProgressPercent%;"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            @if (item.ExpiryDate.HasValue)
+                            {
+                                @if (item.DaysUntilExpiry < 0)
+                                {
+                                    <span class="expiry-cell expiry-cell--danger">@item.ExpiryDate.Value.ToString("dd MMM yyyy") (Expired)</span>
+                                }
+                                else if (item.DaysUntilExpiry <= 30)
+                                {
+                                    <span class="expiry-cell expiry-cell--warning">@item.ExpiryDate.Value.ToString("dd MMM yyyy") (@item.DaysUntilExpiry days)</span>
+                                }
+                                else
+                                {
+                                    <span class="expiry-cell expiry-cell--normal">@item.ExpiryDate.Value.ToString("dd MMM yyyy")</span>
+                                }
+                            }
+                            else
+                            {
+                                <span class="admin-table__muted">Not set</span>
+                            }
+                        </td>
+                        <td>
+                            @if (item.StatusSeverity == "danger")
+                            {
+                                <span class="order-status-badge order-status-badge--rejected">@item.StatusBadge</span>
+                            }
+                            else if (item.StatusSeverity == "warning")
+                            {
+                                <span class="order-status-badge order-status-badge--pending">@item.StatusBadge</span>
+                            }
+                            else
+                            {
+                                <span class="order-status-badge order-status-badge--delivered">@item.StatusBadge</span>
+                            }
+                        </td>
+                        <td style="text-align: right;">
+                            <a class="btn-pill-view" href="~/Admin/EditMedicine/@item.MedicineId">Edit</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
