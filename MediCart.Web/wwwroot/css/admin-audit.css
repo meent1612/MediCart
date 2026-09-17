@@ -1,0 +1,152 @@
+/* ==========================================================================
+   MediCart — Admin Audit Log Styles
+   ========================================================================== */
+
+.audit-groups {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+
+.audit-group {
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+}
+
+.audit-group__header {
+    padding: 14px 22px;
+    background: rgba(21, 46, 25, 0.03);
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.audit-group__title {
+    font-family: var(--font-heading);
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--color-dark);
+    margin: 0;
+}
+
+.audit-timeline {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    position: relative;
+}
+
+.audit-entry {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px 22px;
+    border-bottom: 1px solid rgba(91, 109, 94, 0.1);
+    transition: background-color 0.15s ease;
+}
+
+.audit-entry:last-child {
+    border-bottom: none;
+}
+
+.audit-entry:hover {
+    background-color: rgba(236, 203, 217, 0.12);
+}
+
+.audit-entry__left {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    flex: 1;
+}
+
+.audit-entry__icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.audit-entry__icon--add {
+    background: rgba(91, 138, 100, 0.14);
+    color: var(--color-success);
+}
+
+.audit-entry__icon--edit {
+    background: rgba(133, 155, 119, 0.2);
+    color: #4a6839;
+}
+
+.audit-entry__icon--delete {
+    background: rgba(179, 65, 62, 0.12);
+    color: var(--color-danger);
+}
+
+.audit-entry__icon--security {
+    background: rgba(217, 140, 59, 0.14);
+    color: var(--color-warning);
+}
+
+.audit-entry__icon--other {
+    background: rgba(21, 46, 25, 0.06);
+    color: var(--color-dark);
+}
+
+.audit-entry__icon svg {
+    width: 16px;
+    height: 16px;
+}
+
+.audit-entry__content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.audit-entry__desc {
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--color-dark);
+    line-height: 1.4;
+}
+
+.audit-entry__meta {
+    font-size: 12px;
+    color: var(--color-text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.audit-entry__actor {
+    font-weight: 600;
+    color: var(--color-dark);
+}
+
+.audit-entry__table-tag {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    background: rgba(21, 46, 25, 0.06);
+    padding: 1px 6px;
+    border-radius: 4px;
+    color: var(--color-text);
+}
+
+.audit-entry__time {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--color-text);
+    white-space: nowrap;
+    align-self: flex-start;
+    margin-top: 2px;
+}
