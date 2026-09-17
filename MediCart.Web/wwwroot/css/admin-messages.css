@@ -1,40 +1,183 @@
 /* ==========================================================================
    MediCart — Admin Contact Messages
    Extends tokens from site.css; reuses .admin-table / .admin-alert
-   classes already defined in admin-medicines.css
+   classes already defined in admin-medicines.css & admin-orders.css
    ========================================================================== */
 
-.message-filter-bar {
+.message-sender-cell {
     display: flex;
     align-items: center;
-    gap: 14px;
-    flex-wrap: wrap;
-    margin: 16px 0 14px;
+    gap: 8px;
 }
 
-.message-filter-bar select {
-    font-family: var(--font-body);
-    font-size: 13.5px;
-    padding: 9px 13px;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-sm);
-    background: var(--white);
-    color: var(--ink-900);
-    cursor: pointer;
+.unread-dot {
+    width: 9px;
+    height: 9px;
+    background-color: var(--color-danger);
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+    box-shadow: 0 0 0 3px rgba(179, 65, 62, 0.18);
 }
-.message-filter-bar select:focus {
-    outline: none;
-    border-color: var(--pine-800);
-    box-shadow: 0 0 0 3px rgba(47, 74, 60, .12);
+
+.message-sender-name {
+    font-weight: 500;
+    color: var(--color-dark);
+}
+
+.message-sender-name--unread {
+    font-weight: 700;
+    color: var(--color-dark);
 }
 
 .message-row--unread {
-    background: var(--sage-100);
-    font-weight: 600;
+    background: rgba(236, 203, 217, 0.18) !important;
 }
 
 .message-cell {
-    max-width: 420px;
-    white-space: normal;
+    max-width: 440px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--color-text);
+}
+
+.message-row-clickable {
+    cursor: pointer;
+}
+
+/* Modal for Contact Message Details */
+.message-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background: rgba(21, 46, 25, 0.45);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.message-modal-overlay.is-active {
+    display: flex;
+}
+
+.message-modal {
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xl);
+    width: 100%;
+    max-width: 580px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: modalPop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalPop {
+    from {
+        opacity: 0;
+        transform: scale(0.96) translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.message-modal__header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(21, 46, 25, 0.02);
+}
+
+.message-modal__title {
+    font-family: var(--font-heading);
+    font-size: 19px;
+    font-weight: 700;
+    color: var(--color-dark);
+    margin: 0;
+}
+
+.message-modal__close {
+    background: none;
+    border: none;
+    font-size: 22px;
+    line-height: 1;
+    color: var(--color-text);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: var(--radius-sm);
+    transition: color 0.15s, background-color 0.15s;
+}
+
+.message-modal__close:hover {
+    color: var(--color-dark);
+    background: rgba(21, 46, 25, 0.08);
+}
+
+.message-modal__body {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.message-modal__meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(91, 109, 94, 0.12);
+}
+
+.message-modal__meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.message-modal__meta-label {
+    font-size: 11.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text);
+}
+
+.message-modal__meta-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-dark);
+    word-break: break-all;
+}
+
+.message-modal__content-box {
+    background: var(--color-bg);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    padding: 18px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--color-dark);
+    white-space: pre-wrap;
     word-break: break-word;
+    max-height: 280px;
+    overflow-y: auto;
+}
+
+.message-modal__footer {
+    padding: 16px 24px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    background: rgba(21, 46, 25, 0.02);
 }
