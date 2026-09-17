@@ -272,7 +272,7 @@ template { display: none; }
 .admin-alert { align-items: center; }
 .admin-alert__dismiss { margin-left: auto; }
 .toggle-row--card {
-    background: var(--beige-50, #faf6ec);
+    background: var(--color-bg);
     border: 1px solid var(--line);
     border-radius: var(--radius-sm);
     padding: 16px 18px;

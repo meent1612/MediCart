@@ -307,4 +307,17 @@
             setTimeout(dismiss, 5000);
         }
     });
+
+    /* ---------------------------------------------------------------------
+       Expiry date minimum constraint (at least 30 days from today)
+       ------------------------------------------------------------------ */
+    var expiryInput = document.querySelector('input[name="Form.ExpiryDate"], #Form_ExpiryDate');
+    if (expiryInput) {
+        var minDate = new Date();
+        minDate.setDate(minDate.getDate() + 30);
+        var yyyy = minDate.getFullYear();
+        var mm = String(minDate.getMonth() + 1).padStart(2, '0');
+        var dd = String(minDate.getDate()).padStart(2, '0');
+        expiryInput.min = yyyy + '-' + mm + '-' + dd;
+    }
 })();

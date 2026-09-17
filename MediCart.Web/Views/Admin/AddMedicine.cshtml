@@ -163,7 +163,7 @@
             </div>
             <div class="admin-form__field">
                 <label asp-for="Form.ExpiryDate">Expiry date</label>
-                <input asp-for="Form.ExpiryDate" type="date" required />
+                <input asp-for="Form.ExpiryDate" type="date" min="@DateTime.Today.AddDays(30).ToString("yyyy-MM-dd")" required />
                 <span asp-validation-for="Form.ExpiryDate" class="admin-form__error"></span>
             </div>
         </div>
