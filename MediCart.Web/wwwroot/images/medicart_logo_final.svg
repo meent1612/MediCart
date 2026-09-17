@@ -9,8 +9,8 @@
       }
     </style>
     <linearGradient id="cartGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#3a3f54"/>
-      <stop offset="100%" stop-color="#2D3142"/>
+      <stop offset="0%" stop-color="#859B77"/>
+      <stop offset="100%" stop-color="#152E19"/>
     </linearGradient>
 
     <!-- mask that knocks a true transparent plus/cross out of the basket -->
@@ -33,11 +33,11 @@
   </g>
 
   <!-- basket ribs, drawn after masking so they stay visible either side of the cross -->
-  <line x1="150" y1="102" x2="140" y2="208" stroke="#2D3142" stroke-width="5" stroke-opacity="0.3" stroke-linecap="round"/>
-  <line x1="250" y1="102" x2="260" y2="208" stroke="#2D3142" stroke-width="5" stroke-opacity="0.3" stroke-linecap="round"/>
+  <line x1="150" y1="102" x2="140" y2="208" stroke="#152E19" stroke-width="5" stroke-opacity="0.3" stroke-linecap="round"/>
+  <line x1="250" y1="102" x2="260" y2="208" stroke="#152E19" stroke-width="5" stroke-opacity="0.3" stroke-linecap="round"/>
 
   <!-- wordmark -->
-  <text x="220" y="275" text-anchor="middle" class="brand-text" fill="#2D3142">
-    Medi<tspan fill="#ADACB5" font-style="italic">Cart</tspan>
+  <text x="220" y="275" text-anchor="middle" class="brand-text" fill="#152E19">
+    Medi<tspan fill="#859B77" font-style="italic">Cart</tspan>
   </text>
 </svg>
