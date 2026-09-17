@@ -134,13 +134,23 @@
 }
 
 .badge--rx {
-    background: var(--amber-100);
-    color: var(--amber-700);
+    background: rgba(179, 65, 62, 0.15);
+    color: var(--color-danger);
 }
 
 .badge--stock {
-    background: var(--sage-100);
-    color: var(--pine-800);
+    background: var(--color-success);
+    color: var(--color-dark);
+}
+
+.badge--warning {
+    background: var(--color-warning);
+    color: var(--color-dark);
+}
+
+.badge--danger {
+    background: var(--color-danger);
+    color: #ffffff;
 }
 
 .qty-stepper {
