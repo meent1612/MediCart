@@ -1,0 +1,282 @@
+@model MediCart.Web.Models.AdminDashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+    Layout = "_AdminLayout";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin-medicines.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/admin-orders.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/admin-dashboard.css" asp-append-version="true" />
+}
+
+<div class="admin-page-header">
+    <h2 class="admin-page-header__title">Dashboard</h2>
+    <p class="admin-page-header__subtitle">Live command center for orders, inventory, and activity</p>
+</div>
+
+<!-- 4 KPI Stat Cards -->
+<div class="admin-kpi-grid">
+    <a href="~/AdminOrders/IncomingOrders?status=All" class="admin-kpi-card admin-kpi-card--primary">
+        <div class="admin-kpi-card__top">
+            <span class="admin-kpi-card__label">Total Orders</span>
+            <div class="admin-kpi-card__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/>
+                </svg>
+            </div>
+        </div>
+        <div class="admin-kpi-card__val">@Model.TotalOrdersCount</div>
+        <div class="admin-kpi-card__desc">Lifetime store orders</div>
+    </a>
+
+    <a href="~/AdminOrders/IncomingOrders?status=Active" class="admin-kpi-card admin-kpi-card--warning">
+        <div class="admin-kpi-card__top">
+            <span class="admin-kpi-card__label">Pending &amp; Processing</span>
+            <div class="admin-kpi-card__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                </svg>
+            </div>
+        </div>
+        <div class="admin-kpi-card__val">@Model.PendingProcessingCount</div>
+        <div class="admin-kpi-card__desc">Awaiting fulfillment</div>
+    </a>
+
+    <a href="~/AdminOrders/FlaggedOrders" class="admin-kpi-card admin-kpi-card--danger">
+        <div class="admin-kpi-card__top">
+            <span class="admin-kpi-card__label">Flagged Orders</span>
+            <div class="admin-kpi-card__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/>
+                </svg>
+            </div>
+        </div>
+        <div class="admin-kpi-card__val">@Model.FlaggedOrdersCount</div>
+        <div class="admin-kpi-card__desc">Rx or quantity threshold</div>
+    </a>
+
+    <a href="~/Admin/StockExpiry?filter=LowStock" class="admin-kpi-card admin-kpi-card--accent">
+        <div class="admin-kpi-card__top">
+            <span class="admin-kpi-card__label">Low Stock Alerts</span>
+            <div class="admin-kpi-card__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+            </div>
+        </div>
+        <div class="admin-kpi-card__val">@Model.LowStockCount</div>
+        <div class="admin-kpi-card__desc">Fewer than 10 units</div>
+    </a>
+</div>
+
+<!-- Main 2-Column Dashboard Grid -->
+<div class="dashboard-grid">
+    <!-- Left Column: Chart + Recent Orders -->
+    <div class="dashboard-col-left">
+        <!-- 7-Day Trend Chart -->
+        <div class="dashboard-card">
+            <div class="dashboard-card__header">
+                <h3 class="dashboard-card__title">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+                    </svg>
+                    Orders Trend (Last 7 Days)
+                </h3>
+            </div>
+            <div class="dashboard-chart-wrap">
+                <canvas id="ordersTrendChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Recent Orders Table -->
+        <div class="dashboard-card">
+            <div class="dashboard-card__header">
+                <h3 class="dashboard-card__title">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 7h18M6 7v12a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V7M9 11h6"/>
+                    </svg>
+                    Recent Orders
+                </h3>
+                <a href="~/AdminOrders/IncomingOrders" class="dashboard-card__link">
+                    View all
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9 18 15 12 9 6"/>
+                    </svg>
+                </a>
+            </div>
+
+            @if (Model.RecentOrders.Count == 0)
+            {
+                <div class="admin-empty-state" style="padding: 36px 20px;">
+                    <p>No orders placed yet.</p>
+                </div>
+            }
+            else
+            {
+                <div style="overflow-x: auto;">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Order</th>
+                                <th>Customer</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                                <th>Placed</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var order in Model.RecentOrders)
+                            {
+                                <tr>
+                                    <td><strong>@order.OrderNumber</strong></td>
+                                    <td>@order.CustomerName</td>
+                                    <td>৳@order.TotalAmount.ToString("0")</td>
+                                    <td><span class="order-status-badge order-status-badge--@order.Status.ToLower()">@order.Status</span></td>
+                                    <td>@order.CreatedAt.ToLocalTime().ToString("dd MMM, h:mm tt")</td>
+                                    <td style="text-align: right;">
+                                        <a class="btn-pill-view" href="~/AdminOrders/OrderDetail/@order.Id">View</a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Right Column: Attention Needed Stacked Panel -->
+    <div class="dashboard-col-right">
+        <div class="dashboard-card">
+            <div class="dashboard-card__header">
+                <h3 class="dashboard-card__title">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                    </svg>
+                    Attention Needed
+                </h3>
+                <span class="admin-count-pill" style="margin-left: 0;">@Model.AttentionItems.Count</span>
+            </div>
+
+            @if (Model.AttentionItems.Count == 0)
+            {
+                <div class="admin-empty-state" style="padding: 44px 20px;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+                    </svg>
+                    <h3>All clear!</h3>
+                    <p>No flagged orders or critical stock alerts.</p>
+                </div>
+            }
+            else
+            {
+                <ul class="attention-list">
+                    @foreach (var item in Model.AttentionItems)
+                    {
+                        <li class="attention-item attention-item--@item.Severity">
+                            <div class="attention-item__main">
+                                <div class="attention-item__icon">
+                                    @if (item.Type == "FlaggedOrder")
+                                    {
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/>
+                                        </svg>
+                                    }
+                                    else
+                                    {
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                                        </svg>
+                                    }
+                                </div>
+                                <div class="attention-item__info">
+                                    <span class="attention-item__title">@item.Title</span>
+                                    <span class="attention-item__sub">@Html.Raw(item.Subtitle)</span>
+                                </div>
+                            </div>
+                            <div class="attention-item__action">
+                                <a href="@item.ActionUrl" class="btn-pill-view">@item.ActionText</a>
+                            </div>
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var ctx = document.getElementById('ordersTrendChart');
+            if (!ctx) return;
+
+            var labels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ChartDays));
+            var data = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ChartOrderCounts));
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Orders',
+                        data: data,
+                        borderColor: '#859B77',
+                        backgroundColor: 'rgba(133, 155, 119, 0.15)',
+                        borderWidth: 2.5,
+                        fill: true,
+                        tension: 0.35,
+                        pointBackgroundColor: '#859B77',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#152E19',
+                            titleFont: { family: "'Inter', sans-serif", size: 12 },
+                            bodyFont: { family: "'Inter', sans-serif", size: 13, weight: 'bold' },
+                            padding: 10,
+                            cornerRadius: 6,
+                            displayColors: false,
+                            callbacks: {
+                                label: function(context) {
+                                    return context.parsed.y + ' order(s)';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: {
+                                font: { family: "'Inter', sans-serif", size: 11 },
+                                color: '#5B6D5E'
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0,
+                                font: { family: "'Inter', sans-serif", size: 11 },
+                                color: '#5B6D5E'
+                            },
+                            grid: {
+                                color: 'rgba(91, 109, 94, 0.1)'
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+}
