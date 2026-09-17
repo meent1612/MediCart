@@ -184,15 +184,337 @@ namespace MediCart.Web.Controllers
             return View(model);
         }
 
-        // TEMP placeholder stubs so sidebar links don't 404
         [HttpGet]
-        public IActionResult Dashboard() => View("ComingSoon");
+        public async Task<IActionResult> Dashboard()
+        {
+            var todayUtc = DateTime.UtcNow.Date;
+            var sevenDaysAgo = todayUtc.AddDays(-6);
+            var todayDateOnly = DateOnly.FromDateTime(DateTime.UtcNow);
+            var expiryThreshold = todayDateOnly.AddDays(30);
+
+            var totalOrders = await _db.Orders.CountAsync();
+            var pendingProcessing = await _db.Orders.CountAsync(o => o.Status == "Pending" || o.Status == "Processing");
+            var flaggedCount = await _db.Orders.CountAsync(o => o.IsFlagged);
+            var lowStockCount = await _db.Stocks.CountAsync(s => s.Quantity < 10);
+
+            var ordersLast7Days = await _db.Orders
+                .Where(o => o.CreatedAt >= sevenDaysAgo)
+                .Select(o => new { o.CreatedAt })
+                .ToListAsync();
+
+            var chartDays = new List<string>();
+            var chartCounts = new List<int>();
+
+            for (int i = 6; i >= 0; i--)
+            {
+                var targetDay = todayUtc.AddDays(-i);
+                var label = targetDay.ToString("dd MMM");
+                var count = ordersLast7Days.Count(o => o.CreatedAt.Date == targetDay);
+                chartDays.Add(label);
+                chartCounts.Add(count);
+            }
+
+            var recentOrders = await _db.Orders
+                .Include(o => o.User)
+                .Include(o => o.OrderItems)
+                .OrderByDescending(o => o.CreatedAt)
+                .Take(7)
+                .Select(o => new DashboardRecentOrderViewModel
+                {
+                    Id = o.Id,
+                    OrderNumber = "MC-" + (10000 + o.Id),
+                    CustomerName = o.User != null && !string.IsNullOrWhiteSpace(o.User.FullName) ? o.User.FullName : (o.User != null ? o.User.UserName! : "Customer"),
+                    ItemCount = o.OrderItems.Sum(i => i.Quantity),
+                    TotalAmount = o.TotalAmount,
+                    Status = o.Status,
+                    CreatedAt = o.CreatedAt
+                })
+                .ToListAsync();
+
+            var attentionItems = new List<DashboardAttentionItemViewModel>();
+
+            var flaggedOrders = await _db.Orders
+                .Include(o => o.User)
+                .Where(o => o.IsFlagged && o.Status != "Delivered" && o.Status != "Rejected")
+                .OrderByDescending(o => o.CreatedAt)
+                .Take(4)
+                .ToListAsync();
+
+            foreach (var fo in flaggedOrders)
+            {
+                attentionItems.Add(new DashboardAttentionItemViewModel
+                {
+                    Type = "FlaggedOrder",
+                    Title = $"Order #MC-{10000 + fo.Id} flagged",
+                    Subtitle = $"{fo.User?.FullName ?? "Customer"} · ৳{fo.TotalAmount:0} · Status: {fo.Status}",
+                    Severity = "danger",
+                    ActionUrl = Url.Action("OrderDetail", "AdminOrders", new { id = fo.Id }) ?? $"/AdminOrders/OrderDetail/{fo.Id}",
+                    ActionText = "Review order"
+                });
+            }
+
+            var lowOrExpiringStocks = await _db.Stocks
+                .Include(s => s.Medicine)
+                .Where(s => s.Quantity < 10 || s.ExpiryDate <= expiryThreshold)
+                .OrderBy(s => s.Quantity)
+                .ThenBy(s => s.ExpiryDate)
+                .Take(5)
+                .ToListAsync();
+
+            foreach (var st in lowOrExpiringStocks)
+            {
+                var isLow = st.Quantity < 10;
+                var isExpiring = st.ExpiryDate <= expiryThreshold;
+                string title = st.Medicine?.Name ?? "Medicine";
+                string subtitle;
+                string severity = "warning";
+
+                if (st.Quantity == 0)
+                {
+                    subtitle = "Out of stock (0 units remaining)";
+                    severity = "danger";
+                }
+                else if (isLow && isExpiring)
+                {
+                    subtitle = $"Low stock ({st.Quantity} left) & Expiring {st.ExpiryDate:dd MMM yyyy}";
+                    severity = "danger";
+                }
+                else if (isLow)
+                {
+                    subtitle = $"Low stock: only {st.Quantity} units remaining";
+                    severity = "warning";
+                }
+                else
+                {
+                    subtitle = $"Expiring on {st.ExpiryDate:dd MMM yyyy}";
+                    severity = "warning";
+                }
+
+                attentionItems.Add(new DashboardAttentionItemViewModel
+                {
+                    Type = isLow ? "LowStock" : "ExpiringSoon",
+                    Title = title,
+                    Subtitle = subtitle,
+                    Severity = severity,
+                    ActionUrl = Url.Action("StockExpiry", "Admin") ?? "/Admin/StockExpiry",
+                    ActionText = "View stock"
+                });
+            }
+
+            var vm = new AdminDashboardViewModel
+            {
+                TotalOrdersCount = totalOrders,
+                PendingProcessingCount = pendingProcessing,
+                FlaggedOrdersCount = flaggedCount,
+                LowStockCount = lowStockCount,
+                ChartDays = chartDays,
+                ChartOrderCounts = chartCounts,
+                RecentOrders = recentOrders,
+                AttentionItems = attentionItems
+            };
+
+            return View(vm);
+        }
 
         [HttpGet]
-        public IActionResult StockExpiry() => View("ComingSoon");
+        public async Task<IActionResult> StockExpiry(string? filter)
+        {
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+            var expiryThreshold = today.AddDays(30);
+
+            var query = _db.Medicines
+                .Include(m => m.Category)
+                .Include(m => m.Stock)
+                .AsQueryable();
+
+            var allList = await query.ToListAsync();
+
+            var rowList = allList.Select(m =>
+            {
+                var qty = m.Stock?.Quantity ?? 0;
+                var exp = m.Stock?.ExpiryDate;
+                var daysUntil = exp.HasValue
+                    ? (exp.Value.ToDateTime(TimeOnly.MinValue) - DateTime.UtcNow.Date).Days
+                    : 9999;
+
+                string badge;
+                string severity;
+
+                if (qty == 0)
+                {
+                    badge = "Out of stock";
+                    severity = "danger";
+                }
+                else if (daysUntil < 0)
+                {
+                    badge = "Expired";
+                    severity = "danger";
+                }
+                else if (daysUntil <= 30)
+                {
+                    badge = "Expiring soon";
+                    severity = "warning";
+                }
+                else if (qty < 10)
+                {
+                    badge = "Low stock";
+                    severity = "warning";
+                }
+                else
+                {
+                    badge = "In stock";
+                    severity = "success";
+                }
+
+                var percent = Math.Clamp((qty * 100) / 50, 0, 100);
+                var progressColor = qty == 0 ? "red" : (qty < 10 ? "amber" : "green");
+
+                return new AdminStockExpiryRowViewModel
+                {
+                    MedicineId = m.Id,
+                    MedicineName = m.Name,
+                    GenericName = m.GenericName,
+                    CategoryName = m.Category?.Name ?? "Uncategorized",
+                    Quantity = qty,
+                    ExpiryDate = exp,
+                    DaysUntilExpiry = daysUntil,
+                    StatusBadge = badge,
+                    StatusSeverity = severity,
+                    ProgressPercent = percent,
+                    ProgressColor = progressColor
+                };
+            }).ToList();
+
+            var totalCount = rowList.Count;
+            var expiringCount = rowList.Count(r => r.DaysUntilExpiry >= 0 && r.DaysUntilExpiry <= 30);
+            var lowStockCount = rowList.Count(r => r.Quantity < 10 && r.Quantity > 0);
+            var criticalCount = rowList.Count(r => r.Quantity == 0 || r.DaysUntilExpiry < 0);
+
+            var activeFilter = filter ?? "All";
+            var filtered = activeFilter switch
+            {
+                "ExpiringSoon" => rowList.Where(r => r.DaysUntilExpiry >= 0 && r.DaysUntilExpiry <= 30).ToList(),
+                "LowStock" => rowList.Where(r => r.Quantity < 10).ToList(),
+                "Critical" => rowList.Where(r => r.Quantity == 0 || r.DaysUntilExpiry < 0).ToList(),
+                _ => rowList
+            };
+
+            filtered = filtered
+                .OrderBy(r => r.ExpiryDate.HasValue ? 0 : 1)
+                .ThenBy(r => r.ExpiryDate)
+                .ThenBy(r => r.Quantity)
+                .ToList();
+
+            var vm = new AdminStockExpiryViewModel
+            {
+                Filter = activeFilter,
+                TotalCount = totalCount,
+                ExpiringSoonCount = expiringCount,
+                LowStockCount = lowStockCount,
+                CriticalCount = criticalCount,
+                Items = filtered
+            };
+
+            return View(vm);
+        }
 
         [HttpGet]
-        public IActionResult AuditLog() => View("ComingSoon");
+        public async Task<IActionResult> AuditLog(string? actionFilter, string? adminId)
+        {
+            var query = _db.AuditLogs
+                .Include(a => a.Admin)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(actionFilter) && actionFilter != "All")
+            {
+                query = query.Where(a => a.Action.Contains(actionFilter));
+            }
+
+            if (!string.IsNullOrWhiteSpace(adminId) && adminId != "All")
+            {
+                query = query.Where(a => a.AdminId == adminId);
+            }
+
+            var logs = await query
+                .OrderByDescending(a => a.CreatedAt)
+                .Take(150)
+                .ToListAsync();
+
+            var adminUsers = await _db.AuditLogs
+                .Include(a => a.Admin)
+                .Where(a => a.Admin != null)
+                .Select(a => a.Admin!)
+                .Distinct()
+                .Select(u => new AdminUserOptionViewModel
+                {
+                    Id = u.Id,
+                    Name = !string.IsNullOrWhiteSpace(u.FullName) ? u.FullName : u.UserName!
+                })
+                .ToListAsync();
+
+            var mappedRows = logs.Select(l =>
+            {
+                var localTime = l.CreatedAt.ToLocalTime();
+                var actionLower = l.Action.ToLowerInvariant();
+                string actionType = "Other";
+
+                if (actionLower.Contains("add") || actionLower.Contains("created")) actionType = "Add";
+                else if (actionLower.Contains("edit") || actionLower.Contains("updated") || actionLower.Contains("marked")) actionType = "Edit";
+                else if (actionLower.Contains("delete") || actionLower.Contains("removed")) actionType = "Delete";
+                else if (actionLower.Contains("login") || actionLower.Contains("password") || actionLower.Contains("role")) actionType = "Security";
+
+                string dateLabel;
+                if (localTime.Date == DateTime.Now.Date)
+                {
+                    dateLabel = "Today";
+                }
+                else if (localTime.Date == DateTime.Now.Date.AddDays(-1))
+                {
+                    dateLabel = "Yesterday";
+                }
+                else
+                {
+                    dateLabel = localTime.ToString("dd MMM yyyy");
+                }
+
+                return new
+                {
+                    Row = new AuditLogRowViewModel
+                    {
+                        Id = l.Id,
+                        Action = l.Action,
+                        ActionType = actionType,
+                        TableName = l.TableName,
+                        RecordId = l.RecordId,
+                        AdminName = l.Admin != null && !string.IsNullOrWhiteSpace(l.Admin.FullName) ? l.Admin.FullName : (l.Admin?.UserName ?? "System"),
+                        AdminEmail = l.Admin?.Email ?? string.Empty,
+                        CreatedAt = l.CreatedAt,
+                        TimeString = localTime.ToString("h:mm tt")
+                    },
+                    DateLabel = dateLabel
+                };
+            }).ToList();
+
+            var groups = mappedRows
+                .GroupBy(x => x.DateLabel)
+                .Select(g => new AuditLogGroupViewModel
+                {
+                    DateLabel = g.Key,
+                    Entries = g.Select(x => x.Row).ToList()
+                })
+                .ToList();
+
+            var vm = new AdminAuditLogViewModel
+            {
+                ActionFilter = actionFilter ?? "All",
+                AdminIdFilter = adminId ?? "All",
+                TotalCount = logs.Count,
+                AdminOptions = adminUsers,
+                Groups = groups
+            };
+
+            return View(vm);
+        }
 
 
         // =====================
@@ -263,6 +585,38 @@ namespace MediCart.Web.Controllers
                 {
                     AdminId = adminId,
                     Action = $"Marked contact message #{message.Id} as read",
+                    TableName = "ContactMessages",
+                    RecordId = message.Id,
+                    CreatedAt = DateTime.UtcNow
+                });
+            }
+
+            await _db.SaveChangesAsync();
+
+            return RedirectToAction(nameof(ContactMessages));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> MarkMessageAsUnread(int id)
+        {
+            var message = await _db.ContactMessages.FindAsync(id);
+
+            if (message == null)
+            {
+                TempData["MessageError"] = "Message not found.";
+                return RedirectToAction(nameof(ContactMessages));
+            }
+
+            message.IsRead = false;
+
+            var adminId = _userManager.GetUserId(User);
+            if (adminId != null)
+            {
+                _db.AuditLogs.Add(new AuditLog
+                {
+                    AdminId = adminId,
+                    Action = $"Marked contact message #{message.Id} as unread",
                     TableName = "ContactMessages",
                     RecordId = message.Id,
                     CreatedAt = DateTime.UtcNow
