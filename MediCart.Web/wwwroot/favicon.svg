@@ -1,22 +1,22 @@
 <svg viewBox="-2 -38 320 320" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="cartGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#3a3f54"/>
-      <stop offset="100%" stop-color="#2D3142"/>
+      <stop offset="0%" stop-color="#859B77"/>
+      <stop offset="100%" stop-color="#152E19"/>
     </linearGradient>
     <linearGradient id="cartGradDark" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#F3F1F5"/>
-      <stop offset="100%" stop-color="#D8D5DB"/>
+      <stop offset="0%" stop-color="#FBF5F7"/>
+      <stop offset="100%" stop-color="#ECCBD9"/>
     </linearGradient>
 
     <style>
       .cart-fill { fill: url(#cartGrad); }
       .cart-stroke { stroke: url(#cartGrad); }
-      .rib-stroke { stroke: #2D3142; stroke-opacity: 0.35; }
+      .rib-stroke { stroke: #152E19; stroke-opacity: 0.35; }
       @media (prefers-color-scheme: dark) {
         .cart-fill { fill: url(#cartGradDark); }
         .cart-stroke { stroke: url(#cartGradDark); }
-        .rib-stroke { stroke: #F3F1F5; stroke-opacity: 0.45; }
+        .rib-stroke { stroke: #ECCBD9; stroke-opacity: 0.45; }
       }
     </style>
 

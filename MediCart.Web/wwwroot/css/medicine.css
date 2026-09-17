@@ -1,14 +1,28 @@
 /* ===== Browse medicines page ===== */
 
 :root {
-    --pine: #2D3142;
-    --pine-dark: #1E2230;
-    --cream: #F7F6F8;
-    --card: #FFFFFF;
-    --amber: #2D3142;
-    --ink: #2D3142;
-    --muted: #ADACB5;
-    --border: #D8D5DB;
+    --color-primary: #859B77;
+    --color-bg:      #FBF5F7;
+    --color-dark:    #152E19;
+    --color-accent:  #ECCBD9;
+    --color-text:    #5B6D5E;
+
+    --color-success: #5B8A64;
+    --color-warning: #D98C3B;
+    --color-danger:  #B3413E;
+    --color-neutral: #9CA3AF;
+
+    --font-heading: 'Fraunces', serif;
+    --font-body:    'Inter', sans-serif;
+
+    --pine: var(--color-primary);
+    --pine-dark: var(--color-dark);
+    --cream: var(--color-bg);
+    --card: var(--white);
+    --amber: var(--color-accent);
+    --ink: var(--color-dark);
+    --muted: var(--color-text);
+    --border: rgba(91, 109, 94, 0.22);
 }
 
 .browse {
@@ -176,7 +190,7 @@
     padding: 8px 12px;
     border-radius: 8px;
     border: 1px solid var(--border);
-    background: #fff;
+    background: var(--white);
     color: var(--ink);
     cursor: pointer;
 }
@@ -207,7 +221,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #F2F1F4;
+    background: var(--color-bg);
     color: var(--pine);
 }
 
@@ -259,24 +273,23 @@
 }
 
 .badge--rx {
-    background: #F6E2E1;
-    color: #A83A3A;
+    background: var(--danger-100);
+    color: var(--danger-700);
 }
 
 .badge--stock-in {
-    background: #F2F1F4;
-    color: #2D3142;
-    border: 1px solid #D8D5DB;
+    background: var(--color-success);
+    color: var(--color-dark);
 }
 
 .badge--stock-low {
-    background: #D8D5DB;
-    color: #2D3142;
+    background: var(--color-warning);
+    color: var(--color-dark);
 }
 
 .badge--stock-out {
-    background: #F6E2E1;
-    color: #A83A3A;
+    background: var(--color-danger);
+    color: #ffffff;
 }
 
 .badge--disabled {
@@ -327,7 +340,7 @@
     border-radius: 8px;
     border: none;
     background: var(--pine);
-    color: #fff;
+    color: var(--white);
     font-size: 1.15rem;
     line-height: 1;
     cursor: pointer;
@@ -343,7 +356,7 @@
 }
 
 .btn-add:disabled {
-    background: #D8D5DB;
+    background: rgba(91, 109, 94, 0.15);
     cursor: not-allowed;
 }
 
@@ -400,7 +413,7 @@
     position: absolute;
     top: 20px;
     right: 22px;
-    background: #fff;
+    background: var(--white);
     border: 1px solid var(--border);
     width: 30px;
     height: 30px;
@@ -429,7 +442,7 @@
     flex-shrink: 0;
     border-radius: 10px;
     background: var(--amber);
-    color: #fff;
+    color: var(--color-dark);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -484,12 +497,12 @@
 }
 
 .modal__value--warning {
-    color: var(--danger-700, #A83A3A);
+    color: var(--danger-700);
     font-weight: 700;
 }
 
 .modal__value--danger {
-    color: var(--danger-700, #A83A3A);
+    color: var(--danger-700);
     font-weight: 700;
 }
 
@@ -531,19 +544,19 @@
 }
 
 .side-effect--mild {
-    background: #F2F1F4;
-    color: #2D3142;
-    border: 1px solid #D8D5DB;
+    background: var(--color-success);
+    color: var(--color-dark);
 }
 
 .side-effect--moderate {
-    background: #D8D5DB;
-    color: #2D3142;
+    background: var(--color-warning);
+    color: var(--color-dark);
 }
 
-.side-effect--high {
-    background: #F6E2E1;
-    color: #A83A3A;
+.side-effect--high,
+.side-effect--severe {
+    background: var(--color-danger);
+    color: #ffffff;
 }
 
 .modal__cart {
@@ -559,7 +572,7 @@
     border: 1px solid var(--border);
     border-radius: 10px;
     overflow: hidden;
-    background: #fff;
+    background: var(--white);
 }
 
 .qty-stepper button {
@@ -594,7 +607,7 @@
 .btn-add-cart {
     flex: 1;
     background: var(--pine);
-    color: #fff;
+    color: var(--white);
     border: none;
     border-radius: 10px;
     padding: 12px 18px;

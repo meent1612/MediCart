@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using MediCart.Web.Attributes;
 
 namespace MediCart.Web.Models
 {
@@ -72,6 +73,7 @@ namespace MediCart.Web.Models
 
         [Required(ErrorMessage = "Enter an expiry date")]
         [DataType(DataType.Date)]
+        [MinimumFutureDate(30)]
         public DateOnly ExpiryDate { get; set; }
 
         public bool RequiresPrescription { get; set; }

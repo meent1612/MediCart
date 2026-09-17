@@ -6,59 +6,221 @@
 
 @section Styles {
     <link rel="stylesheet" href="~/css/admin-medicines.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/admin-orders.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/admin-messages.css" asp-append-version="true" />
 }
 
-<div class="message-filter-bar">
-    <form method="get" asp-action="ContactMessages">
-        <label for="statusFilter">Status</label>
-        <select id="statusFilter" name="status" onchange="this.form.submit()">
-            <option value="Unread" selected="@(Model.StatusFilter == "Unread")">Unread</option>
-            <option value="Read" selected="@(Model.StatusFilter == "Read")">Read</option>
-            <option value="All" selected="@(Model.StatusFilter == "All")">All</option>
-        </select>
-    </form>
-    <span class="medicine-results-count">@Model.UnreadCount unread &middot; @Model.TotalCount total</span>
+@if (TempData["MessageSuccess"] != null)
+{
+    <div class="admin-alert admin-alert--success"><span>@TempData["MessageSuccess"]</span></div>
+}
+@if (TempData["MessageError"] != null)
+{
+    <div class="admin-alert admin-alert--danger"><span>@TempData["MessageError"]</span></div>
+}
+
+<div class="admin-page-header">
+    <h2 class="admin-page-header__title">Contact messages</h2>
+    <p class="admin-page-header__subtitle">Inquiries and feedback submitted through the contact page</p>
+</div>
+
+<div class="admin-toolbar-card">
+    <div class="order-filter-bar">
+        <form method="get" asp-action="ContactMessages" style="display: flex; align-items: center; gap: 10px;">
+            <label for="statusFilter">Status</label>
+            <select id="statusFilter" name="status" onchange="this.form.submit()">
+                <option value="Unread" selected="@(Model.StatusFilter == "Unread")">Unread</option>
+                <option value="Read" selected="@(Model.StatusFilter == "Read")">Read</option>
+                <option value="All" selected="@(Model.StatusFilter == "All")">All</option>
+            </select>
+        </form>
+    </div>
+    <span class="admin-toolbar-count">@Model.UnreadCount unread &middot; @Model.TotalCount total</span>
 </div>
 
 <div class="admin-table-wrap">
-    <table class="admin-table">
-        <thead>
-            <tr>
-                <th>From</th>
-                <th>Email</th>
-                <th>Message</th>
-                <th>Received</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @if (Model.Messages.Count == 0)
-            {
-                <tr><td colspan="5" class="admin-table__muted">No messages match this filter.</td></tr>
-            }
-            @foreach (var msg in Model.Messages)
-            {
-                <tr class="@(!msg.IsRead ? "message-row--unread" : "")">
-                    <td>@msg.Name</td>
-                    <td>@msg.Email</td>
-                    <td class="message-cell">@msg.Message</td>
-                    <td>@msg.CreatedAt.ToLocalTime().ToString("dd MMM, h:mm tt")</td>
-                    <td>
-                        @if (!msg.IsRead)
-                        {
-                            <form method="post" asp-action="MarkMessageAsRead" asp-route-id="@msg.Id" style="display:inline;">
-                                @Html.AntiForgeryToken()
-                                <button type="submit" class="btn btn--sm">Mark as read</button>
-                            </form>
-                        }
-                        else
-                        {
-                            <span class="admin-table__muted">Read</span>
-                        }
-                    </td>
+    @if (Model.Messages.Count == 0)
+    {
+        <div class="admin-empty-state">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/>
+            </svg>
+            <h3>No messages found</h3>
+            <p>Try changing the status filter above.</p>
+        </div>
+    }
+    else
+    {
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>From</th>
+                    <th>Email</th>
+                    <th>Message snippet</th>
+                    <th>Received</th>
+                    <th style="text-align: right;">Action</th>
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @foreach (var msg in Model.Messages)
+                {
+                    <tr class="@(!msg.IsRead ? "message-row--unread" : "") message-row-clickable" 
+                        data-id="@msg.Id"
+                        data-name="@msg.Name"
+                        data-email="@msg.Email"
+                        data-date="@msg.CreatedAt.ToLocalTime().ToString("dd MMM yyyy, h:mm tt")"
+                        data-read="@msg.IsRead.ToString().ToLower()"
+                        data-message="@msg.Message">
+                        <td>
+                            <div class="message-sender-cell">
+                                @if (!msg.IsRead)
+                                {
+                                    <span class="unread-dot" title="Unread message"></span>
+                                }
+                                <span class="@(!msg.IsRead ? "message-sender-name--unread" : "message-sender-name")">@msg.Name</span>
+                            </div>
+                        </td>
+                        <td><a href="mailto:@msg.Email" style="color: inherit;" onclick="event.stopPropagation();">@msg.Email</a></td>
+                        <td class="message-cell" title="@msg.Message">@msg.Message</td>
+                        <td>@msg.CreatedAt.ToLocalTime().ToString("dd MMM, h:mm tt")</td>
+                        <td style="text-align: right;" onclick="event.stopPropagation();">
+                            <button type="button" class="btn-pill-view btn-view-msg" 
+                                    data-id="@msg.Id"
+                                    data-name="@msg.Name"
+                                    data-email="@msg.Email"
+                                    data-date="@msg.CreatedAt.ToLocalTime().ToString("dd MMM yyyy, h:mm tt")"
+                                    data-read="@msg.IsRead.ToString().ToLower()"
+                                    data-message="@msg.Message">
+                                View
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
 </div>
+
+<!-- Modal Dialog for Message Detail -->
+<div class="message-modal-overlay" id="messageModalOverlay" role="dialog" aria-modal="true" aria-labelledby="modalSender">
+    <div class="message-modal">
+        <div class="message-modal__header">
+            <h3 class="message-modal__title">Message Details</h3>
+            <button type="button" class="message-modal__close" id="modalCloseBtn" aria-label="Close dialog">&times;</button>
+        </div>
+        <div class="message-modal__body">
+            <div class="message-modal__meta-grid">
+                <div class="message-modal__meta-item">
+                    <span class="message-modal__meta-label">From</span>
+                    <span class="message-modal__meta-value" id="modalSender"></span>
+                </div>
+                <div class="message-modal__meta-item">
+                    <span class="message-modal__meta-label">Email</span>
+                    <span class="message-modal__meta-value" id="modalEmail"></span>
+                </div>
+                <div class="message-modal__meta-item">
+                    <span class="message-modal__meta-label">Date &amp; Time</span>
+                    <span class="message-modal__meta-value" id="modalDate"></span>
+                </div>
+                <div class="message-modal__meta-item">
+                    <span class="message-modal__meta-label">Status</span>
+                    <span class="message-modal__meta-value" id="modalStatusBadge"></span>
+                </div>
+            </div>
+            <div class="message-modal__content-box" id="modalContent"></div>
+        </div>
+        <div class="message-modal__footer">
+            <form id="modalReadForm" method="post" action="">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn--pine btn--sm" id="modalToggleReadBtn">Mark as read</button>
+            </form>
+            <button type="button" class="btn btn--outline btn--sm" id="modalDismissBtn">Close</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var overlay = document.getElementById('messageModalOverlay');
+            var closeBtn = document.getElementById('modalCloseBtn');
+            var dismissBtn = document.getElementById('modalDismissBtn');
+            var modalSender = document.getElementById('modalSender');
+            var modalEmail = document.getElementById('modalEmail');
+            var modalDate = document.getElementById('modalDate');
+            var modalStatusBadge = document.getElementById('modalStatusBadge');
+            var modalContent = document.getElementById('modalContent');
+            var modalReadForm = document.getElementById('modalReadForm');
+            var modalToggleReadBtn = document.getElementById('modalToggleReadBtn');
+
+            function openModal(data) {
+                modalSender.textContent = data.name;
+                modalEmail.textContent = data.email;
+                modalDate.textContent = data.date;
+                modalContent.textContent = data.message;
+
+                var isRead = data.read === 'true';
+                if (isRead) {
+                    modalStatusBadge.innerHTML = '<span class="order-status-badge order-status-badge--delivered">Read</span>';
+                    modalReadForm.action = '@Url.Action("MarkMessageAsUnread", "Admin")/' + data.id;
+                    modalToggleReadBtn.textContent = 'Mark as unread';
+                    modalToggleReadBtn.className = 'btn btn--outline btn--sm';
+                } else {
+                    modalStatusBadge.innerHTML = '<span class="order-status-badge order-status-badge--flagged">Unread</span>';
+                    modalReadForm.action = '@Url.Action("MarkMessageAsRead", "Admin")/' + data.id;
+                    modalToggleReadBtn.textContent = 'Mark as read';
+                    modalToggleReadBtn.className = 'btn btn--pine btn--sm';
+                }
+
+                overlay.classList.add('is-active');
+            }
+
+            function closeModal() {
+                overlay.classList.remove('is-active');
+            }
+
+            document.querySelectorAll('.message-row-clickable').forEach(function(row) {
+                row.addEventListener('click', function(e) {
+                    var data = {
+                        id: row.getAttribute('data-id'),
+                        name: row.getAttribute('data-name'),
+                        email: row.getAttribute('data-email'),
+                        date: row.getAttribute('data-date'),
+                        read: row.getAttribute('data-read'),
+                        message: row.getAttribute('data-message')
+                    };
+                    openModal(data);
+                });
+            });
+
+            document.querySelectorAll('.btn-view-msg').forEach(function(btn) {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    var data = {
+                        id: btn.getAttribute('data-id'),
+                        name: btn.getAttribute('data-name'),
+                        email: btn.getAttribute('data-email'),
+                        date: btn.getAttribute('data-date'),
+                        read: btn.getAttribute('data-read'),
+                        message: btn.getAttribute('data-message')
+                    };
+                    openModal(data);
+                });
+            });
+
+            closeBtn.addEventListener('click', closeModal);
+            dismissBtn.addEventListener('click', closeModal);
+            overlay.addEventListener('click', function(e) {
+                if (e.target === overlay) {
+                    closeModal();
+                }
+            });
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && overlay.classList.contains('is-active')) {
+                    closeModal();
+                }
+            });
+        });
+    </script>
+}

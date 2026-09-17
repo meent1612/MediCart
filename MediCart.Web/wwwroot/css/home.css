@@ -5,7 +5,7 @@
 /* ---- Hero ---------------------------------------------------------------- */
 .hero {
     position: relative;
-    background: linear-gradient(145deg, #373C50 0%, #2D3142 55%, #222533 100%);
+    background: linear-gradient(145deg, rgba(133, 155, 119, 0.25) 0%, rgba(21, 46, 25, 0) 70%), var(--color-dark);
     color: var(--white);
     overflow: hidden;
     border-radius: var(--radius-lg);
@@ -25,7 +25,7 @@
     left: 5%;
     width: 95%;
     height: 65%;
-    background: radial-gradient(ellipse 65% 50% at 50% 85%, rgba(216, 213, 219, 0.35) 0%, rgba(173, 172, 181, 0.20) 40%, rgba(45, 49, 66, 0) 75%);
+    background: radial-gradient(ellipse 65% 50% at 50% 85%, rgba(236, 203, 217, 0.35) 0%, rgba(133, 155, 119, 0.20) 40%, rgba(21, 46, 25, 0) 75%);
     filter: blur(90px);
     -webkit-filter: blur(90px);
     pointer-events: none;
@@ -197,9 +197,10 @@
 
 .hero h1,
 .hero__headline {
-    font-family: var(--font-display) !important;
+    font-family: var(--font-heading) !important;
+    font-optical-sizing: auto;
     font-size: clamp(40px, 4.8vw, 60px);
-    font-weight: 600;
+    font-weight: 900 !important;
     line-height: 1.12;
     letter-spacing: -0.015em;
     max-width: 14ch;
@@ -209,11 +210,12 @@
 }
 .hero h1 em,
 .hero__headline em {
-    font-family: var(--font-display) !important;
+    font-family: var(--font-heading) !important;
+    font-optical-sizing: auto;
     font-style: italic;
-    font-weight: 500;
-    color: var(--platinum-200);
-    text-shadow: 0 0 24px rgba(216, 213, 219, 0.35);
+    font-weight: inherit;
+    color: var(--color-accent);
+    text-shadow: 0 0 24px rgba(236, 203, 217, 0.35);
 }
 
 .hero p,
@@ -263,18 +265,18 @@
 .hero__search .btn--search-hero,
 .hero__search .btn--amber {
     font-family: var(--font-body) !important;
-    background: #D8D5DB;
-    color: #2D3142;
+    background: var(--color-accent);
+    color: var(--color-dark);
     font-weight: 700;
-    border: 1px solid #D8D5DB;
+    border: 1px solid var(--color-accent);
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.16);
     transition: all .18s var(--ease);
 }
 .hero__search .btn--search-hero:hover,
 .hero__search .btn--amber:hover {
-    background: #FFFFFF;
-    border-color: #FFFFFF;
-    color: #1E2230;
+    background: var(--color-bg);
+    border-color: var(--color-accent);
+    color: var(--color-dark);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.22);
     transform: translateY(-1px);
 }
@@ -369,9 +371,9 @@
     top: 38px;
     left: 50%;
     transform: translateX(-50%) scale(0.65);
-    background: var(--white, #ffffff);
-    color: var(--gunmetal-800, #2D3142);
-    font-family: var(--font-display, "Fraunces", Georgia, serif);
+    background: var(--white);
+    color: var(--color-dark);
+    font-family: var(--font-heading);
     font-size: 15px;
     font-weight: 600;
     padding: 6px 18px;
@@ -398,7 +400,7 @@
     height: 0;
     border-left: 6px solid transparent;
     border-right: 6px solid transparent;
-    border-top: 6px solid var(--white, #ffffff);
+    border-top: 6px solid var(--white);
 }
 
 .hero__baymax-bubble.is-visible {
@@ -1024,23 +1026,23 @@
     position: relative;
     overflow: hidden;
     text-align: center;
-    background: linear-gradient(145deg, #373C50 0%, #2D3142 55%, #222533 100%);
+    background: linear-gradient(145deg, rgba(133, 155, 119, 0.25) 0%, rgba(21, 46, 25, 0) 70%), var(--color-dark);
     color: var(--white);
     border-radius: var(--radius-lg);
     padding: 64px 32px;
     margin-block: 24px 40px;
 }
 .cta-banner .btn--amber {
-    background: #D8D5DB;
-    color: #2D3142;
-    border: 1px solid #D8D5DB;
+    background: var(--color-accent);
+    color: var(--color-dark);
+    border: 1px solid var(--color-accent);
     font-weight: 700;
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.16);
 }
 .cta-banner .btn--amber:hover {
-    background: #FFFFFF;
-    border-color: #FFFFFF;
-    color: #1E2230;
+    background: var(--color-bg);
+    border-color: var(--color-accent);
+    color: var(--color-dark);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.22);
 }
 .cta-banner__noise {

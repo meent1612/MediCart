@@ -1,0 +1,132 @@
+@model MediCart.Web.Models.AdminAuditLogViewModel
+@{
+    ViewData["Title"] = "Audit log";
+    Layout = "_AdminLayout";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin-medicines.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/admin-orders.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/admin-audit.css" asp-append-version="true" />
+}
+
+<div class="admin-page-header">
+    <h2 class="admin-page-header__title">Audit log</h2>
+    <p class="admin-page-header__subtitle">System operations, record mutations, and admin event history</p>
+</div>
+
+<!-- Filter Toolbar Card -->
+<div class="admin-toolbar-card">
+    <div class="order-filter-bar">
+        <form method="get" asp-action="AuditLog" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+                <label for="actionFilter">Action</label>
+                <select id="actionFilter" name="actionFilter" onchange="this.form.submit()">
+                    <option value="All" selected="@(Model.ActionFilter == "All")">All actions</option>
+                    <option value="Add" selected="@(Model.ActionFilter == "Add")">Adds / Creations</option>
+                    <option value="Edit" selected="@(Model.ActionFilter == "Edit")">Edits / Updates</option>
+                    <option value="Delete" selected="@(Model.ActionFilter == "Delete")">Deletions</option>
+                    <option value="Security" selected="@(Model.ActionFilter == "Security")">Auth &amp; Security</option>
+                </select>
+            </div>
+
+            @if (Model.AdminOptions.Count > 1)
+            {
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <label for="adminIdFilter">Admin</label>
+                    <select id="adminIdFilter" name="adminId" onchange="this.form.submit()">
+                        <option value="All" selected="@(Model.AdminIdFilter == "All")">All admins</option>
+                        @foreach (var adm in Model.AdminOptions)
+                        {
+                            <option value="@adm.Id" selected="@(Model.AdminIdFilter == adm.Id)">@adm.Name</option>
+                        }
+                    </select>
+                </div>
+            }
+        </form>
+    </div>
+    <span class="admin-toolbar-count">@Model.TotalCount event(s) recorded</span>
+</div>
+
+@if (Model.Groups.Count == 0)
+{
+    <div class="admin-table-wrap">
+        <div class="admin-empty-state">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 3H5a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9l-6-6Z"/><path d="M13 3v6h6"/>
+            </svg>
+            <h3>No audit events found</h3>
+            <p>No activity records match the selected filter criteria.</p>
+        </div>
+    </div>
+}
+else
+{
+    <div class="audit-groups">
+        @foreach (var group in Model.Groups)
+        {
+            <div class="audit-group">
+                <div class="audit-group__header">
+                    <h3 class="audit-group__title">@group.DateLabel</h3>
+                    <span class="admin-count-pill">@group.Entries.Count</span>
+                </div>
+                <ul class="audit-timeline">
+                    @foreach (var entry in group.Entries)
+                    {
+                        <li class="audit-entry">
+                            <div class="audit-entry__left">
+                                <div class="audit-entry__icon audit-entry__icon--@entry.ActionType.ToLowerInvariant()">
+                                    @if (entry.ActionType == "Add")
+                                    {
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                                        </svg>
+                                    }
+                                    else if (entry.ActionType == "Edit")
+                                    {
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                        </svg>
+                                    }
+                                    else if (entry.ActionType == "Delete")
+                                    {
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                        </svg>
+                                    }
+                                    else if (entry.ActionType == "Security")
+                                    {
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                                        </svg>
+                                    }
+                                    else
+                                    {
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+                                        </svg>
+                                    }
+                                </div>
+                                <div class="audit-entry__content">
+                                    <div class="audit-entry__desc">@entry.Action</div>
+                                    <div class="audit-entry__meta">
+                                        <span class="audit-entry__actor">@entry.AdminName</span>
+                                        @if (!string.IsNullOrWhiteSpace(entry.TableName))
+                                        {
+                                            <span class="audit-entry__table-tag">@entry.TableName</span>
+                                        }
+                                        @if (entry.RecordId.HasValue)
+                                        {
+                                            <span>#@entry.RecordId.Value</span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                            <span class="audit-entry__time">@entry.TimeString</span>
+                        </li>
+                    }
+                </ul>
+            </div>
+        }
+    </div>
+}
