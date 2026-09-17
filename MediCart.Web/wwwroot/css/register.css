@@ -4,22 +4,31 @@
    ========================================================================== */
 
 :root {
-  /* Brand palette: Gunmetal, French Gray, Platinum */
-  --slate: #2D3142;      /* deep, grounded — headings, primary CTA, dark panel */
-  --misty: #ADACB5;      /* mid gray — accents, active states, links */
-  --sage: #D8D5DB;       /* soft platinum — borders, dividers, quiet fills */
-  --beige: #F7F6F8;      /* light canvas — page background, badges */
-  --cream: #FFFFFF;      /* pure white — cards, inputs */
-  --ink: #2D3142;        /* body text */
-  --ink-soft: #71707E;   /* secondary text */
+  /* Core Design System Tokens */
+  --color-primary: #859B77;
+  --color-bg:      #FBF5F7;
+  --color-dark:    #152E19;
+  --color-accent:  #ECCBD9;
+  --color-text:    #5B6D5E;
+
+  --font-heading: 'Fraunces', serif;
+  --font-body:    'Inter', sans-serif;
+
+  --slate: var(--color-primary);
+  --misty: var(--color-accent);
+  --sage: #d6ded7;
+  --beige: var(--color-bg);
+  --cream: #FFFFFF;
+  --ink: var(--color-dark);
+  --ink-soft: var(--color-text);
 
   /* Semantic */
   --error: #a3453a;
   --error-bg: #f8e9e6;
 
   /* Type */
-  --font-display: "Fraunces", "Iowan Old Style", serif;
-  --font-body: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-display: var(--font-heading);
+  --font-body: 'Inter', sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
 
   /* Rhythm */
@@ -552,7 +561,7 @@ body.register-body {
 }
 
 .register__submit:hover {
-  background: #1E2230;
+  background: var(--color-dark);
 }
 
 .register__submit:active {
