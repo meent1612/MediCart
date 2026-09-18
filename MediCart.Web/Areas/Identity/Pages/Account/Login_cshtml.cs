@@ -46,7 +46,7 @@ namespace MediCart.Web.Areas.Identity.Pages.Account
             public string Password { get; set; }
 
             [Display(Name = "Remember me?")]
-            public bool RememberMe { get; set; }
+            public bool RememberMe { get; set; } = true;
         }
 
         public async Task<IActionResult> OnGetAsync(string returnUrl = null)
@@ -83,7 +83,7 @@ namespace MediCart.Web.Areas.Identity.Pages.Account
             if (ModelState.IsValid)
             {
                 var result = await _signInManager.PasswordSignInAsync(
-                    Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
+                    Input.Email, Input.Password, isPersistent: true, lockoutOnFailure: false);
 
                 if (result.Succeeded)
                 {

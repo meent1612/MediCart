@@ -21,9 +21,12 @@
 
     <div class="login">
 
-        <!-- ============================================================
-             LEFT — brand panel
-             ============================================================ -->
+        <!-- Ambient animated gradient blobs (full-page continuous background) -->
+        <div class="auth__ambient" aria-hidden="true">
+            <div class="auth__blob auth__blob--dark"></div>
+            <div class="auth__blob auth__blob--primary"></div>
+            <div class="auth__blob auth__blob--accent"></div>
+        </div>
         <aside class="login__brand">
             <div class="login__brand-noise" aria-hidden="true"></div>
 
@@ -88,13 +91,6 @@
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12Z" /><circle cx="12" cy="12" r="3" /></svg>
                         </button>
                         <span asp-validation-for="Input.Password"></span>
-                    </div>
-
-                    <div class="login__row">
-                        <label class="login__remember">
-                            <input asp-for="Input.RememberMe" type="checkbox" />
-                            Remember me
-                        </label>
                     </div>
 
                     <button type="submit" id="loginSubmit" class="login__submit">
