@@ -15,8 +15,29 @@
     <p class="admin-page-header__subtitle">Live command center for orders, inventory, and activity</p>
 </div>
 
-<!-- 4 KPI Stat Cards -->
+<!-- 5 KPI Stat Cards -->
 <div class="admin-kpi-grid">
+    <div class="admin-kpi-card admin-kpi-card--revenue">
+        <div class="admin-kpi-card__top">
+            <span class="admin-kpi-card__label">Revenue</span>
+            <select id="revenuePeriodSelect" class="kpi-card-select" aria-label="Revenue timeframe">
+                <option value="all" selected>All time</option>
+                <option value="thisMonth">This month</option>
+                <option value="lastMonth">Last month</option>
+                <option value="last3Months">3 months</option>
+                <option value="last6Months">6 months</option>
+            </select>
+            <div class="admin-kpi-card__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/>
+                </svg>
+            </div>
+        </div>
+        <div class="admin-kpi-card__val" id="revenueVal">৳@Model.TotalRevenue.ToString("#,##0")</div>
+        <div class="admin-kpi-card__avg" id="revenueAvgOrder">Avg order: ৳@Model.AverageOrderValue.ToString("#,##0")</div>
+        <div class="admin-kpi-card__desc" id="revenueDesc">@Model.RevenuePeriodLabel</div>
+    </div>
+
     <a href="~/AdminOrders/IncomingOrders?status=All" class="admin-kpi-card admin-kpi-card--primary">
         <div class="admin-kpi-card__top">
             <span class="admin-kpi-card__label">Total Orders</span>
@@ -157,7 +178,7 @@
                     </svg>
                     Attention Needed
                 </h3>
-                <span class="admin-count-pill" style="margin-left: 0;">@Model.AttentionItems.Count</span>
+                <span class="admin-count-pill" style="margin-left: 0;">@Model.TotalAttentionCount</span>
             </div>
 
             @if (Model.AttentionItems.Count == 0)
@@ -167,7 +188,7 @@
                         <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
                     </svg>
                     <h3>All clear!</h3>
-                    <p>No flagged orders or critical stock alerts.</p>
+                    <p>No flagged orders, low-stock items, or near-expiry medicines.</p>
                 </div>
             }
             else
@@ -184,10 +205,18 @@
                                             <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/>
                                         </svg>
                                     }
+                                    else if (item.Type == "LowStock")
+                                    {
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                                            <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                                            <line x1="12" y1="22.08" x2="12" y2="12"/>
+                                        </svg>
+                                    }
                                     else
                                     {
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                                            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
                                         </svg>
                                     }
                                 </div>
@@ -202,6 +231,91 @@
                         </li>
                     }
                 </ul>
+                @if (Model.TotalAttentionCount > 4)
+                {
+                    <div class="dashboard-card__footer">
+                        <a href="~/Admin/StockExpiry" class="dashboard-card__link">
+                            View all alerts
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                        </a>
+                    </div>
+                }
+            }
+        </div>
+
+        <!-- Best Selling Medicines Card -->
+        <div class="dashboard-card best-selling-card">
+            <div class="dashboard-card__header">
+                <h3 class="dashboard-card__title">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                    </svg>
+                    Best Selling
+                </h3>
+                <span class="admin-count-pill" style="margin-left: 0;">Top @Model.BestSellingMedicines.Count</span>
+            </div>
+
+            @if (Model.BestSellingMedicines.Count == 0)
+            {
+                <div class="admin-empty-state" style="padding: 34px 20px;">
+                    <p>No medicines sold yet.</p>
+                </div>
+            }
+            else
+            {
+                <ul class="best-selling-list">
+                    @foreach (var med in Model.BestSellingMedicines)
+                    {
+                        <li class="best-selling-item">
+                            <div class="best-selling-item__main">
+                                <span class="best-selling-rank">@med.Rank</span>
+                                <div class="best-selling-item__info">
+                                    <span class="best-selling-item__name">@med.MedicineName</span>
+                                    <span class="best-selling-item__sub">@med.UnitsSold @(med.UnitsSold == 1 ? "unit" : "units") sold</span>
+                                </div>
+                            </div>
+                            <div class="best-selling-item__revenue">
+                                ৳@med.Revenue.ToString("#,##0")
+                            </div>
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+
+        <!-- Top Categories Mini Breakdown -->
+        <div class="dashboard-card top-categories-card">
+            <div class="dashboard-card__header">
+                <h3 class="dashboard-card__title">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/>
+                    </svg>
+                    Top Categories
+                </h3>
+            </div>
+
+            @if (Model.TopCategories.Count == 0)
+            {
+                <div class="admin-empty-state" style="padding: 30px 20px;">
+                    <p>No category sales data yet.</p>
+                </div>
+            }
+            else
+            {
+                <div class="top-categories-list">
+                    @foreach (var cat in Model.TopCategories)
+                    {
+                        <div class="category-bar-row">
+                            <div class="category-bar-head">
+                                <span class="category-bar-name">@cat.CategoryName</span>
+                                <span class="category-bar-val">৳@cat.Revenue.ToString("#,##0") <span class="category-bar-pct">(@cat.Percentage%)</span></span>
+                            </div>
+                            <div class="category-bar-track">
+                                <div class="category-bar-fill" style="width: @(Math.Max(5, cat.Percentage))%;"></div>
+                            </div>
+                        </div>
+                    }
+                </div>
             }
         </div>
     </div>
@@ -277,6 +391,34 @@
                     }
                 }
             });
+
+            // Revenue Period Filter Listener
+            var revenueSelect = document.getElementById('revenuePeriodSelect');
+            var revenueVal = document.getElementById('revenueVal');
+            var revenueAvg = document.getElementById('revenueAvgOrder');
+            var revenueDesc = document.getElementById('revenueDesc');
+
+            if (revenueSelect && revenueVal) {
+                revenueSelect.addEventListener('change', function() {
+                    var period = this.value;
+                    revenueVal.style.opacity = '0.35';
+                    fetch('/Admin/Dashboard/Revenue?period=' + encodeURIComponent(period))
+                        .then(function(res) {
+                            if (!res.ok) throw new Error('Network response was not ok');
+                            return res.json();
+                        })
+                        .then(function(data) {
+                            revenueVal.textContent = data.revenue;
+                            if (revenueAvg) revenueAvg.textContent = 'Avg order: ' + data.avgOrder;
+                            if (revenueDesc) revenueDesc.textContent = data.label;
+                            revenueVal.style.opacity = '1';
+                        })
+                        .catch(function(err) {
+                            revenueVal.style.opacity = '1';
+                            console.error('Error fetching revenue stats:', err);
+                        });
+                });
+            }
         });
     </script>
 }

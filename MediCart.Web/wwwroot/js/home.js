@@ -13,35 +13,21 @@
         toastTimer = setTimeout(() => toast.classList.remove("is-visible"), 2200);
     };
 
-    /* ---- Cart badge (front-end preview only — no backend yet) --------- */
-    const cartBadge = document.querySelector(".cart-button__badge");
-    const cartButton = document.querySelector(".cart-button");
-    let cartCount = 0;
-
-    const bumpCart = () => {
-        cartCount += 1;
-        if (cartBadge) {
-            cartBadge.textContent = String(cartCount);
-            cartBadge.classList.add("is-visible");
-        }
-        cartButton?.classList.remove("is-bumped");
-        // restart animation
-        void cartButton?.offsetWidth;
-        cartButton?.classList.add("is-bumped");
-    };
-
-    /* ---- Add-to-cart buttons on product cards -------------------------- */
+    /* ---- Add-to-cart buttons on product cards (shared cart handler) --- */
     document.querySelectorAll(".add-btn").forEach((btn) => {
         btn.addEventListener("click", () => {
-            const card = btn.closest(".product-card");
-            const name = card?.querySelector(".product-card__name")?.textContent?.trim() || "Item";
+            const medId = btn.dataset.id;
+            if (!medId) return;
 
-            btn.classList.add("is-added");
-            btn.setAttribute("aria-label", `${name} added to cart`);
-            setTimeout(() => btn.classList.remove("is-added"), 350);
-
-            bumpCart();
-            showToast(`${name} added to cart`);
+            window.MediCartCart.add({
+                medicineId: medId,
+                quantity: 1,
+                button: btn,
+                onSuccess: () => {
+                    btn.classList.add("is-added");
+                    setTimeout(() => btn.classList.remove("is-added"), 350);
+                }
+            });
         });
     });
 
@@ -54,6 +40,44 @@
             }
         });
     });
+
+    /* ---- Card grids pop-in on scroll (product type, category, how-it-works, stats, testimonials) ---- */
+    const popGrids = document.querySelectorAll(".category-grid, .shop-category-grid, .steps, .stats-strip, .testimonials-grid");
+    if (popGrids.length) {
+        const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+        popGrids.forEach((grid) => {
+            const cards = grid.querySelectorAll(".category-card, .shop-category-card, .step, .stats-strip__item, .testimonial-card");
+            cards.forEach((card, index) => {
+                card.style.setProperty("--pop-delay", index);
+                if (prefersReducedMotion || !("IntersectionObserver" in window)) {
+                    card.classList.add("is-visible");
+                }
+            });
+        });
+
+        if (!prefersReducedMotion && "IntersectionObserver" in window) {
+            const popObserver = new IntersectionObserver(
+                (entries, observer) => {
+                    entries.forEach((entry) => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add("is-visible");
+                            observer.unobserve(entry.target);
+                        }
+                    });
+                },
+                {
+                    rootMargin: "0px 0px -10% 0px",
+                    threshold: 0.15
+                }
+            );
+
+            popGrids.forEach((grid) => {
+                const cards = grid.querySelectorAll(".category-card, .shop-category-card, .step, .stats-strip__item, .testimonial-card");
+                cards.forEach((card) => popObserver.observe(card));
+            });
+        }
+    }
 
     /* ---- Hero search: friendly no-op guard until Browse page exists ----- */
     const searchForm = document.getElementById("heroSearchForm");
@@ -103,62 +127,19 @@
         }
     }
 
-    /* ---- Testimonial carousel ---------------------------------------- */
-    const testimonialTrack = document.querySelector(".testimonial__track");
-    if (testimonialTrack) {
-        const slides = Array.from(testimonialTrack.querySelectorAll(".testimonial__slide"));
-        const dots = Array.from(document.querySelectorAll(".testimonial__dot"));
-        const prevBtn = document.querySelector(".testimonial__arrow--prev");
-        const nextBtn = document.querySelector(".testimonial__arrow--next");
-        let current = 0;
-        let autoTimer = null;
-
-        const goTo = (index) => {
-            current = (index + slides.length) % slides.length;
-            slides.forEach((slide, i) => slide.classList.toggle("is-active", i === current));
-            dots.forEach((dot, i) => dot.classList.toggle("is-active", i === current));
-        };
-
-        const startAuto = () => {
-            clearInterval(autoTimer);
-            autoTimer = setInterval(() => goTo(current + 1), 5500);
-        };
-
-        prevBtn?.addEventListener("click", () => { goTo(current - 1); startAuto(); });
-        nextBtn?.addEventListener("click", () => { goTo(current + 1); startAuto(); });
-        dots.forEach((dot, i) => dot.addEventListener("click", () => { goTo(i); startAuto(); }));
-
-        startAuto();
-    }
-
-    /* ---- Subtle mouse-tilt on the hero review card ----------------------- */
-    const reviewCard = document.querySelector(".review-card");
-    const heroGrid = document.querySelector(".hero__grid");
-    if (reviewCard && heroGrid && window.matchMedia("(pointer: fine)").matches) {
-        heroGrid.addEventListener("mousemove", (e) => {
-            const rect = heroGrid.getBoundingClientRect();
-            const x = (e.clientX - rect.left) / rect.width - 0.5;
-            const y = (e.clientY - rect.top) / rect.height - 0.5;
-            reviewCard.style.transform = `rotateY(${x * 6}deg) rotateX(${y * -6}deg)`;
-        });
-        heroGrid.addEventListener("mouseleave", () => {
-            reviewCard.style.transform = "";
-        });
-    }
-
-    /* ---- "Meet Baymax" Hero Animation Sequence --------------------------- */
+    /* ---- Hero Baymax Visual Anchor & Reaction --------------------------- */
     const meetBaymaxBtn = document.getElementById("meetBaymaxBtn");
-    const baymaxOverlay = document.getElementById("baymaxHeroOverlay");
-    const baymaxWalker = document.getElementById("baymaxHeroWalker");
-    const baymaxBubble = document.getElementById("baymaxSpeechBubble");
+    const baymaxAnchor = document.getElementById("heroBaymaxAnchor");
+    const baymaxBubble = document.getElementById("heroBaymaxBubble");
+    const baymaxBubbleText = document.getElementById("heroBaymaxBubbleText");
     const baymaxAnimContainer = document.getElementById("baymaxHeroLottie");
+    const howItWorksSection = document.getElementById("howItWorksSection");
 
     let heroBaymaxAnim = null;
-    let isGreetingRunning = false;
+    let isReactionRunning = false;
 
     function initHeroBaymax() {
-        if (!meetBaymaxBtn || !baymaxWalker || !baymaxAnimContainer) return;
-        if (baymaxOverlay) baymaxOverlay.style.display = "none";
+        if (!baymaxAnimContainer) return;
         if (typeof lottie === "undefined") return;
 
         try {
@@ -169,128 +150,64 @@
                 autoplay: false,
                 path: "/animations/loading.json"
             });
-            heroBaymaxAnim.setSpeed(1.6);
+
+            heroBaymaxAnim.addEventListener("DOMLoaded", () => {
+                // Hold on a calm standing frame as the visual anchor
+                heroBaymaxAnim.goToAndStop(0, true);
+            });
         } catch (err) {
             console.warn("Could not load hero Baymax animation:", err);
         }
 
-        meetBaymaxBtn.addEventListener("click", function () {
-            if (isGreetingRunning) return;
-            isGreetingRunning = true;
-            meetBaymaxBtn.disabled = true;
+        const triggerBaymaxReaction = () => {
+            if (isReactionRunning) return;
+            isReactionRunning = true;
+            if (meetBaymaxBtn) meetBaymaxBtn.disabled = true;
 
-            if (baymaxOverlay) {
-                baymaxOverlay.style.display = "block";
-            }
-
-            const isMobile = window.matchMedia("(max-width: 767px)").matches;
             const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-            // Coordinates: desktop lands at x = 32vw (clear of button row & chips); mobile lands at x = 17vw scaled to 55%
-            const targetX = isMobile ? "17vw" : "32vw";
-            const scaleStr = isMobile ? " scale(0.55)" : "";
-            const landedTransform = `translateX(${targetX})${scaleStr}`;
-            const offscreenTransform = `translateX(-120%)${scaleStr}`;
-
-            if (heroBaymaxAnim) {
-                heroBaymaxAnim.goToAndStop(0, true);
-                heroBaymaxAnim.setSpeed(1.6);
+            // 1. Play reaction animation (wave / greeting)
+            if (heroBaymaxAnim && !prefersReducedMotion) {
+                heroBaymaxAnim.setSpeed(1.4);
+                heroBaymaxAnim.goToAndPlay(0, true);
             }
 
-            if (prefersReducedMotion) {
-                // Reduced motion: skip walk, fade in, hold, fade out
-                baymaxWalker.style.transition = "none";
-                baymaxWalker.style.transform = landedTransform;
-                baymaxWalker.style.opacity = "0";
-                baymaxWalker.style.visibility = "visible";
+            // 2. React with speech bubble
+            if (baymaxBubble) {
+                baymaxBubble.classList.add("is-reacting");
+            }
+            if (baymaxBubbleText) {
+                baymaxBubbleText.textContent = "I will care for your order!";
+            }
 
-                if (heroBaymaxAnim) {
-                    heroBaymaxAnim.play();
+            // 3. Scroll to "How it works" section where pharmacist & order review is explained
+            setTimeout(() => {
+                if (howItWorksSection) {
+                    howItWorksSection.scrollIntoView({
+                        behavior: prefersReducedMotion ? "auto" : "smooth",
+                        block: "start"
+                    });
                 }
+            }, prefersReducedMotion ? 100 : 700);
 
-                requestAnimationFrame(() => {
-                    baymaxWalker.style.transition = "opacity 0.3s ease";
-                    baymaxWalker.style.opacity = "1";
-                });
-
-                // Speech bubble "Hi!"
-                setTimeout(() => {
-                    baymaxBubble?.classList.add("is-visible");
-                }, 350);
-
-                setTimeout(() => {
-                    baymaxBubble?.classList.remove("is-visible");
-                }, 1700);
-
-                setTimeout(() => {
-                    baymaxWalker.style.transition = "opacity 0.3s ease";
-                    baymaxWalker.style.opacity = "0";
-                }, 2100);
-
-                setTimeout(() => {
-                    baymaxWalker.style.visibility = "hidden";
-                    baymaxWalker.style.opacity = "";
-                    baymaxWalker.style.transform = offscreenTransform;
-                    if (baymaxOverlay) baymaxOverlay.style.display = "none";
-                    if (heroBaymaxAnim) {
-                        heroBaymaxAnim.goToAndStop(0, true);
-                    }
-                    meetBaymaxBtn.disabled = false;
-                    isGreetingRunning = false;
-                }, 2500);
-
-                return;
-            }
-
-            // Normal motion sequence:
-            // 1. Starts off-screen to the LEFT of the viewport, hidden.
-            baymaxWalker.style.transition = "none";
-            baymaxWalker.style.transform = offscreenTransform;
-            baymaxWalker.style.opacity = "1";
-            baymaxWalker.style.visibility = "visible";
-
-            // 2. Slides in from left edge to x = 22% (or 12% on mobile) over ~0.7s, ease-out.
-            // Lottie plays during the whole sequence at speed ~1.6.
-            if (heroBaymaxAnim) {
-                heroBaymaxAnim.play();
-            }
-
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    baymaxWalker.style.transition = "transform 0.7s cubic-bezier(0.16, 1, 0.3, 1)";
-                    baymaxWalker.style.transform = landedTransform;
-                });
-            });
-
-            // 3. Holds at that position for ~1.1s (the "hi" beat). Speech bubble fades+scales in "Hi!"
+            // 4. Reset speech bubble and enable button
             setTimeout(() => {
-                baymaxBubble?.classList.add("is-visible");
-            }, 700);
-
-            // Speech bubble fades out before he leaves (~1.55s)
-            setTimeout(() => {
-                baymaxBubble?.classList.remove("is-visible");
-            }, 1550);
-
-            // 4. Slides back out to the left, off-screen, over ~0.7s, ease-in (~1.8s to ~2.5s)
-            setTimeout(() => {
-                baymaxWalker.style.transition = "transform 0.7s cubic-bezier(0.7, 0, 0.84, 0)";
-                baymaxWalker.style.transform = offscreenTransform;
-            }, 1800);
-
-            // Total ≈ 2.5s: unmounts and Lottie resets to frame 0
-            setTimeout(() => {
-                baymaxWalker.style.visibility = "hidden";
-                baymaxWalker.style.transition = "none";
-                baymaxWalker.style.transform = offscreenTransform;
-                if (baymaxOverlay) baymaxOverlay.style.display = "none";
+                if (baymaxBubble) {
+                    baymaxBubble.classList.remove("is-reacting");
+                }
+                if (baymaxBubbleText) {
+                    baymaxBubbleText.textContent = "Hello! I am Baymax.";
+                }
                 if (heroBaymaxAnim) {
                     heroBaymaxAnim.goToAndStop(0, true);
                 }
-                meetBaymaxBtn.disabled = false;
-                isGreetingRunning = false;
-            }, 2500);
-        });
+                if (meetBaymaxBtn) meetBaymaxBtn.disabled = false;
+                isReactionRunning = false;
+            }, 2600);
+        };
+
+        meetBaymaxBtn?.addEventListener("click", triggerBaymaxReaction);
+        baymaxAnchor?.addEventListener("click", triggerBaymaxReaction);
     }
 
     if (document.readyState === "loading") {

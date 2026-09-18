@@ -193,6 +193,7 @@ namespace MediCart.Web.Controllers
             var expiryThreshold = todayDateOnly.AddDays(30);
 
             var totalOrders = await _db.Orders.CountAsync();
+            var totalRevenue = await _db.Orders.SumAsync(o => (decimal?)o.TotalAmount) ?? 0m;
             var pendingProcessing = await _db.Orders.CountAsync(o => o.Status == "Pending" || o.Status == "Processing");
             var flaggedCount = await _db.Orders.CountAsync(o => o.IsFlagged);
             var lowStockCount = await _db.Stocks.CountAsync(s => s.Quantity < 10);
@@ -233,15 +234,36 @@ namespace MediCart.Web.Controllers
 
             var attentionItems = new List<DashboardAttentionItemViewModel>();
 
-            var flaggedOrders = await _db.Orders
+            var flaggedOrdersQuery = _db.Orders
                 .Include(o => o.User)
                 .Where(o => o.IsFlagged && o.Status != "Delivered" && o.Status != "Rejected")
-                .OrderByDescending(o => o.CreatedAt)
-                .Take(4)
-                .ToListAsync();
+                .OrderByDescending(o => o.CreatedAt);
 
+            var totalFlaggedCount = await flaggedOrdersQuery.CountAsync();
+            var flaggedOrders = await flaggedOrdersQuery.Take(4).ToListAsync();
+
+            var expiringQuery = _db.Stocks
+                .Include(s => s.Medicine)
+                .Where(s => s.ExpiryDate <= expiryThreshold)
+                .OrderBy(s => s.ExpiryDate);
+
+            var totalExpiringCount = await expiringQuery.CountAsync();
+            var expiringItems = await expiringQuery.Take(2).ToListAsync();
+
+            var lowStockQuery = _db.Stocks
+                .Include(s => s.Medicine)
+                .Where(s => s.Quantity < 10)
+                .OrderBy(s => s.Quantity);
+
+            var totalLowStockCount = await lowStockQuery.CountAsync();
+            var lowStockItems = await lowStockQuery.Take(2).ToListAsync();
+
+            var totalAttentionCount = totalFlaggedCount + totalExpiringCount + totalLowStockCount;
+
+            // 1. Priority 1: Flagged orders
             foreach (var fo in flaggedOrders)
             {
+                if (attentionItems.Count >= 4) break;
                 attentionItems.Add(new DashboardAttentionItemViewModel
                 {
                     Type = "FlaggedOrder",
@@ -253,56 +275,124 @@ namespace MediCart.Web.Controllers
                 });
             }
 
-            var lowOrExpiringStocks = await _db.Stocks
-                .Include(s => s.Medicine)
-                .Where(s => s.Quantity < 10 || s.ExpiryDate <= expiryThreshold)
-                .OrderBy(s => s.Quantity)
-                .ThenBy(s => s.ExpiryDate)
-                .Take(5)
-                .ToListAsync();
-
-            foreach (var st in lowOrExpiringStocks)
+            // 2. Priority 2: Soonest-to-expire (up to 2, capped at 4 total)
+            var handledMedicineIds = new HashSet<int>();
+            foreach (var st in expiringItems)
             {
-                var isLow = st.Quantity < 10;
-                var isExpiring = st.ExpiryDate <= expiryThreshold;
-                string title = st.Medicine?.Name ?? "Medicine";
-                string subtitle;
-                string severity = "warning";
+                if (attentionItems.Count >= 4) break;
+                handledMedicineIds.Add(st.MedicineId);
 
-                if (st.Quantity == 0)
+                var daysUntil = (st.ExpiryDate.ToDateTime(TimeOnly.MinValue) - todayUtc).Days;
+                string sub;
+                string sev;
+                if (daysUntil < 0)
                 {
-                    subtitle = "Out of stock (0 units remaining)";
-                    severity = "danger";
+                    sub = $"Expired {Math.Abs(daysUntil)} days ago";
+                    sev = "danger";
                 }
-                else if (isLow && isExpiring)
+                else if (daysUntil == 0)
                 {
-                    subtitle = $"Low stock ({st.Quantity} left) & Expiring {st.ExpiryDate:dd MMM yyyy}";
-                    severity = "danger";
+                    sub = "Expires today";
+                    sev = "danger";
                 }
-                else if (isLow)
+                else if (daysUntil == 1)
                 {
-                    subtitle = $"Low stock: only {st.Quantity} units remaining";
-                    severity = "warning";
+                    sub = "Expires tomorrow";
+                    sev = "warning";
                 }
                 else
                 {
-                    subtitle = $"Expiring on {st.ExpiryDate:dd MMM yyyy}";
-                    severity = "warning";
+                    sub = $"Expires in {daysUntil} days";
+                    sev = "warning";
                 }
 
                 attentionItems.Add(new DashboardAttentionItemViewModel
                 {
-                    Type = isLow ? "LowStock" : "ExpiringSoon",
-                    Title = title,
-                    Subtitle = subtitle,
-                    Severity = severity,
-                    ActionUrl = Url.Action("StockExpiry", "Admin") ?? "/Admin/StockExpiry",
-                    ActionText = "View stock"
+                    Type = "ExpiringSoon",
+                    Title = st.Medicine?.Name ?? "Medicine",
+                    Subtitle = sub,
+                    Severity = sev,
+                    ActionUrl = Url.Action("StockExpiry", "Admin", new { filter = "ExpiringSoon" }) ?? "/Admin/StockExpiry?filter=ExpiringSoon",
+                    ActionText = "View"
                 });
             }
 
+            // 3. Priority 3: Lowest stock (up to 2, capped at 4 total)
+            foreach (var st in lowStockItems)
+            {
+                if (attentionItems.Count >= 4) break;
+                if (handledMedicineIds.Contains(st.MedicineId)) continue;
+
+                var isOut = st.Quantity == 0;
+                string sub = isOut ? "Out of stock (0 units left)" : $"{st.Quantity} {(st.Quantity == 1 ? "unit" : "units")} left";
+                string sev = isOut ? "danger" : "warning";
+
+                attentionItems.Add(new DashboardAttentionItemViewModel
+                {
+                    Type = "LowStock",
+                    Title = st.Medicine?.Name ?? "Medicine",
+                    Subtitle = sub,
+                    Severity = sev,
+                    ActionUrl = Url.Action("EditMedicine", "Admin", new { id = st.MedicineId }) ?? $"/Admin/EditMedicine/{st.MedicineId}",
+                    ActionText = "Restock"
+                });
+            }
+
+            var avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0m;
+
+            // Best Selling Medicines (Top 5 by units sold)
+            var bestSellingGroup = await _db.OrderItems
+                .Include(oi => oi.Medicine)
+                .GroupBy(oi => new { oi.MedicineId, oi.Medicine.Name })
+                .Select(g => new
+                {
+                    MedicineId = g.Key.MedicineId,
+                    MedicineName = g.Key.Name,
+                    UnitsSold = g.Sum(oi => oi.Quantity),
+                    Revenue = g.Sum(oi => oi.Quantity * oi.UnitPrice)
+                })
+                .OrderByDescending(x => x.UnitsSold)
+                .ThenByDescending(x => x.Revenue)
+                .Take(5)
+                .ToListAsync();
+
+            var bestSellingList = bestSellingGroup.Select((item, idx) => new DashboardBestSellingMedicineViewModel
+            {
+                Rank = idx + 1,
+                MedicineId = item.MedicineId,
+                MedicineName = item.MedicineName,
+                UnitsSold = item.UnitsSold,
+                Revenue = item.Revenue
+            }).ToList();
+
+            // Top Categories breakdown (by revenue share)
+            var categoryRevenueGroup = await _db.OrderItems
+                .Include(oi => oi.Medicine)
+                    .ThenInclude(m => m.Category)
+                .Where(oi => oi.Medicine != null && oi.Medicine.Category != null)
+                .GroupBy(oi => oi.Medicine.Category.Name)
+                .Select(g => new
+                {
+                    CategoryName = g.Key,
+                    Revenue = g.Sum(oi => oi.Quantity * oi.UnitPrice)
+                })
+                .OrderByDescending(x => x.Revenue)
+                .Take(4)
+                .ToListAsync();
+
+            var totalCategoryRevenue = categoryRevenueGroup.Sum(x => x.Revenue);
+            var topCategoriesList = categoryRevenueGroup.Select(x => new DashboardTopCategoryViewModel
+            {
+                CategoryName = x.CategoryName,
+                Revenue = x.Revenue,
+                Percentage = totalCategoryRevenue > 0 ? Math.Round((x.Revenue / totalCategoryRevenue) * 100m, 1) : 0m
+            }).ToList();
+
             var vm = new AdminDashboardViewModel
             {
+                TotalRevenue = totalRevenue,
+                AverageOrderValue = avgOrderValue,
+                RevenuePeriodLabel = "Lifetime store revenue",
                 TotalOrdersCount = totalOrders,
                 PendingProcessingCount = pendingProcessing,
                 FlaggedOrdersCount = flaggedCount,
@@ -310,10 +400,74 @@ namespace MediCart.Web.Controllers
                 ChartDays = chartDays,
                 ChartOrderCounts = chartCounts,
                 RecentOrders = recentOrders,
-                AttentionItems = attentionItems
+                AttentionItems = attentionItems,
+                TotalAttentionCount = totalAttentionCount,
+                BestSellingMedicines = bestSellingList,
+                TopCategories = topCategoriesList
             };
 
             return View(vm);
+        }
+
+        [HttpGet]
+        [Route("Admin/Dashboard/Revenue")]
+        public async Task<IActionResult> GetDashboardRevenue([FromQuery] string period = "all")
+        {
+            var nowUtc = DateTime.UtcNow;
+            DateTime? startDate = null;
+            DateTime? endDate = null;
+            string label;
+
+            switch (period?.ToLowerInvariant())
+            {
+                case "thismonth":
+                    startDate = new DateTime(nowUtc.Year, nowUtc.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+                    label = nowUtc.ToString("MMMM yyyy");
+                    break;
+                case "lastmonth":
+                    var firstOfThisMonth = new DateTime(nowUtc.Year, nowUtc.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+                    startDate = firstOfThisMonth.AddMonths(-1);
+                    endDate = firstOfThisMonth;
+                    label = startDate.Value.ToString("MMMM yyyy");
+                    break;
+                case "last3months":
+                    startDate = nowUtc.AddMonths(-3);
+                    label = "Last 3 months";
+                    break;
+                case "last6months":
+                    startDate = nowUtc.AddMonths(-6);
+                    label = "Last 6 months";
+                    break;
+                case "all":
+                default:
+                    startDate = null;
+                    endDate = null;
+                    label = "Lifetime store revenue";
+                    break;
+            }
+
+            var query = _db.Orders.AsQueryable();
+            if (startDate.HasValue)
+            {
+                query = query.Where(o => o.CreatedAt >= startDate.Value);
+            }
+            if (endDate.HasValue)
+            {
+                query = query.Where(o => o.CreatedAt < endDate.Value);
+            }
+
+            var orderCount = await query.CountAsync();
+            var revenue = await query.SumAsync(o => (decimal?)o.TotalAmount) ?? 0m;
+            var avgOrder = orderCount > 0 ? revenue / orderCount : 0m;
+
+            return Json(new
+            {
+                revenue = "৳" + revenue.ToString("#,##0"),
+                rawRevenue = revenue,
+                orderCount = orderCount,
+                avgOrder = "৳" + avgOrder.ToString("#,##0"),
+                label = label
+            });
         }
 
         [HttpGet]

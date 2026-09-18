@@ -14,9 +14,11 @@ namespace MediCart.Web.Models
         public string? SensitivityLevel { get; set; } // low | mid | high | null
         public bool RequiresPrescription { get; set; }
 
-        public bool IsLowStock => StockQuantity <= 10;
-        public bool IsExpiringSoon => ExpiryDate <= DateOnly.FromDateTime(DateTime.UtcNow.AddDays(30));
-        public bool IsExpired => ExpiryDate < DateOnly.FromDateTime(DateTime.UtcNow);
+        public bool IsLowStock => StockQuantity < 10;
+        public int DaysUntilExpiry => (ExpiryDate.ToDateTime(TimeOnly.MinValue) - DateTime.UtcNow.Date).Days;
+        public bool IsExpiringSoon => DaysUntilExpiry <= 30 && DaysUntilExpiry >= 0;
+        public bool IsExpired => DaysUntilExpiry < 0;
+        public bool IsNearExpiryWindow => DaysUntilExpiry <= 60 && DaysUntilExpiry > 30;
     }
 
     public class AdminMedicinesPageViewModel

@@ -130,6 +130,28 @@ using (var scope = app.Services.CreateScope())
 if (app.Environment.IsDevelopment())
 {
     app.UseMigrationsEndPoint();
+
+    using (var scope = app.Services.CreateScope())
+    {
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var s1 = await db.Stocks.FirstOrDefaultAsync(s => s.MedicineId == 1);
+        if (s1 != null && s1.ExpiryDate > today.AddDays(30))
+        {
+            s1.ExpiryDate = today.AddDays(18);
+        }
+        var s3 = await db.Stocks.FirstOrDefaultAsync(s => s.MedicineId == 3);
+        if (s3 != null && s3.ExpiryDate > today.AddDays(30))
+        {
+            s3.ExpiryDate = today.AddDays(25);
+        }
+        var s4 = await db.Stocks.FirstOrDefaultAsync(s => s.MedicineId == 4);
+        if (s4 != null && s4.Quantity > 10)
+        {
+            s4.Quantity = 5;
+        }
+        await db.SaveChangesAsync();
+    }
 }
 else
 {

@@ -12,6 +12,7 @@
     string displayName = "";
     string profileUrl = "~/UserProfile";
     bool isAdmin = false;
+    bool isCustomer = false;
     if (User.Identity != null && User.Identity.IsAuthenticated)
     {
         var currentUser = await UserManager.GetUserAsync(User);
@@ -21,6 +22,10 @@
         {
             profileUrl = "~/Admin/Profile";
             isAdmin = true;
+        }
+        else if (currentUser != null && await UserManager.IsInRoleAsync(currentUser, "Customer"))
+        {
+            isCustomer = true;
         }
     }
     bool showCartIcon = !isAdmin;
@@ -43,7 +48,10 @@
     <link rel="stylesheet" href="~/css/loader.css" asp-append-version="true" />
     @await RenderSectionAsync("Styles", required: false)
 </head>
-<body>
+<body data-is-admin="@(isAdmin ? "true" : "false")"
+      data-is-customer="@(isCustomer ? "true" : "false")"
+      data-is-authenticated="@(User.Identity?.IsAuthenticated == true ? "true" : "false")"
+      data-login-url="/Identity/Account/Login">
 
     <header class="site-header">
         <div class="container navbar">
@@ -218,6 +226,7 @@
 
     @Html.AntiForgeryToken()
     <script src="~/lib/lottie/lottie.min.js" asp-append-version="true"></script>
+    <script src="~/js/cart-handler.js" asp-append-version="true"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/js/loader.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)

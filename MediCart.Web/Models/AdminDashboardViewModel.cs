@@ -6,6 +6,9 @@ namespace MediCart.Web.Models
     public class AdminDashboardViewModel
     {
         // KPI Stat Cards
+        public decimal TotalRevenue { get; set; }
+        public decimal AverageOrderValue { get; set; }
+        public string RevenuePeriodLabel { get; set; } = "Lifetime store revenue";
         public int TotalOrdersCount { get; set; }
         public int PendingProcessingCount { get; set; }
         public int FlaggedOrdersCount { get; set; }
@@ -19,7 +22,30 @@ namespace MediCart.Web.Models
         public List<DashboardRecentOrderViewModel> RecentOrders { get; set; } = new();
 
         // Attention Needed
+        public int TotalAttentionCount { get; set; }
         public List<DashboardAttentionItemViewModel> AttentionItems { get; set; } = new();
+
+        // Best Selling Medicines
+        public List<DashboardBestSellingMedicineViewModel> BestSellingMedicines { get; set; } = new();
+
+        // Top Categories
+        public List<DashboardTopCategoryViewModel> TopCategories { get; set; } = new();
+    }
+
+    public class DashboardBestSellingMedicineViewModel
+    {
+        public int MedicineId { get; set; }
+        public string MedicineName { get; set; } = string.Empty;
+        public int UnitsSold { get; set; }
+        public decimal Revenue { get; set; }
+        public int Rank { get; set; }
+    }
+
+    public class DashboardTopCategoryViewModel
+    {
+        public string CategoryName { get; set; } = string.Empty;
+        public decimal Revenue { get; set; }
+        public decimal Percentage { get; set; }
     }
 
     public class DashboardRecentOrderViewModel

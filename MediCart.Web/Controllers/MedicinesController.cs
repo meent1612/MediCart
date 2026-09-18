@@ -24,13 +24,55 @@ namespace MediCart.Web.Controllers
         }
 
         [HttpGet]
+        [Route("Medicines/Find")]
+        [Route("Medicines/Search")]
+        public async Task<IActionResult> Find([FromQuery] string? search)
+        {
+            if (string.IsNullOrWhiteSpace(search))
+            {
+                return Redirect("/Medicines/Browse");
+            }
+
+            var term = search.Trim();
+
+            var allMedicines = await _context.Medicines
+                .Select(m => new { m.Id, m.Name })
+                .ToListAsync();
+
+            // 1. Exact match (case-insensitive)
+            var exact = allMedicines.FirstOrDefault(m => string.Equals(m.Name, term, StringComparison.OrdinalIgnoreCase));
+            if (exact != null)
+            {
+                return Redirect($"/Medicines/Browse?openDetails={exact.Id}");
+            }
+
+            // 2. Starts with (case-insensitive)
+            var startsWith = allMedicines.FirstOrDefault(m => m.Name != null && m.Name.StartsWith(term, StringComparison.OrdinalIgnoreCase));
+            if (startsWith != null)
+            {
+                return Redirect($"/Medicines/Browse?openDetails={startsWith.Id}");
+            }
+
+            // 3. Contains (case-insensitive)
+            var contains = allMedicines.FirstOrDefault(m => m.Name != null && m.Name.Contains(term, StringComparison.OrdinalIgnoreCase));
+            if (contains != null)
+            {
+                return Redirect($"/Medicines/Browse?openDetails={contains.Id}");
+            }
+
+            // No match found -> redirect to Browse carrying search term and notFound flag
+            return Redirect($"/Medicines/Browse?search={Uri.EscapeDataString(term)}&notFound=true");
+        }
+
+        [HttpGet]
         [Route("Medicines")]
         [Route("Medicines/Index")]
         [Route("Medicines/Browse")]
-        public async Task<IActionResult> Index([FromQuery] string? category = null, [FromQuery] string? productType = null)
+        public async Task<IActionResult> Index([FromQuery] string? category = null, [FromQuery] string? productType = null, [FromQuery] string? search = null)
         {
             ViewBag.SelectedCategory = category;
             ViewBag.SelectedProductType = productType;
+            ViewBag.SelectedSearch = search;
 
             var medicines = await _context.Medicines
                 .Include(m => m.Category)

@@ -43,6 +43,11 @@
     </div>
 }
 
+<div class="admin-page-header" style="margin-bottom: 24px;">
+    <h2 class="admin-page-header__title">Categories &amp; Product Types</h2>
+    <p class="admin-page-header__subtitle">Organize how medicines are grouped and filtered across the store</p>
+</div>
+
 <div class="admin-cat-grid">
 
     <!-- ============ Categories ============ -->
@@ -55,9 +60,11 @@
             </button>
         </div>
 
-        <div class="admin-search">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
-            <input type="text" id="categorySearch" placeholder="Search categories..." aria-label="Search categories" />
+        <div class="admin-toolbar-card admin-toolbar-card--search">
+            <div class="admin-search" style="margin-bottom: 0; width: 100%;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
+                <input type="text" id="categorySearch" placeholder="Search categories..." aria-label="Search categories" />
+            </div>
         </div>
 
         <div class="admin-table-wrap">
@@ -101,7 +108,11 @@
                             </td>
                             <td data-label="Parent">&mdash;</td>
                             <td data-label="Subcategories"><span class="count-pill @(cat.SubCategoryCount > 0 ? "count-pill--active" : "")">@cat.SubCategoryCount</span></td>
-                            <td data-label="Medicines"><span class="count-pill @(cat.MedicineCount > 0 ? "count-pill--active" : "")">@cat.MedicineCount</span></td>
+                            <td data-label="Medicines">
+                                <a href="@Url.Action("Medicines", "Admin", new { categoryId = cat.Id })" class="count-pill count-pill--link @(cat.MedicineCount > 0 ? "count-pill--active" : "")" title="View @cat.MedicineCount medicines in @cat.Name">
+                                    @cat.MedicineCount
+                                </a>
+                            </td>
                             <td class="admin-table__actions">
                                 <button type="button" class="btn-link edit-category-btn"
                                         data-id="@cat.Id" data-name="@cat.Name"
@@ -134,7 +145,11 @@
                                 </td>
                                 <td data-label="Parent">@cat.Name</td>
                                 <td data-label="Subcategories"><span class="count-pill">0</span></td>
-                                <td data-label="Medicines"><span class="count-pill @(child.MedicineCount > 0 ? "count-pill--active" : "")">@child.MedicineCount</span></td>
+                                <td data-label="Medicines">
+                                    <a href="@Url.Action("Medicines", "Admin", new { categoryId = cat.Id, subCategoryId = child.Id })" class="count-pill count-pill--link @(child.MedicineCount > 0 ? "count-pill--active" : "")" title="View @child.MedicineCount medicines in @child.Name">
+                                        @child.MedicineCount
+                                    </a>
+                                </td>
                                 <td class="admin-table__actions">
                                     <button type="button" class="btn-link edit-category-btn"
                                             data-id="@child.Id" data-name="@child.Name"
@@ -162,7 +177,13 @@
                     }
                 </tbody>
             </table>
-            <p class="admin-table__no-matches" id="categoryNoMatches" hidden>No categories match your search.</p>
+            <div class="admin-empty-state" id="categoryNoMatches" style="margin-top: 14px; padding: 32px 16px;" hidden>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" />
+                </svg>
+                <h4 style="margin: 0 0 4px; font-size: 15px; color: var(--color-dark);">No categories match your search</h4>
+                <p style="margin: 0; font-size: 12.5px; color: var(--color-text);">Try searching with a different term.</p>
+            </div>
         </div>
 
         <form asp-action="CreateCategory" method="post" class="admin-form admin-form--panel" id="categoryForm"
@@ -211,9 +232,11 @@
             </button>
         </div>
 
-        <div class="admin-search">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
-            <input type="text" id="productTypeSearch" placeholder="Search product types..." aria-label="Search product types" />
+        <div class="admin-toolbar-card admin-toolbar-card--search">
+            <div class="admin-search" style="margin-bottom: 0; width: 100%;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
+                <input type="text" id="productTypeSearch" placeholder="Search product types..." aria-label="Search product types" />
+            </div>
         </div>
 
         <div class="admin-table-wrap">
@@ -230,7 +253,11 @@
                     {
                         <tr class="pt-row" data-pt-name="@pt.Name.ToLower()">
                             <td><strong>@pt.Name</strong></td>
-                            <td data-label="Medicines"><span class="count-pill @(pt.MedicineCount > 0 ? "count-pill--active" : "")">@pt.MedicineCount</span></td>
+                            <td data-label="Medicines">
+                                <a href="@Url.Action("Medicines", "Admin", new { productTypeId = pt.Id })" class="count-pill count-pill--link @(pt.MedicineCount > 0 ? "count-pill--active" : "")" title="View @pt.MedicineCount medicines of type @pt.Name">
+                                    @pt.MedicineCount
+                                </a>
+                            </td>
                             <td class="admin-table__actions">
                                 <button type="button" class="btn-link edit-producttype-btn"
                                         data-id="@pt.Id" data-name="@pt.Name">
@@ -255,7 +282,13 @@
                     }
                 </tbody>
             </table>
-            <p class="admin-table__no-matches" id="productTypeNoMatches" hidden>No product types match your search.</p>
+            <div class="admin-empty-state" id="productTypeNoMatches" style="margin-top: 14px; padding: 32px 16px;" hidden>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" />
+                </svg>
+                <h4 style="margin: 0 0 4px; font-size: 15px; color: var(--color-dark);">No product types match your search</h4>
+                <p style="margin: 0; font-size: 12.5px; color: var(--color-text);">Try searching with a different term.</p>
+            </div>
         </div>
 
         <form asp-action="CreateProductType" method="post" class="admin-form admin-form--panel" id="productTypeForm"
