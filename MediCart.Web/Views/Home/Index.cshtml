@@ -39,42 +39,22 @@
 
 <div class="container">
 
-    <!-- ============================================================
-         HERO
+    <!-- ==========================================================          HERO
          ============================================================ -->
     <section class="hero">
-        <div class="hero__noise" aria-hidden="true"></div>
-        <div class="hero__glow" aria-hidden="true"></div>
-        <div class="hero__wave-glow" aria-hidden="true">
-            <svg viewBox="0 0 1440 540" fill="none" preserveAspectRatio="none">
-                <defs>
-                    <linearGradient id="heroWaveGrad1" x1="0%" y1="100%" x2="100%" y2="0%">
-                        <stop offset="0%" stop-color="#859B77" stop-opacity="0.75" />
-                        <stop offset="35%" stop-color="#ECCBD9" stop-opacity="0.95" />
-                        <stop offset="65%" stop-color="#FBF5F7" stop-opacity="0.85" />
-                        <stop offset="100%" stop-color="#859B77" stop-opacity="0.45" />
-                    </linearGradient>
-                    <linearGradient id="heroWaveGrad2" x1="15%" y1="0%" x2="85%" y2="100%">
-                        <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.8" />
-                        <stop offset="45%" stop-color="#ECCBD9" stop-opacity="0.9" />
-                        <stop offset="85%" stop-color="#859B77" stop-opacity="0.5" />
-                        <stop offset="100%" stop-color="#152E19" stop-opacity="0" />
-                    </linearGradient>
-                </defs>
-                <path d="M-80 380 C 220 440, 410 240, 740 270 C 1040 300, 1190 160, 1520 220 L 1520 560 L -80 560 Z" fill="url(#heroWaveGrad1)" />
-                <path d="M-60 320 C 280 260, 520 390, 840 250 C 1120 130, 1340 230, 1500 170 L 1500 560 L -60 560 Z" fill="url(#heroWaveGrad2)" opacity="0.65" />
-            </svg>
+        <!-- Ambient animated gradient blobs -->
+        <div class="hero__ambient" aria-hidden="true">
+            <div class="hero__blob hero__blob--dark"></div>
+            <div class="hero__blob hero__blob--primary"></div>
+            <div class="hero__blob hero__blob--accent"></div>
         </div>
-        <span class="hero__capsule hero__capsule--a" aria-hidden="true"></span>
-        <span class="hero__capsule hero__capsule--b" aria-hidden="true"></span>
 
-        <!-- Baymax Hero Overlay (Meet Baymax interaction - unmounted at rest) -->
-        <div id="baymaxHeroOverlay" class="hero__baymax-overlay" style="display: none;" aria-hidden="true">
-            <div id="baymaxHeroWalker" class="hero__baymax-walker">
-                <div id="baymaxSpeechBubble" class="hero__baymax-bubble">Hi!</div>
-                <div id="baymaxHeroLottie" class="hero__baymax-lottie"></div>
-            </div>
-        </div>
+        <div class="hero__noise" aria-hidden="true"></div>
+
+        <!-- Floating decorative shapes -->
+        <span class="hero__floating-shape hero__floating-shape--1" aria-hidden="true"></span>
+        <span class="hero__floating-shape hero__floating-shape--2" aria-hidden="true"></span>
+        <span class="hero__floating-shape hero__floating-shape--3" aria-hidden="true"></span>
 
         <div class="hero__grid">
             <div class="hero__content">
@@ -87,11 +67,11 @@
                 </div>
                 <h1 class="hero__headline">Every order is checked <em>before it ships</em>.</h1>
                 <p class="hero__subcopy">
-                    Browse a full pharmacy catalogue and order online — with a pharmacist
+                    Browse a full pharmacy catalogue and order online — with a licensed pharmacist
                     reviewing every order, not just the ones tagged prescription-only.
                 </p>
 
-                <form id="heroSearchForm" class="hero__search" method="get" action="~/Medicines" role="search">
+                <form id="heroSearchForm" class="hero__search" method="get" action="~/Medicines/Find" role="search">
                     <label for="heroSearchInput" class="visually-hidden">Search for a medicine</label>
                     <input type="search" id="heroSearchInput" name="search" class="hero__search-input" placeholder="Search for a medicine" autocomplete="off" />
                     <button type="submit" class="btn btn--search-hero">Search</button>
@@ -99,84 +79,65 @@
 
                 <div class="hero__chips" aria-label="Popular searches">
                     <span class="hero__chips-label">Popular:</span>
-                    <a href="~/Medicines?search=Napa+Extra" class="hero__chip">Napa Extra</a>
-                    <a href="~/Medicines?search=Seclo" class="hero__chip">Seclo</a>
+                    <a href="~/Medicines/Find?search=Napa+Extra" class="hero__chip">Napa Extra</a>
+                    <a href="~/Medicines/Find?search=Seclo" class="hero__chip">Seclo</a>
                     <a href="~/Medicines/Browse?productType=Syrup" class="hero__chip">Cough syrup</a>
-                    <a href="~/Medicines?search=Vitamin" class="hero__chip">Vitamins</a>
+                    <a href="~/Medicines/Browse?search=Vitamin" class="hero__chip">Vitamins</a>
                 </div>
 
                 <div class="hero__actions">
-                    <a href="~/Medicines/Browse" class="btn btn--outline-light">Browse full catalogue &rarr;</a>
-                    <button type="button" id="meetBaymaxBtn" class="btn btn--ghost" style="color: rgba(255,255,255,0.85); border: 1px solid rgba(255,255,255,0.3);">
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                    <a href="~/Medicines" class="btn btn--hero-primary">Browse full catalogue &rarr;</a>
+                    <button type="button" id="meetBaymaxBtn" class="btn btn--hero-ghost">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 6px;"><polygon points="5 3 19 12 5 21 5 3"/></svg>
                         Meet Baymax
                     </button>
                 </div>
             </div>
 
-            <div class="hero__card-wrap">
-                <div class="review-card">
-                    <span class="review-card__label">Order #MC-1042</span>
-                    <p class="review-card__order">Napa Extra &times; 2, Seclo 20mg &times; 1</p>
-
-                    <div class="review-card__reviewer">
-                        <span class="review-card__avatar">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21a8 8 0 1 0-16 0" /><circle cx="12" cy="7" r="4" /></svg>
+            <div class="hero__right">
+                <div class="hero__baymax-anchor" id="heroBaymaxAnchor">
+                    <div class="hero__baymax-bubble" id="heroBaymaxBubble">
+                        <span id="heroBaymaxBubbleText">Hello! I am Baymax.</span>
+                    </div>
+                    <div class="hero__baymax-lottie-wrap">
+                        <div id="baymaxHeroLottie" class="hero__baymax-lottie"></div>
+                    </div>
+                    <div class="hero__verified-badge">
+                        <span class="hero__verified-badge-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
                         </span>
                         <div>
-                            <span class="review-card__label">Reviewed by</span>
-                            <span style="font-weight:600; font-size:14px; color:var(--ink-900);">Pharmacist on duty</span>
+                            <span class="hero__verified-badge-title">Pharmacist Verified</span>
+                            <span class="hero__verified-badge-sub">Every order checked before dispatch</span>
                         </div>
                     </div>
-
-                    <span class="review-card__badge">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
-                        Approved for dispatch
-                    </span>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- ============================================================
-         STATS STRIP
+         STATS / TRUST BAR
          ============================================================ -->
-    <section class="stats-strip" aria-label="MediCart at a glance">
+    <section class="stats-strip" aria-label="MediCart at a glance" id="statsStrip">
         <div class="stats-strip__item">
-            <span class="stats-strip__icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="9" width="18" height="6" rx="3" transform="rotate(-45 12 12)" /><path d="M9.5 14.5 14.5 9.5" /></svg>
-            </span>
-            <div class="stats-strip__content">
-                <span class="stats-strip__number" data-count-to="1200" data-suffix="+">0</span>
-                <span class="stats-strip__label">Medicines listed</span>
-            </div>
+            <span class="stats-strip__number">500+</span>
+            <span class="stats-strip__label">Verified medicines</span>
         </div>
+        <div class="stats-strip__divider" aria-hidden="true"></div>
         <div class="stats-strip__item">
-            <span class="stats-strip__icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/></svg>
-            </span>
-            <div class="stats-strip__content">
-                <span class="stats-strip__number" data-count-to="15000" data-suffix="+">0</span>
-                <span class="stats-strip__label">Orders fulfilled</span>
-            </div>
+            <span class="stats-strip__number">100%</span>
+            <span class="stats-strip__label">Pharmacist-reviewed orders</span>
         </div>
+        <div class="stats-strip__divider" aria-hidden="true"></div>
         <div class="stats-strip__item">
-            <span class="stats-strip__icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
-            </span>
-            <div class="stats-strip__content">
-                <span class="stats-strip__number" data-count-to="100" data-suffix="%">0</span>
-                <span class="stats-strip__label">Orders pharmacist-reviewed</span>
-            </div>
+            <span class="stats-strip__number">15,000+</span>
+            <span class="stats-strip__label">Orders delivered</span>
         </div>
+        <div class="stats-strip__divider" aria-hidden="true"></div>
         <div class="stats-strip__item">
-            <span class="stats-strip__icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            </span>
-            <div class="stats-strip__content">
-                <span class="stats-strip__number" data-count-to="24" data-suffix="/7">0</span>
-                <span class="stats-strip__label">Order tracking</span>
-            </div>
+            <span class="stats-strip__number">24/7</span>
+            <span class="stats-strip__label">Dedicated support</span>
         </div>
     </section>
 
@@ -257,7 +218,7 @@
     <!-- ============================================================
          HOW IT WORKS
          ============================================================ -->
-    <section class="section section--alt">
+    <section class="section section--alt" id="howItWorksSection">
         <div class="section__head">
             <p class="eyebrow">How it works</p>
             <h2>From cart to doorstep, reviewed at every step</h2>
@@ -306,177 +267,126 @@
         </div>
 
         <div class="product-grid">
+            @{
+                var frequentlyOrdered = ViewBag.FrequentlyOrdered as List<MediCart.Web.Data.Medicine>;
+            }
+            @if (frequentlyOrdered != null && frequentlyOrdered.Any())
+            {
+                foreach (var med in frequentlyOrdered)
+                {
+                    var genericWithDosage = string.Join(" ", new[] { med.GenericName, med.Dosage }.Where(s => !string.IsNullOrWhiteSpace(s)));
+                    var meta = string.Join(" · ", new[] { genericWithDosage, med.ProductType?.Name }.Where(s => !string.IsNullOrWhiteSpace(s)));
+                    if (string.IsNullOrWhiteSpace(meta))
+                    {
+                        meta = med.Manufacturer ?? "Medicine";
+                    }
 
-            <article class="product-card">
-                <div class="product-card__media">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="3" y="9" width="18" height="6" rx="3" transform="rotate(-45 12 12)" /><path d="M9.5 14.5 14.5 9.5" /></svg>
-                </div>
-                <div class="product-card__body">
-                    <span class="product-card__name">Napa Extra</span>
-                    <span class="product-card__meta">Paracetamol 500mg + Caffeine &middot; Tablet</span>
-                    <div class="product-card__tags">
-                        <span class="tag tag--stock">In stock</span>
-                        <span class="tag tag--mild">Mild severity</span>
-                    </div>
-                    <div class="product-card__footer">
-                        <span class="product-card__price">&#2547; 30</span>
-                        <button type="button" class="add-btn" aria-label="Add Napa Extra to cart">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14" /></svg>
-                        </button>
-                    </div>
-                </div>
-            </article>
-
-            <article class="product-card">
-                <div class="product-card__media">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2h6M10 2v6.34a2 2 0 0 1-.4 1.2L6.3 15a4 4 0 0 0-.8 2.4V20a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2v-2.6a4 4 0 0 0-.8-2.4l-3.3-5.46a2 2 0 0 1-.4-1.2V2" /></svg>
-                </div>
-                <div class="product-card__body">
-                    <span class="product-card__name">Ambrox Syrup</span>
-                    <span class="product-card__meta">Ambroxol 15mg/5ml &middot; Syrup</span>
-                    <div class="product-card__tags">
-                        <span class="tag tag--stock">In stock</span>
-                        <span class="tag tag--mild">Mild severity</span>
-                    </div>
-                    <div class="product-card__footer">
-                        <span class="product-card__price">&#2547; 85</span>
-                        <button type="button" class="add-btn" aria-label="Add Ambrox Syrup to cart">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14" /></svg>
-                        </button>
-                    </div>
-                </div>
-            </article>
-
-            <article class="product-card">
-                <div class="product-card__media">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="3" y="9" width="18" height="6" rx="3" transform="rotate(-45 12 12)" /><path d="M9.5 14.5 14.5 9.5" /></svg>
-                </div>
-                <div class="product-card__body">
-                    <span class="product-card__name">Seclo 20</span>
-                    <span class="product-card__meta">Omeprazole 20mg &middot; Tablet</span>
-                    <div class="product-card__tags">
-                        <span class="tag tag--rx">Rx required</span>
-                        <span class="tag tag--mild">Mild severity</span>
-                    </div>
-                    <div class="product-card__footer">
-                        <span class="product-card__price">&#2547; 60</span>
-                        <button type="button" class="add-btn" aria-label="Add Seclo 20 to cart">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14" /></svg>
-                        </button>
-                    </div>
-                </div>
-            </article>
-
-            <article class="product-card">
-                <div class="product-card__media">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m18 2 4 4M17 7l-9 9-4 4-1-1 4-4 9-9zM12 6l6 6M9 9l6 6" /></svg>
-                </div>
-                <div class="product-card__body">
-                    <span class="product-card__name">Fasidol IV</span>
-                    <span class="product-card__meta">Paracetamol 1g/100ml &middot; Injection</span>
-                    <div class="product-card__tags">
-                        <span class="tag tag--high">High sensitivity</span>
-                        <span class="tag tag--rx">Rx required</span>
-                    </div>
-                    <div class="product-card__footer">
-                        <span class="product-card__price">&#2547; 140</span>
-                        <button type="button" class="add-btn" aria-label="Add Fasidol IV to cart">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14" /></svg>
-                        </button>
-                    </div>
-                </div>
-            </article>
-
-        </div>
-    </section>
-
-    <!-- ============================================================
-         TRUST STRIP
-         ============================================================ -->
-    <section class="section section--alt">
-        <div class="container" style="padding-inline:40px;">
-            <div class="trust-grid">
-                <div class="trust-card">
-                    <span class="trust-card__icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" /></svg>
-                    </span>
-                    <h3>Reviewed, always</h3>
-                    <p>Every order — not only prescription items — is queued for admin approval before it ships.</p>
-                </div>
-                <div class="trust-card">
-                    <span class="trust-card__icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" /><path d="M4 22V15" /></svg>
-                    </span>
-                    <h3>Sensitivity flagging</h3>
-                    <p>Unusually large orders of sensitive medicines are flagged automatically for a closer look.</p>
-                </div>
-                <div class="trust-card">
-                    <span class="trust-card__icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3.5 3.5" /></svg>
-                    </span>
-                    <h3>Expiry-aware stock</h3>
-                    <p>Two-tier expiry alerts mean what reaches you is checked, in-date stock.</p>
-                </div>
-            </div>
+                    <article class="product-card">
+                        <div class="product-card__media">
+                            @if (!string.IsNullOrWhiteSpace(med.ImageUrl))
+                            {
+                                <img src="@med.ImageUrl" alt="@med.Name" loading="lazy" style="width:100%;height:100%;object-fit:cover;" />
+                            }
+                            else
+                            {
+                                @Html.Raw(ProductTypeIcon(med.ProductType?.Name ?? ""))
+                            }
+                        </div>
+                        <div class="product-card__body">
+                            <span class="product-card__name">@med.Name</span>
+                            <span class="product-card__meta">@meta</span>
+                            <div class="product-card__tags">
+                                @if (med.RequiresPrescription)
+                                {
+                                    <span class="tag tag--rx">Rx required</span>
+                                }
+                                else
+                                {
+                                    <span class="tag tag--stock">In stock</span>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(med.SensitivityLevel) && med.SensitivityLevel.Equals("High", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    <span class="tag tag--high">High sensitivity</span>
+                                }
+                                else if (!string.IsNullOrWhiteSpace(med.SensitivityLevel))
+                                {
+                                    <span class="tag tag--mild">Mild severity</span>
+                                }
+                            </div>
+                            <div class="product-card__footer">
+                                <span class="product-card__price">&#2547; @(med.Price % 1 == 0 ? med.Price.ToString("0") : med.Price.ToString("0.00"))</span>
+                                @if (!User.IsInRole("Admin"))
+                                {
+                                    <button type="button" class="add-btn" aria-label="Add @med.Name to cart" data-id="@med.Id">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14" /></svg>
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button type="button" class="add-btn add-btn--admin-disabled" data-id="@med.Id" title="Admins cannot place orders" aria-label="Admins cannot place orders" aria-disabled="true">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    </article>
+                }
+            }
         </div>
     </section>
 
     <!-- ============================================================
          TESTIMONIALS
          ============================================================ -->
-    <section class="section">
+    <section class="section" id="testimonialsSection">
         <div class="section__head">
-            <p class="eyebrow">What customers say</p>
-            <h2>Trusted by people who need it to be right</h2>
+            <p class="eyebrow">Customer reviews</p>
+            <h2>Trusted by our customers</h2>
+            <p>Real stories from patients and families who count on MediCart for verified, on-time pharmacy deliveries.</p>
         </div>
 
-        <div class="testimonial" role="region" aria-roledby="testimonialHeading" aria-label="Customer testimonials">
-            <button type="button" class="testimonial__arrow testimonial__arrow--prev" aria-label="Previous testimonial">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
-            </button>
-
-            <div class="testimonial__track">
-                <blockquote class="testimonial__slide is-active">
-                    <p>&ldquo;I was nervous ordering blood-pressure medicine online, but knowing a pharmacist checks every order before it ships made the difference.&rdquo;</p>
-                    <footer>
-                        <span class="testimonial__avatar">RA</span>
-                        <div>
-                            <cite>Rahim A.</cite>
-                            <span>Dhaka</span>
-                        </div>
-                    </footer>
-                </blockquote>
-                <blockquote class="testimonial__slide">
-                    <p>&ldquo;The category search is quick and the site tells you clearly what's in stock. No surprises at checkout.&rdquo;</p>
-                    <footer>
-                        <span class="testimonial__avatar">SK</span>
-                        <div>
-                            <cite>Sadia K.</cite>
-                            <span>Narayanganj</span>
-                        </div>
-                    </footer>
-                </blockquote>
-                <blockquote class="testimonial__slide">
-                    <p>&ldquo;I order syrups for my kids every month. Delivery has been on time and the packaging is always intact.&rdquo;</p>
-                    <footer>
-                        <span class="testimonial__avatar">TH</span>
-                        <div>
-                            <cite>Tanvir H.</cite>
-                            <span>Chattogram</span>
-                        </div>
-                    </footer>
-                </blockquote>
+        <div class="testimonials-grid">
+            <div class="testimonial-card">
+                <span class="testimonial-card__tag">Sample review</span>
+                <div class="testimonial-card__quote">
+                    &ldquo;Knowing a licensed pharmacist reviews every prescription before dispatch gives me complete peace of mind. Delivery was prompt and discreet.&rdquo;
+                </div>
+                <div class="testimonial-card__author">
+                    <span class="testimonial-card__avatar testimonial-card__avatar--green">RA</span>
+                    <div class="testimonial-card__info">
+                        <span class="testimonial-card__name">Rahim Ahmed</span>
+                        <span class="testimonial-card__role">Verified Patient · Dhaka</span>
+                    </div>
+                </div>
             </div>
 
-            <button type="button" class="testimonial__arrow testimonial__arrow--next" aria-label="Next testimonial">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6" /></svg>
-            </button>
-        </div>
+            <div class="testimonial-card">
+                <span class="testimonial-card__tag">Sample review</span>
+                <div class="testimonial-card__quote">
+                    &ldquo;I reorder my parents' hypertension and diabetes medicines monthly. The expiry dates are always well in the future and packaging is completely sealed.&rdquo;
+                </div>
+                <div class="testimonial-card__author">
+                    <span class="testimonial-card__avatar testimonial-card__avatar--pink">SK</span>
+                    <div class="testimonial-card__info">
+                        <span class="testimonial-card__name">Sadia Karim</span>
+                        <span class="testimonial-card__role">Verified Customer · Narayanganj</span>
+                    </div>
+                </div>
+            </div>
 
-        <div class="testimonial__dots" role="tablist" aria-label="Choose testimonial">
-            <button type="button" class="testimonial__dot is-active" aria-label="Testimonial 1"></button>
-            <button type="button" class="testimonial__dot" aria-label="Testimonial 2"></button>
-            <button type="button" class="testimonial__dot" aria-label="Testimonial 3"></button>
+            <div class="testimonial-card">
+                <span class="testimonial-card__tag">Sample review</span>
+                <div class="testimonial-card__quote">
+                    &ldquo;Finding pediatric syrups and inhalers used to be a hassle. MediCart's catalogue is organized cleanly and the search is instantaneous.&rdquo;
+                </div>
+                <div class="testimonial-card__author">
+                    <span class="testimonial-card__avatar testimonial-card__avatar--dark">TH</span>
+                    <div class="testimonial-card__info">
+                        <span class="testimonial-card__name">Tanvir Hossain</span>
+                        <span class="testimonial-card__role">Verified Customer · Chattogram</span>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
 

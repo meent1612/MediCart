@@ -40,6 +40,50 @@ public class HomeController : Controller
             .Select(pt => new ProductTypeFilterOption { Id = pt.Id, Name = pt.Name })
             .ToListAsync();
 
+        // Frequently ordered / Best selling medicines (same ranked query as Admin Dashboard)
+        var bestSellingGroup = await _context.OrderItems
+            .GroupBy(oi => oi.MedicineId)
+            .Select(g => new
+            {
+                MedicineId = g.Key,
+                UnitsSold = g.Sum(oi => oi.Quantity),
+                Revenue = g.Sum(oi => oi.Quantity * oi.UnitPrice)
+            })
+            .OrderByDescending(x => x.UnitsSold)
+            .ThenByDescending(x => x.Revenue)
+            .ToListAsync();
+
+        var rankedMedicineIds = bestSellingGroup.Select(x => x.MedicineId).ToList();
+
+        var medicines = await _context.Medicines
+            .Include(m => m.ProductType)
+            .Include(m => m.Stock)
+            .Where(m => rankedMedicineIds.Contains(m.Id))
+            .ToListAsync();
+
+        // In-stock medicines matching the admin best-selling rank order, capped at 4
+        var frequentlyOrdered = rankedMedicineIds
+            .Select(id => medicines.FirstOrDefault(m => m.Id == id))
+            .Where(m => m != null && m.Stock != null && m.Stock.Quantity > 0)
+            .Take(4)
+            .ToList();
+
+        if (frequentlyOrdered.Count < 4)
+        {
+            var existingIds = frequentlyOrdered.Select(m => m!.Id).ToHashSet();
+            var additional = await _context.Medicines
+                .Include(m => m.ProductType)
+                .Include(m => m.Stock)
+                .Where(m => !existingIds.Contains(m.Id) && m.Stock != null && m.Stock.Quantity > 0)
+                .OrderByDescending(m => m.CreatedAt)
+                .Take(4 - frequentlyOrdered.Count)
+                .ToListAsync();
+
+            frequentlyOrdered.AddRange(additional);
+        }
+
+        ViewBag.FrequentlyOrdered = frequentlyOrdered;
+
         return View();
     }
 
