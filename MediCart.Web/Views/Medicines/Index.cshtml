@@ -78,18 +78,41 @@
 
         <section class="results" aria-live="polite">
             <div class="results__toolbar">
-                <div>
+                <div class="results__title-wrap">
                     <h1 id="resultsHeading">All medicines</h1>
                     <span class="results__count" id="resultsCount">@Model.Count results</span>
                 </div>
-                <label class="sort">
-                    Sort:
-                    <select id="sortSelect">
-                        <option value="name-asc" selected>Name: A to Z</option>
-                        <option value="price-asc">Price: low to high</option>
-                        <option value="price-desc">Price: high to low</option>
-                    </select>
-                </label>
+                <div class="results__actions">
+                    <form id="browseSearchForm" class="browse-search-bar" role="search" onsubmit="return false;">
+                        <div class="browse-search-input-wrap">
+                            <svg class="browse-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
+                            <input type="text"
+                                   id="browseSearchInput"
+                                   class="browse-search-input"
+                                   placeholder="Search medicines..."
+                                   autocomplete="off"
+                                   aria-label="Search medicines by name" />
+                            <button type="button"
+                                    id="browseSearchClear"
+                                    class="browse-search-clear"
+                                    aria-label="Clear search"
+                                    title="Clear search"
+                                    hidden>&times;</button>
+                        </div>
+                        <button type="submit" id="browseSearchSubmit" class="browse-search-btn" aria-label="Search">Search</button>
+                    </form>
+
+                    <label class="sort">
+                        Sort:
+                        <select id="sortSelect">
+                            <option value="name-asc" selected>Name: A to Z</option>
+                            <option value="price-asc">Price: low to high</option>
+                            <option value="price-desc">Price: high to low</option>
+                        </select>
+                    </label>
+                </div>
             </div>
 
             <div class="product-grid" id="productGrid"
@@ -148,7 +171,7 @@
                                     }
                                     else
                                     {
-                                        <button type="button" class="btn-add btn-add--disabled" disabled title="Admins cannot place orders" aria-label="Admins cannot place orders" style="opacity: 0.35; cursor: not-allowed;">&times;</button>
+                                        <button type="button" class="btn-add btn-add--disabled" data-id="@med.Id" title="Admins cannot place orders" aria-label="Admins cannot place orders" aria-disabled="true" style="opacity: 0.35; cursor: not-allowed;">&times;</button>
                                     }
                                 </div>
                             </div>
@@ -238,7 +261,7 @@
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                     <span><strong>Admin mode</strong> &mdash; Admins cannot place orders.</span>
                 </div>
-                <button type="button" class="btn-add-cart" disabled style="opacity: 0.55; cursor: not-allowed;" title="Admins cannot place orders">Add to cart</button>
+                <button type="button" class="btn-add-cart btn-add-cart--admin" aria-disabled="true" style="opacity: 0.55; cursor: not-allowed;" title="Admins cannot place orders">Add to cart</button>
             </div>
         }
         else

@@ -11,6 +11,9 @@
     var priceRangeValue = document.getElementById("priceRangeValue");
     var sortSelect = document.getElementById("sortSelect");
     var clearFiltersBtn = document.getElementById("clearFilters");
+    var browseSearchForm = document.getElementById("browseSearchForm");
+    var browseSearchInput = document.getElementById("browseSearchInput");
+    var browseSearchClear = document.getElementById("browseSearchClear");
     var medicineData = JSON.parse(document.getElementById("medicineData").textContent);
 
     function getChecked(groupName) {
@@ -29,9 +32,11 @@
         var categoryIds = getChecked("category");
         var subCategoryIds = getChecked("subCategory");
         var maxPrice = parseFloat(priceRange.value);
+        var searchTerm = (browseSearchInput ? browseSearchInput.value : "").trim().toLowerCase();
         var visibleCount = 0;
 
         cards.forEach(function (card) {
+            var cardName = (card.dataset.name || "").toLowerCase();
             var cardProductTypeId = card.dataset.productTypeId;
             var cardCategoryId = card.dataset.categoryId;
             var cardSubCategoryId = card.dataset.subcategoryId;
@@ -42,8 +47,9 @@
             var matchesSubCategory = subCategoryIds.length === 0 ||
                 (cardSubCategoryId !== "" && subCategoryIds.indexOf(cardSubCategoryId) !== -1);
             var matchesPrice = cardPrice <= maxPrice;
+            var matchesSearch = !searchTerm || cardName.indexOf(searchTerm) !== -1;
 
-            var visible = matchesProductType && matchesCategory && matchesSubCategory && matchesPrice;
+            var visible = matchesProductType && matchesCategory && matchesSubCategory && matchesPrice && matchesSearch;
             card.style.display = visible ? "" : "none";
             if (visible) visibleCount++;
         });
@@ -77,10 +83,69 @@
 
     sortSelect.addEventListener("change", applySort);
 
+    function updateSearchUrl(term) {
+        var currentParams = new URLSearchParams(window.location.search);
+        if (term) {
+            currentParams.set("search", term);
+        } else {
+            currentParams.delete("search");
+        }
+        currentParams.delete("notFound");
+        var newQuery = currentParams.toString();
+        var newUrl = window.location.pathname + (newQuery ? "?" + newQuery : "");
+        window.history.replaceState(null, "", newUrl);
+    }
+
+    if (browseSearchInput) {
+        browseSearchInput.addEventListener("input", function () {
+            if (browseSearchClear) {
+                browseSearchClear.hidden = !browseSearchInput.value.trim();
+            }
+            applyFilters();
+        });
+
+        browseSearchInput.addEventListener("change", function () {
+            updateSearchUrl(browseSearchInput.value.trim());
+        });
+
+        if (browseSearchForm) {
+            browseSearchForm.addEventListener("submit", function (e) {
+                e.preventDefault();
+                var term = browseSearchInput.value.trim();
+                updateSearchUrl(term);
+                applyFilters();
+            });
+        }
+
+        if (browseSearchClear) {
+            browseSearchClear.addEventListener("click", function () {
+                browseSearchInput.value = "";
+                browseSearchClear.hidden = true;
+                updateSearchUrl("");
+                applyFilters();
+                browseSearchInput.focus();
+            });
+        }
+    }
+
     clearFiltersBtn.addEventListener("click", function () {
         document.querySelectorAll(".filter-check input:checked").forEach(function (i) { i.checked = false; });
         priceRange.value = priceRange.max;
         priceRangeValue.textContent = "\u09F3" + priceRange.max;
+        if (browseSearchInput) {
+            browseSearchInput.value = "";
+            if (browseSearchClear) browseSearchClear.hidden = true;
+        }
+        var currentParams = new URLSearchParams(window.location.search);
+        currentParams.delete("search");
+        currentParams.delete("category");
+        currentParams.delete("productType");
+        currentParams.delete("categoryId");
+        currentParams.delete("type");
+        currentParams.delete("notFound");
+        var newQuery = currentParams.toString();
+        var newUrl = window.location.pathname + (newQuery ? "?" + newQuery : "");
+        window.history.replaceState(null, "", newUrl);
         applyFilters();
     });
 
@@ -149,30 +214,45 @@
         showToast._t = setTimeout(function () { toast.classList.remove("is-visible"); }, 2200);
     }
 
+    function showSearchNoticeToast(message) {
+        var toast = document.getElementById("toast");
+        if (!toast) return;
+        toast.classList.add("toast--search-notice");
+        var icon = toast.querySelector("svg");
+        var prevSvg = icon ? icon.innerHTML : "";
+        if (icon) {
+            icon.innerHTML = '<circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line>';
+        }
+        toast.querySelector(".toast__text").textContent = message;
+        toast.classList.add("is-visible");
+        clearTimeout(showSearchNoticeToast._t);
+        showSearchNoticeToast._t = setTimeout(function () {
+            toast.classList.remove("is-visible");
+            setTimeout(function () {
+                toast.classList.remove("toast--search-notice");
+                if (icon && prevSvg) {
+                    icon.innerHTML = prevSvg;
+                }
+            }, 300);
+        }, 3600);
+    }
+
     grid.addEventListener("click", function (e) {
         var addBtn = e.target.closest(".btn-add");
-        if (addBtn && !addBtn.disabled) {
-            if (isAdmin) return; // button shouldn't exist for admins; defensive no-op
-
-            if (!isCustomer) {
-                redirectToLogin();
-                return;
-            }
-
+        if (addBtn) {
             var medicineId = addBtn.dataset.id;
-            addBtn.disabled = true;
+            if (!medicineId) return;
 
-            addToCartOnServer(medicineId, 1).then(function (data) {
-                updateCartBadge(data.cartItemCount);
-                addBtn.classList.add("added");
-                showToast("Added to cart");
-                setTimeout(function () {
-                    addBtn.classList.remove("added");
-                    addBtn.disabled = false;
-                }, 350);
-            }).catch(function (errorMessage) {
-                addBtn.disabled = false;
-                if (errorMessage) showToast(errorMessage);
+            window.MediCartCart.add({
+                medicineId: medicineId,
+                quantity: 1,
+                button: addBtn,
+                onSuccess: function () {
+                    addBtn.classList.add("added");
+                    setTimeout(function () {
+                        addBtn.classList.remove("added");
+                    }, 350);
+                }
             });
 
             return;
@@ -323,27 +403,27 @@
 
     if (addToCartBtn) {
         addToCartBtn.addEventListener("click", function () {
-            if (!currentMedicine || addToCartBtn.disabled) return;
-            if (isAdmin) return; // section is hidden and button disabled server-side for admins; defensive no-op
-
-            if (!isCustomer) {
-                redirectToLogin();
-                return;
-            }
+            if (!currentMedicine) return;
 
             var qty = qtyInput ? (parseInt(qtyInput.value, 10) || 1) : 1;
-            addToCartBtn.disabled = true;
 
-            addToCartOnServer(currentMedicine.Id, qty).then(function (data) {
-                updateCartBadge(data.cartItemCount);
-                addToCartBtn.textContent = "Added";
-                addToCartBtn.classList.add("added");
-                showToast(qty === 1 ? "Added to cart" : qty + " items added to cart");
-                setTimeout(closeModal, 500);
-            }).catch(function (errorMessage) {
-                addToCartBtn.disabled = false;
-                if (errorMessage) showToast(errorMessage);
+            window.MediCartCart.add({
+                medicineId: currentMedicine.Id,
+                quantity: qty,
+                button: addToCartBtn,
+                onSuccess: function () {
+                    addToCartBtn.textContent = "Added";
+                    addToCartBtn.classList.add("added");
+                    setTimeout(closeModal, 500);
+                }
             });
+        });
+    }
+
+    var adminModalBtn = document.querySelector(".btn-add-cart--admin");
+    if (adminModalBtn) {
+        adminModalBtn.addEventListener("click", function () {
+            window.MediCartCart.showToast("Admins cannot place orders");
         });
     }
 
@@ -352,7 +432,9 @@
     var categoryParam = (urlParams.get("category") || "").toLowerCase().trim();
     var categoryIdParam = (urlParams.get("categoryId") || "").trim();
     var productTypeParam = (urlParams.get("productType") || urlParams.get("type") || "").toLowerCase().trim();
-    var searchParam = (urlParams.get("search") || "").toLowerCase().trim();
+    var searchParam = (urlParams.get("search") || "").trim();
+    var openDetailsParam = (urlParams.get("openDetails") || "").trim();
+    var notFoundParam = (urlParams.get("notFound") || "").trim();
 
     if (categoryParam || categoryIdParam) {
         document.querySelectorAll('[data-filter-group="category"] input, [data-filter-group="subCategory"] input').forEach(function (input) {
@@ -374,7 +456,36 @@
         });
     }
 
+    if (searchParam && browseSearchInput) {
+        browseSearchInput.value = searchParam;
+        if (browseSearchClear) browseSearchClear.hidden = false;
+    }
+
     /* initial render */
     priceRangeValue.textContent = "\u09F3" + priceRange.value;
     applyFilters();
+
+    /* Check openDetails query param from FIX 2 */
+    if (openDetailsParam) {
+        openModal(openDetailsParam);
+        var cleanParams = new URLSearchParams(window.location.search);
+        cleanParams.delete("openDetails");
+        var cleanQuery = cleanParams.toString();
+        var cleanUrl = window.location.pathname + (cleanQuery ? "?" + cleanQuery : "");
+        window.history.replaceState(null, "", cleanUrl);
+    }
+
+    /* Check notFound query param from FIX 2 */
+    if (notFoundParam) {
+        var term = searchParam;
+        var msg = term
+            ? "No medicine named \u2018" + term + "\u2019 found \u2014 browse the full catalogue below"
+            : "No matching medicine found \u2014 browse the full catalogue below";
+        showSearchNoticeToast(msg);
+        var cleanParams = new URLSearchParams(window.location.search);
+        cleanParams.delete("notFound");
+        var cleanQuery = cleanParams.toString();
+        var cleanUrl = window.location.pathname + (cleanQuery ? "?" + cleanQuery : "");
+        window.history.replaceState(null, "", cleanUrl);
+    }
 })();
