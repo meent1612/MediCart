@@ -13,12 +13,28 @@
     margin-left: 8px;
 }
 
+/* Polished Toolbar Card */
+.admin-toolbar-card {
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow-sm);
+    flex-wrap: wrap;
+}
+
 .medicine-filter-bar {
     display: flex;
     align-items: center;
     gap: 10px;
     flex-wrap: wrap;
-    margin: 16px 0 10px;
+    margin: 0;
+    width: 100%;
 }
 
 .medicine-filter-search-wrap {
@@ -52,6 +68,256 @@
 
 .admin-table__muted { color: var(--color-neutral); }
 
+/* =====================================================================
+   Medicines Table Redesign (Literal Spec)
+   ===================================================================== */
+
+/* 1. CONTAINER: Rounded Card Shell */
+#medicineTableWrap {
+    background: var(--white, #ffffff);
+    border-radius: 16px;
+    box-shadow: 0 1px 3px rgba(21, 46, 25, 0.08);
+    border: 1px solid rgba(21, 46, 25, 0.08);
+    overflow: auto;
+    max-height: calc(100vh - 270px);
+    min-height: 280px;
+    margin-bottom: 24px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(21, 46, 25, 0.2) transparent;
+}
+
+/* 6. SCROLLBAR STYLING */
+#medicineTableWrap::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+#medicineTableWrap::-webkit-scrollbar-track {
+    background: transparent;
+}
+#medicineTableWrap::-webkit-scrollbar-thumb {
+    background: rgba(21, 46, 25, 0.18);
+    border-radius: 999px;
+}
+#medicineTableWrap::-webkit-scrollbar-thumb:hover {
+    background: rgba(21, 46, 25, 0.35);
+}
+
+/* Base table reset */
+#medicineTable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+    background: var(--white, #ffffff);
+    border: none;
+}
+
+/* 2. HEADER ROW */
+#medicineTable thead th {
+    background: var(--color-bg);
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    color: var(--color-text);
+    font-weight: 600;
+    padding: 14px 16px;
+    border-bottom: 1px solid rgba(21, 46, 25, 0.1);
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    white-space: nowrap;
+    text-align: left;
+    box-shadow: 0 1px 0 rgba(21, 46, 25, 0.08);
+}
+
+#medicineTable thead th:first-child {
+    border-top-left-radius: 15px;
+}
+#medicineTable thead th:last-child {
+    border-top-right-radius: 15px;
+}
+
+/* Sort carets */
+.sort-th {
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.15s ease;
+}
+.sort-th__label {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+.sort-th svg {
+    width: 10px;
+    height: 10px;
+    opacity: 0.45;
+    flex-shrink: 0;
+    color: var(--color-text);
+    transition: opacity .15s ease, transform .15s ease;
+    display: inline-block;
+    vertical-align: middle;
+    margin-top: -1px;
+}
+.sort-th:hover { color: var(--color-dark); }
+.sort-th:hover svg { opacity: 0.85; }
+.sort-th[aria-sort="ascending"],
+.sort-th[aria-sort="descending"] { color: var(--color-dark); }
+.sort-th[aria-sort="ascending"] svg { opacity: 1; transform: rotate(180deg); }
+.sort-th[aria-sort="descending"] svg { opacity: 1; transform: rotate(0deg); }
+.sort-th:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; border-radius: 3px; }
+
+/* 3. BODY ROWS */
+#medicineTable tbody td {
+    padding: 16px;
+    border-bottom: 1px solid rgba(21, 46, 25, 0.06);
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    vertical-align: middle;
+    font-size: 13.5px;
+    color: var(--color-text);
+    line-height: 1.45;
+}
+
+#medicineTable tbody tr {
+    height: 64px;
+    min-height: 64px;
+    transition: background 0.15s ease;
+}
+
+#medicineTable tbody tr:last-child td {
+    border-bottom: none;
+}
+
+#medicineTable tbody tr:hover,
+#medicineTable tr.med-row:hover {
+    background: rgba(133, 155, 119, 0.08) !important;
+}
+
+/* 4. COLUMN ALIGNMENT */
+/* Name Column: left aligned, slightly larger, font-weight 600 */
+#medicineTable th.th--name,
+#medicineTable td.td--name {
+    text-align: left;
+}
+#medicineTable td.td--name strong {
+    font-size: 14.5px;
+    font-weight: 600;
+    color: var(--color-dark);
+    display: inline-block;
+}
+
+/* Price Column: Right align */
+#medicineTable th.th--price,
+#medicineTable td.td--price {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-weight: 500;
+}
+#medicineTable th.sort-th--right .sort-th__label {
+    justify-content: flex-end;
+    width: 100%;
+}
+
+/* Stock Column: Right align */
+#medicineTable th.th--stock,
+#medicineTable td.td--stock {
+    text-align: right;
+}
+#medicineTable td.td--stock .stock-cell-content {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    width: 100%;
+}
+.stock-number {
+    font-weight: 600;
+    font-family: var(--font-mono);
+    color: var(--color-text);
+}
+.stock-number--danger {
+    color: var(--color-danger);
+    font-weight: 700;
+}
+.stock-number--warning {
+    color: var(--color-warning);
+    font-weight: 700;
+}
+
+/* Expiry Column */
+.expiry-cell-wrap {
+    white-space: nowrap;
+}
+.expiry-date {
+    font-size: 13px;
+    color: var(--color-text);
+}
+.expiry-date--danger {
+    color: var(--color-danger);
+    font-weight: 600;
+}
+.expiry-date--warning {
+    color: var(--color-warning);
+    font-weight: 600;
+}
+
+/* 5. EDIT / DELETE PILL BUTTONS */
+#medicineTable th.th--actions,
+#medicineTable td.td--actions {
+    text-align: right;
+    width: 170px;
+    min-width: 170px;
+    padding-right: 20px;
+}
+.admin-table__actions-wrap {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.btn-pill-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    line-height: 1;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    box-sizing: border-box;
+    white-space: nowrap;
+}
+
+.btn-pill-action--edit {
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    background: transparent;
+}
+.btn-pill-action--edit:hover {
+    background: var(--color-primary);
+    color: #ffffff !important;
+}
+
+.btn-pill-action--delete {
+    border: 1px solid var(--color-danger);
+    color: var(--color-danger);
+    background: transparent;
+}
+.btn-pill-action--delete:hover {
+    background: var(--color-danger);
+    color: #ffffff !important;
+}
+
 /* ----- Badges & tags --------------------------------------------- */
 .tag {
     font-size: 11px;
@@ -74,42 +340,42 @@
     flex-shrink: 0;
 }
 .tag--rx { background: rgba(179, 65, 62, 0.15); color: var(--color-danger); }
-.tag--low-stock { background: var(--color-warning); color: var(--color-dark); }
-.tag--out-of-stock { background: var(--color-danger); color: #ffffff; }
-.tag--expired { background: var(--color-danger); color: #ffffff; }
-.tag--expiring { background: var(--color-warning); color: var(--color-dark); }
-.tag--sensitivity-low { background: var(--color-success); color: var(--color-dark); }
-.tag--sensitivity-mid { background: var(--color-warning); color: var(--color-dark); }
-.tag--sensitivity-high { background: var(--color-danger); color: #ffffff; }
+.tag--low-stock { background: rgba(217, 140, 59, 0.16); color: var(--color-warning); border: 1px solid rgba(217, 140, 59, 0.3); }
+.tag--out-of-stock { background: rgba(179, 65, 62, 0.15); color: var(--color-danger); border: 1px solid rgba(179, 65, 62, 0.3); }
+.tag--expired { background: rgba(179, 65, 62, 0.15); color: var(--color-danger); border: 1px solid rgba(179, 65, 62, 0.3); }
+.tag--expiring { background: rgba(217, 140, 59, 0.16); color: var(--color-warning); border: 1px solid rgba(217, 140, 59, 0.3); }
+.tag--sensitivity-low { background: rgba(91, 138, 100, 0.16); color: var(--color-success); border: 1px solid rgba(91, 138, 100, 0.25); }
+.tag--sensitivity-mid { background: rgba(217, 140, 59, 0.16); color: var(--color-warning); border: 1px solid rgba(217, 140, 59, 0.25); }
+.tag--sensitivity-high { background: rgba(179, 65, 62, 0.15); color: var(--color-danger); border: 1px solid rgba(179, 65, 62, 0.25); }
 
-/* ----- Sortable table header ----- */
-.sort-th {
-    cursor: pointer;
-    user-select: none;
-    transition: color .15s ease;
+/* Empty State */
+.admin-empty-state {
+    text-align: center;
+    padding: 48px 24px;
+    background: var(--white);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--line);
 }
-.sort-th__label {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    white-space: nowrap;
+.admin-empty-state svg {
+    width: 44px;
+    height: 44px;
+    color: var(--slate-400, #94a3b8);
+    margin: 0 auto 12px;
+    display: block;
 }
-.sort-th svg {
-    width: 11px;
-    height: 11px;
-    opacity: .35;
-    flex-shrink: 0;
-    transition: opacity .15s ease, transform .15s ease;
+.admin-empty-state h3 {
+    margin: 0 0 6px;
+    font-family: var(--font-heading);
+    font-size: 18px;
+    color: var(--color-dark);
 }
-.sort-th:hover { color: var(--pine-800); }
-.sort-th:hover svg { opacity: .65; }
-.sort-th[aria-sort="ascending"],
-.sort-th[aria-sort="descending"] { color: var(--pine-800); }
-.sort-th[aria-sort="ascending"] svg { opacity: 1; transform: rotate(180deg); }
-.sort-th[aria-sort="descending"] svg { opacity: 1; transform: rotate(0deg); }
-.sort-th:focus-visible { outline: 2px solid var(--amber-600); outline-offset: 3px; border-radius: 3px; }
+.admin-empty-state p {
+    margin: 0;
+    font-size: 13.5px;
+    color: var(--color-text);
+}
 
-/* ----- Row entrance animation ----- */
+/* Row entrance animation */
 .med-row {
     animation: med-row-in .32s var(--ease) backwards;
     animation-delay: calc(var(--row-index, 0) * 28ms);
@@ -120,22 +386,6 @@
 }
 @media (prefers-reduced-motion: reduce) {
     .med-row { animation: none; }
-}
-
-/* ----- Sticky scrolling table body (desktop only) ----- */
-@media (min-width: 641px) {
-    #medicineTableWrap {
-        max-height: calc(100vh - 320px);
-        min-height: 220px;
-        overflow-y: auto;
-    }
-    #medicineTableWrap thead th {
-        position: sticky;
-        top: 0;
-        background: var(--white);
-        z-index: 2;
-        box-shadow: 0 1px 0 var(--line);
-    }
 }
 
 /* ----- Alerts: layout tweak for dismiss button placement ----- */
