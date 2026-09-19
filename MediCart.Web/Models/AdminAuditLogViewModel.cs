@@ -30,7 +30,7 @@ namespace MediCart.Web.Models
         public int Id { get; set; }
         public string Action { get; set; } = string.Empty;
         public string ActionType { get; set; } = "Other"; // Add, Edit, Delete, Security, View
-        public string TableName { get; set; } = string.Empty;
+        public string? TableName { get; set; }
         public int? RecordId { get; set; }
         public string AdminName { get; set; } = string.Empty;
         public string AdminEmail { get; set; } = string.Empty;
