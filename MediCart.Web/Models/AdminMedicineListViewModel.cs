@@ -1,3 +1,5 @@
+using MediCart.Web.Services;
+
 namespace MediCart.Web.Models
 {
     public class MedicineListRowViewModel
@@ -11,14 +13,22 @@ namespace MediCart.Web.Models
         public decimal Price { get; set; }
         public int StockQuantity { get; set; }
         public DateOnly ExpiryDate { get; set; }
-        public string? SensitivityLevel { get; set; } // low | mid | high | null
+        public string? SensitivityLevel { get; set; }
         public bool RequiresPrescription { get; set; }
 
-        public bool IsLowStock => StockQuantity < 10;
-        public int DaysUntilExpiry => (ExpiryDate.ToDateTime(TimeOnly.MinValue) - DateTime.UtcNow.Date).Days;
-        public bool IsExpiringSoon => DaysUntilExpiry <= 30 && DaysUntilExpiry >= 0;
-        public bool IsExpired => DaysUntilExpiry < 0;
-        public bool IsNearExpiryWindow => DaysUntilExpiry <= 60 && DaysUntilExpiry > 30;
+        // Computed — all use StockExpiryHelper constants
+        public int DaysUntilExpiry =>
+            (ExpiryDate.ToDateTime(TimeOnly.MinValue) - DateTime.UtcNow.Date).Days;
+
+        public bool IsOutOfStock  => StockExpiryHelper.IsOutOfStock(StockQuantity);
+        public bool IsLowStock    => StockExpiryHelper.IsLowStock(StockQuantity);
+        public bool IsExpired     => StockExpiryHelper.IsExpired(DaysUntilExpiry);
+        public bool IsCriticalExpiry => StockExpiryHelper.IsCriticalExpiry(DaysUntilExpiry);
+        public bool IsExpiringSoon   => StockExpiryHelper.IsWarningExpiry(DaysUntilExpiry);
+
+        // IsNearExpiryWindow was used in the old Medicines view for a softer
+        // colour — kept for backward compat but now maps to IsExpiringSoon.
+        public bool IsNearExpiryWindow => IsExpiringSoon;
     }
 
     public class AdminMedicinesPageViewModel
@@ -27,7 +37,6 @@ namespace MediCart.Web.Models
         public List<DropdownOptionViewModel> CategoryOptions { get; set; } = new();
         public List<DropdownOptionViewModel> ProductTypeOptions { get; set; } = new();
 
-        // Reflects what was actually applied, so the filter bar can show current state
         public string? Search { get; set; }
         public int? CategoryId { get; set; }
         public int? SubCategoryId { get; set; }
