@@ -47,7 +47,8 @@ namespace MediCart.Web.Controllers
             {
                 newQuantity = result.NewQuantity,
                 newStockQuantity = result.NewStockQuantity,
-                cartItemCount = result.CartItemCount
+                cartItemCount = result.CartItemCount,
+                warningMessage = result.WarningMessage
             });
         }
 
