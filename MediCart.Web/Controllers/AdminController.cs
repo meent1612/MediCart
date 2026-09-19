@@ -3,11 +3,12 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MediCart.Web.Data;
 using MediCart.Web.Models;
-// using Microsoft.AspNetCore.Authorization; // enable once every teammate has tested login with the Admin role
+using MediCart.Web.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MediCart.Web.Controllers
 {
-    // [Authorize(Roles = "Admin")] // TODO: turn this on before demo — currently anyone can hit /Admin/*
+    [Authorize(Roles = "Admin")]
     public class AdminController : Controller
     {
         private readonly ApplicationDbContext _db;
@@ -190,13 +191,13 @@ namespace MediCart.Web.Controllers
             var todayUtc = DateTime.UtcNow.Date;
             var sevenDaysAgo = todayUtc.AddDays(-6);
             var todayDateOnly = DateOnly.FromDateTime(DateTime.UtcNow);
-            var expiryThreshold = todayDateOnly.AddDays(30);
+            var expiryThreshold = todayDateOnly.AddDays(StockExpiryHelper.WarningExpiryDays);
 
             var totalOrders = await _db.Orders.CountAsync();
             var totalRevenue = await _db.Orders.SumAsync(o => (decimal?)o.TotalAmount) ?? 0m;
             var pendingProcessing = await _db.Orders.CountAsync(o => o.Status == "Pending" || o.Status == "Processing");
             var flaggedCount = await _db.Orders.CountAsync(o => o.IsFlagged);
-            var lowStockCount = await _db.Stocks.CountAsync(s => s.Quantity < 10);
+            var lowStockCount = await _db.Stocks.CountAsync(s => s.Quantity <= StockExpiryHelper.LowStockThreshold);
 
             var ordersLast7Days = await _db.Orders
                 .Where(o => o.CreatedAt >= sevenDaysAgo)
@@ -282,27 +283,23 @@ namespace MediCart.Web.Controllers
                 if (attentionItems.Count >= 4) break;
                 handledMedicineIds.Add(st.MedicineId);
 
-                var daysUntil = (st.ExpiryDate.ToDateTime(TimeOnly.MinValue) - todayUtc).Days;
+                var daysUntil = StockExpiryHelper.DaysUntilExpiry(st.ExpiryDate);
                 string sub;
                 string sev;
-                if (daysUntil < 0)
+
+                if (StockExpiryHelper.IsExpired(daysUntil))
                 {
-                    sub = $"Expired {Math.Abs(daysUntil)} days ago";
+                    sub = $"Expired {Math.Abs(daysUntil)} day(s) ago";
                     sev = "danger";
                 }
-                else if (daysUntil == 0)
+                else if (StockExpiryHelper.IsCriticalExpiry(daysUntil))
                 {
-                    sub = "Expires today";
+                    sub = daysUntil == 0 ? "Expires today" : $"Expires in {daysUntil} day(s) — Critical";
                     sev = "danger";
-                }
-                else if (daysUntil == 1)
-                {
-                    sub = "Expires tomorrow";
-                    sev = "warning";
                 }
                 else
                 {
-                    sub = $"Expires in {daysUntil} days";
+                    sub = $"Expires in {daysUntil} day(s) — Warning";
                     sev = "warning";
                 }
 
@@ -312,7 +309,7 @@ namespace MediCart.Web.Controllers
                     Title = st.Medicine?.Name ?? "Medicine",
                     Subtitle = sub,
                     Severity = sev,
-                    ActionUrl = Url.Action("StockExpiry", "Admin", new { filter = "ExpiringSoon" }) ?? "/Admin/StockExpiry?filter=ExpiringSoon",
+                    ActionUrl = Url.Action("StockExpiry", "Admin") ?? "/Admin/StockExpiry",
                     ActionText = "View"
                 });
             }
@@ -323,8 +320,10 @@ namespace MediCart.Web.Controllers
                 if (attentionItems.Count >= 4) break;
                 if (handledMedicineIds.Contains(st.MedicineId)) continue;
 
-                var isOut = st.Quantity == 0;
-                string sub = isOut ? "Out of stock (0 units left)" : $"{st.Quantity} {(st.Quantity == 1 ? "unit" : "units")} left";
+                var isOut = StockExpiryHelper.IsOutOfStock(st.Quantity);
+                string sub = isOut
+                    ? "Out of stock (0 units left)"
+                    : $"{st.Quantity} {(st.Quantity == 1 ? "unit" : "units")} left — Low stock";
                 string sev = isOut ? "danger" : "warning";
 
                 attentionItems.Add(new DashboardAttentionItemViewModel
