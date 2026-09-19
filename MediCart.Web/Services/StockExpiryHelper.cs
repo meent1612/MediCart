@@ -70,10 +70,10 @@ namespace MediCart.Web.Services
                 return ("Expired", "danger");
 
             if (daysUntilExpiry <= CriticalExpiryDays)
-                return ("Critical — expiring soon", "danger");
+                return ("Critical", "danger");
 
             if (daysUntilExpiry <= WarningExpiryDays)
-                return ($"Expiring in {daysUntilExpiry} days", "warning");
+                return ($"Expires in {daysUntilExpiry} days", "warning");
 
             return (null, null);    // normal — no badge needed
         }

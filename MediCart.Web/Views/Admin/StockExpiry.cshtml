@@ -96,20 +96,20 @@
                         <td>
                             @if (item.ExpiryDate.HasValue)
                             {
-                                @if (item.DaysUntilExpiry < 0)
+                                @if (item.IsExpired)
                                 {
                                     <span class="expiry-cell expiry-cell--danger">
                                         @item.ExpiryDate.Value.ToString("dd MMM yyyy") (Expired)
                                     </span>
                                 }
-                                else if (item.DaysUntilExpiry <= 7)
+                                else if (item.IsCriticalExpiry)
                                 {
                                     <span class="expiry-cell expiry-cell--danger">
                                         @item.ExpiryDate.Value.ToString("dd MMM yyyy")
                                         (@item.DaysUntilExpiry day(s))
                                     </span>
                                 }
-                                else if (item.DaysUntilExpiry <= 30)
+                                else if (item.IsWarningExpiry)
                                 {
                                     <span class="expiry-cell expiry-cell--warning">
                                         @item.ExpiryDate.Value.ToString("dd MMM yyyy")
@@ -132,38 +132,20 @@
                         <!-- Status column: both badges shown vertically if both apply -->
                         <td>
                             <div class="stock-badges-cell">
-                                @if (!string.IsNullOrWhiteSpace(item.ExpiryBadgeLabel))
+                                @if (!string.IsNullOrWhiteSpace(item.ExpiryBadge))
                                 {
-                                    @if (item.ExpiryBadgeSeverity == "danger")
-                                    {
-                                        <span class="order-status-badge order-status-badge--rejected">
-                                            @item.ExpiryBadgeLabel
-                                        </span>
-                                    }
-                                    else
-                                    {
-                                        <span class="order-status-badge order-status-badge--pending">
-                                            @item.ExpiryBadgeLabel
-                                        </span>
-                                    }
+                                    <span class="order-status-badge @(item.ExpirySeverity == "danger" ? "order-status-badge--rejected" : "order-status-badge--pending")">
+                                        @item.ExpiryBadge
+                                    </span>
                                 }
-                                @if (!string.IsNullOrWhiteSpace(item.StockBadgeLabel))
+                                @if (!string.IsNullOrWhiteSpace(item.StockBadge))
                                 {
-                                    @if (item.StockBadgeSeverity == "danger")
-                                    {
-                                        <span class="order-status-badge order-status-badge--rejected">
-                                            @item.StockBadgeLabel
-                                        </span>
-                                    }
-                                    else
-                                    {
-                                        <span class="order-status-badge order-status-badge--pending">
-                                            @item.StockBadgeLabel
-                                        </span>
-                                    }
+                                    <span class="order-status-badge @(item.StockSeverity == "danger" ? "order-status-badge--rejected" : "order-status-badge--pending")">
+                                        @item.StockBadge
+                                    </span>
                                 }
-                                @if (string.IsNullOrWhiteSpace(item.ExpiryBadgeLabel) &&
-                                     string.IsNullOrWhiteSpace(item.StockBadgeLabel))
+                                @if (string.IsNullOrWhiteSpace(item.ExpiryBadge) &&
+                                     string.IsNullOrWhiteSpace(item.StockBadge))
                                 {
                                     <span class="order-status-badge order-status-badge--delivered">
                                         In stock
