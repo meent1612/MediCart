@@ -1,3 +1,5 @@
+@using MediCart.Web.Services
+
 @model List<MediCart.Web.Models.CartItemViewModel>
 @{
     ViewData["Title"] = "Your cart";
@@ -92,6 +94,10 @@
                         else if (item.AvailableStock == 0)
                         {
                             <span class="badge badge--danger">Out of stock — wait for restock or remove</span>
+                        }
+                        else if (StockExpiryHelper.IsLowStock(item.AvailableStock))
+                        {
+                            <span class="badge badge--stock-low">Low stock</span>
                         }
                         else if (item.RequiresRx)
                         {
