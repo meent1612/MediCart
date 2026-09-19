@@ -46,6 +46,25 @@
     cursor: pointer;
 }
 
+.message-row--highlighted {
+    background: rgba(133, 155, 119, 0.25) !important;
+    outline: 2px solid var(--color-primary);
+    outline-offset: -2px;
+    animation: highlightPulse 2.5s ease-out forwards;
+}
+
+@keyframes highlightPulse {
+    0% {
+        background: rgba(133, 155, 119, 0.45);
+    }
+    60% {
+        background: rgba(133, 155, 119, 0.25);
+    }
+    100% {
+        background: rgba(133, 155, 119, 0.15);
+    }
+}
+
 /* Modal for Contact Message Details */
 .message-modal-overlay {
     display: none;

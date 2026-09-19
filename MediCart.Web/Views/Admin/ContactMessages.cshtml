@@ -64,7 +64,7 @@
             <tbody>
                 @foreach (var msg in Model.Messages)
                 {
-                    <tr class="@(!msg.IsRead ? "message-row--unread" : "") message-row-clickable" 
+                    <tr id="msg-@msg.Id" class="@(!msg.IsRead ? "message-row--unread" : "") message-row-clickable" 
                         data-id="@msg.Id"
                         data-name="@msg.Name"
                         data-email="@msg.Email"
@@ -221,6 +221,38 @@
                     closeModal();
                 }
             });
+
+            // Auto-focus, scroll to, and open modal for targeted message (via #msg-123 or ?id=123)
+            var targetId = null;
+            if (window.location.hash && window.location.hash.indexOf('#msg-') === 0) {
+                targetId = window.location.hash.substring(5);
+            } else {
+                var urlParams = new URLSearchParams(window.location.search);
+                targetId = urlParams.get('id') || urlParams.get('messageId') || urlParams.get('highlight');
+            }
+
+            if (targetId) {
+                var targetRow = document.getElementById('msg-' + targetId) || document.querySelector('tr[data-id="' + targetId + '"]');
+                if (targetRow) {
+                    targetRow.classList.add('message-row--highlighted');
+                    try {
+                        targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    } catch (e) {
+                        targetRow.scrollIntoView();
+                    }
+                    setTimeout(function() {
+                        var data = {
+                            id: targetRow.getAttribute('data-id'),
+                            name: targetRow.getAttribute('data-name'),
+                            email: targetRow.getAttribute('data-email'),
+                            date: targetRow.getAttribute('data-date'),
+                            read: targetRow.getAttribute('data-read'),
+                            message: targetRow.getAttribute('data-message')
+                        };
+                        openModal(data);
+                    }, 350);
+                }
+            }
         });
     </script>
 }
