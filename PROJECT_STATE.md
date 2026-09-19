@@ -21,8 +21,8 @@ Seeded in `Program.cs` lines 38-44:
 
 | Controller | `[Authorize]` Attribute | Notes |
 |---|---|---|
-| `AdminController` | **COMMENTED OUT** `// [Authorize(Roles = "Admin")]` (line 10) | ⚠️ **Currently anyone can access all /Admin/* routes** |
-| `AdminOrdersController` | **COMMENTED OUT** `// [Authorize(Roles = "Admin")]` (line 11) | ⚠️ **Currently anyone can access all /AdminOrders/* routes** |
+| `AdminController` | `[Authorize(Roles = "Admin")]` (line 11) | Active — Admin only |
+| `AdminOrdersController` | `[Authorize(Roles = "Admin")]` (line 11) | Active — Admin only |
 | `CartController` | `[Authorize(Roles = "Customer")]` (line 9) | Active — Customer only |
 | `CheckoutController` | `[Authorize(Roles = "Customer")]` (line 12) | Active — Customer only |
 | `ConfirmationController` | `[Authorize(Roles = "Customer")]` (line 10) | Active — Customer only |
@@ -104,16 +104,16 @@ Seeded in `Program.cs` lines 38-44:
 | `Index` | GET | `/UserProfile` | — | View(UserProfileViewModel) | No |
 | `Index` | POST | `/UserProfile` | UserProfileViewModel (form) | View/Redirect | **Yes** — updates FullName, PhoneNumber |
 
-### 2.8 AdminController (⚠️ `[Authorize]` COMMENTED OUT)
+### 2.8 AdminController (`[Authorize(Roles = "Admin")]`)
 
 | Action | Verb | Route | Parameters | Return | Mutates? |
 |---|---|---|---|---|---|
 | `Profile` | GET | `/Admin/Profile` | — | View(AdminProfileViewModel) | No |
 | `UpdateProfile` | POST | `/Admin/UpdateProfile` | AdminProfileFormViewModel | Redirect | **Yes** — updates admin user |
 | `Medicines` | GET | `/Admin/Medicines` | search?, categoryId?, subCategoryId?, productTypeId? | View(AdminMedicinesPageViewModel) | No |
-| `Dashboard` | GET | `/Admin/Dashboard` | — | View("ComingSoon") | No |
-| `StockExpiry` | GET | `/Admin/StockExpiry` | — | View("ComingSoon") | No |
-| `AuditLog` | GET | `/Admin/AuditLog` | — | View("ComingSoon") | No |
+| `Dashboard` | GET | `/Admin/Dashboard` | — | View(AdminDashboardViewModel) | No |
+| `StockExpiry` | GET | `/Admin/StockExpiry` | filter? | View(AdminStockExpiryViewModel) | No |
+| `AuditLog` | GET | `/Admin/AuditLog` | search?, actionType?, fromDate?, toDate?, page? | View(AdminAuditLogViewModel) | No |
 | `ContactMessages` | GET | `/Admin/ContactMessages` | status? | View(AdminContactMessageListViewModel) | No |
 | `MarkMessageAsRead` | POST | `/Admin/MarkMessageAsRead` | id (int) | Redirect | **Yes** — marks message read, writes AuditLog |
 | `Categories` | GET | `/Admin/Categories` | — | View(AdminCategoriesViewModel) | No |
@@ -131,7 +131,7 @@ Seeded in `Program.cs` lines 38-44:
 | `EditMedicine` | POST | `/Admin/EditMedicine` | MedicineFormViewModel | Redirect/View | **Yes** — updates Medicine + Stock + SideEffects |
 | `DeleteMedicine` | POST | `/Admin/DeleteMedicine` | id (int) | Redirect | **Yes** — deletes Medicine (blocked if order history exists) |
 
-### 2.9 AdminOrdersController (⚠️ `[Authorize]` COMMENTED OUT)
+### 2.9 AdminOrdersController (`[Authorize(Roles = "Admin")]`)
 
 | Action | Verb | Route | Parameters | Return | Mutates? |
 |---|---|---|---|---|---|
@@ -165,11 +165,12 @@ Seeded in `Program.cs` lines 38-44:
 | **OrderItem** | `Id` (int), `OrderId` (int), `MedicineId` (int), `Quantity` (int), `UnitPrice` (decimal) | ⚠️ None |
 | **Prescription** | `Id` (int), `UserId` (string), `OrderId` (int), `ImageUrl` (string), `Status` (string, default "pending"), `UploadedAt` (DateTime) | ⚠️ None (CHECK constraint via Fluent API for Status) |
 | **Payment** | `Id` (int), `OrderId` (int), `UserId` (string), `Amount` (decimal), `Method` (string), `Status` (string, default "pending"), `PaidAt` (DateTime?), `CreatedAt` (DateTime) | ⚠️ None (CHECK constraint via Fluent API for Status) |
-| **ExpiryAlert** | `Id` (int), `StockId` (int), `MedicineId` (int), `AlertLevel` (string), `AlertDate` (DateOnly), `IsResolved` (bool) | ⚠️ None (CHECK constraint via Fluent API for AlertLevel) |
 | **Notification** | `Id` (int), `UserId` (string), `Message` (string), `IsRead` (bool), `CreatedAt` (DateTime) | ⚠️ None |
 | **ContactMessage** | `Id` (int), `Name` (string), `Email` (string), `Message` (string), `IsRead` (bool), `CreatedAt` (DateTime), `UserId` (string?) | ⚠️ None |
 | **AuditLog** | `Id` (int), `AdminId` (string), `Action` (string), `TableName` (string?), `RecordId` (int?), `CreatedAt` (DateTime) | ⚠️ None |
 | **OtpCode** | `Id` (int), `Email` (string), `Code` (string), `ExpiresAt` (DateTime), `IsUsed` (bool), `CreatedAt` (DateTime) | ⚠️ None |
+
+> **Note on Deleted Entities**: The `ExpiryAlert` entity does **not** exist and must not be referenced. `Data/ExpiryAlert.cs`, the `DbSet<ExpiryAlert>`, its check constraint in `OnModelCreating`, and the `ICollection<ExpiryAlert>` navigation property on `Stock.cs` were completely deleted, and the table was dropped from Neon via migration.
 
 > **⚠️ Flag**: All EF Core entity classes have **zero** data-annotation validation attributes. Validation is enforced via Fluent API CHECK constraints and ViewModel-level annotations only.
 
@@ -212,11 +213,13 @@ Seeded in `Program.cs` lines 38-44:
 | Method | Description |
 |---|---|
 | `GetCartAsync(userId)` | Returns cart items for user, releases expired items first, computes expiry warnings |
-| `AddToCartAsync(userId, medicineId, quantity)` | Adds item to cart, deducts stock; blocks if critical expiry (≤7 days) or insufficient stock; uses DB transaction |
+| `AddToCartAsync(userId, medicineId, quantity)` | Adds item to cart, deducts stock; blocks if expired or critical expiry (≤7 days) or insufficient stock; returns `OkWithWarning(...)` with `WarningMessage` for warning-tier items (>7–30 days); uses DB transaction |
 | `UpdateQuantityAsync(userId, cartItemId, newQuantity)` | Updates cart quantity, adjusts stock delta; uses DB transaction |
 | `RemoveItemAsync(userId, cartItemId)` | Removes cart item, restores stock; uses DB transaction |
 | `GetCartItemCountAsync(userId)` | Returns sum of quantities in user's cart |
 | `ReleaseExpiredCartItemsAsync(userId?)` | Removes cart items older than 3 days (`CartExpiry = TimeSpan.FromDays(3)`), returns stock |
+
+> **Cart Warning Notification**: `CartOperationResult` includes `WarningMessage (string?)`. `AddToCartAsync` returns `OkWithWarning(...)` with an expiry warning message for warning-tier items; `CartController.Add` forwards it as `warningMessage` in JSON; `cart-handler.js` reads it and shows a toast.
 
 #### OrderService (`IOrderService`)
 | Method | Description |
@@ -244,6 +247,25 @@ Seeded in `Program.cs` lines 38-44:
 | `IsOverThreshold(sensitivityLevel, quantity)` | Returns true if quantity exceeds the tier's threshold |
 | `GetThreshold(sensitivityLevel)` | Returns the threshold int for a given tier |
 
+#### StockExpiryHelper (static utility — `Services/StockExpiryHelper.cs`)
+Single source of truth for all stock and expiry thresholds and state checks across the application.
+> **Rule**: Every controller, service, and ViewModel must use this helper — never hard-code raw magic numbers anywhere else.
+
+- **Thresholds**:
+  - `LowStockThreshold = 10`
+  - `WarningExpiryDays = 30`
+  - `CriticalExpiryDays = 7`
+- **Methods & Logic**:
+  - `IsOutOfStock(int quantity) => quantity == 0`
+  - `IsLowStock(int quantity) => quantity <= LowStockThreshold` (<= 10 units, inclusive of exactly 10)
+  - `IsExpired(int daysUntilExpiry) => daysUntilExpiry < 0`
+  - `IsCriticalExpiry(int daysUntilExpiry) => daysUntilExpiry >= 0 && daysUntilExpiry <= CriticalExpiryDays` (0–7 days)
+  - `IsWarningExpiry(int daysUntilExpiry) => daysUntilExpiry > CriticalExpiryDays && daysUntilExpiry <= WarningExpiryDays` (>7–30 days)
+  - `IsBlockedFromCart(int daysUntilExpiry) => daysUntilExpiry <= CriticalExpiryDays` (covers negative/expired and critical 0–7 days)
+  - `DaysUntilExpiry(DateOnly expiryDate) => expiryDate.DayNumber - today.DayNumber`
+  - `GetStockBadge(int quantity)`: returns `("Out of stock", "danger")` for qty 0, `("Low stock", "warning")` for qty <= 10, or `(null, null)`
+  - `GetExpiryBadge(int daysUntilExpiry)`: returns `("Expired", "danger")` for < 0, `("Critical", "danger")` for <= 7, `($"Expires in {daysUntilExpiry} days", "warning")` for <= 30, or `(null, null)`
+
 ### 4.2 Flagged-Orders Sensitivity Tiers (SensitivityFlagHelper)
 
 | Tier | Threshold (units) | Constant Name |
@@ -252,30 +274,45 @@ Seeded in `Program.cs` lines 38-44:
 | **Mid** | ≥ 15 | `MidThreshold = 15` |
 | **Low** | ≥ 30 | `LowThreshold = 30` |
 
-### 4.3 Low-Stock Alert Threshold
+### 4.3 Stock & Inventory Health Thresholds
+- **Low stock threshold**: `<= 10 units`, inclusive of exactly 10 (`StockExpiryHelper.LowStockThreshold = 10`).
+- **Out of stock**: `Quantity == 0` (`StockExpiryHelper.IsOutOfStock(quantity)`).
 
-Defined in `MedicineListRowViewModel` (AdminMedicineListViewModel.cs line 17):
-- `IsLowStock => StockQuantity <= 10`
+### 4.4 Expiry Alert Tiers & State Checks
+Defined server-side in `Services/StockExpiryHelper.cs`:
+- **Expired**: `< 0 days` until expiry (already expired) — blocked from cart and checkout. Badge: `--color-danger` ("Expired").
+- **Critical**: `0–7 days` until expiry — blocked from cart and checkout (`IsBlockedFromCart` / `IsBlockedFromCheckout`). Badge: `--color-danger` ("Critical").
+- **Warning**: `> 7–30 days` until expiry — customer can purchase and checkout; shows warning badge and toast on add-to-cart (`WarningMessage`). Badge: `--color-warning` ("Expires in {X} days" with real day count).
+- **Normal**: `> 30 days` until expiry — normal inventory, no expiry badge shown.
 
-This is a **computed property on the ViewModel** — there is no separate low-stock service or background alert. The admin medicines list page highlights medicines with ≤10 units in stock.
+> **Deleted Entity Note**: The `ExpiryAlert` entity and table have been deleted from the project and must not be referenced. All expiry logic is evaluated on the fly via `StockExpiryHelper`.
 
-### 4.4 Expiry Alert Tiers
+### 4.5 ViewModel Properties for Stock & Expiry
+All affected ViewModels compute or bind directly via `StockExpiryHelper`. `IsNearExpiryWindow` and `IsExpiringSoon` were **deleted** — do not use.
 
-**CartService (customer-facing):**
-- `CriticalExpiryDays = 7` — blocks add-to-cart, shown as critical warning
-- `WarningExpiryDays = 30` — shown as soft warning in cart
+Current correct property sets:
+- **`MedicineViewModel`** (Browse medicines & modal):
+  `IsExpired`, `IsCriticalExpiry`, `IsWarningExpiry`, `IsLowStock`, `IsOutOfStock`, `IsBlockedFromCart`, `StockStatus`, `StockCssClass`.
+- **`CartItemViewModel`** (Customer cart):
+  `IsExpired`, `IsCriticalExpiry`, `IsWarningExpiry`, `IsLowStock`, `IsOutOfStock`, `IsBlockedFromCheckout`, `StockStatus`, `StockCssClass`.
+- **`AdminStockExpiryRowViewModel`** (Admin stock & expiry table):
+  `IsExpired`, `IsCriticalExpiry`, `IsWarningExpiry`, `IsLowStock`, `IsOutOfStock`, `StockBadge`/`StockSeverity`, `ExpiryBadge`/`ExpirySeverity`.
+- **`MedicineListRowViewModel`** (Admin medicines table):
+  `IsExpired`, `IsCriticalExpiry`, `IsWarningExpiry`, `IsLowStock`, `IsOutOfStock`, `IsBlockedFromCart`, `StockStatus`, `StockCssClass`.
 
-**AdminMedicineListViewModel (admin-facing):**
-- `IsExpired => ExpiryDate < DateOnly.FromDateTime(DateTime.UtcNow)` — already expired
-- `IsExpiringSoon => ExpiryDate <= DateOnly.FromDateTime(DateTime.UtcNow.AddDays(30))` — expiring within 30 days
+### 4.6 Badge Rendering Rules
+- **Independent, Stacked Badges**: Expiry and stock badges render as two independent, stacked badges when both apply to the same row — never merge them into a single combined badge. This applies identically across:
+  - Admin Medicines table (`Views/Admin/Medicines.cshtml`)
+  - Admin Stock & Expiry page (`Views/Admin/StockExpiry.cshtml`)
+  - Browse Medicines product cards (`Views/Medicines/Index.cshtml`)
+  - Cart page rows (`Views/Cart/Index.cshtml`)
+- **Cart Badge Priority Order**:
+  When evaluating or displaying badges top-to-bottom in summary/card contexts:
+  `Expired → Critical → Warning → Out of stock → Low stock → Rx required → In stock`.
+  Warning badge shows the real day count (e.g., "Expires in 18 days"), not a static string.
+  Checkout blocks strictly on `Expired`, `Critical`, or `Out of stock` only — `Warning` tier does not block checkout.
 
-**MedicineViewModel (customer browse page):**
-- `IsExpired => ExpiryDate < today`
-- `IsExpiringSoon => ExpiryDate within 90 days`
-
-**ExpiryAlert entity** exists in DB schema (with `AlertLevel IN ('warning','critical')`) but **no service or controller action writes ExpiryAlert records**. The `Admin/StockExpiry` action returns `View("ComingSoon")`.
-
-### 4.5 DB Transaction Usage
+### 4.7 DB Transaction Usage
 
 | Location | Transaction? | Details |
 |---|---|---|
@@ -324,11 +361,11 @@ This is a **computed property on the ViewModel** — there is no separate low-st
 | Review & approve/reject/ship/deliver orders | ✅ Done | Full order lifecycle in `AdminOrdersController` with AuditLog entries |
 | View prescription images | ✅ Done | `PrescriptionImageUrl` displayed in `OrderDetail` view |
 | Flagged orders | ✅ Done | `FlaggedOrders` action with per-medicine tier breakdown, filterable by tier |
-| Low-stock alerts | 🟡 Partially Done | Computed property `IsLowStock <= 10` on admin medicine list ViewModel; displayed in UI. **No separate alert/notification system** |
-| Two-tier expiry alerts | 🟡 Partially Done | ExpiryAlert entity + DB table exist, CHECK constraint for 'warning'/'critical' is configured. Admin medicines list computes `IsExpired` and `IsExpiringSoon`. **But**: `Admin/StockExpiry` returns "ComingSoon" — no controller logic writes ExpiryAlert records, no dedicated alert page is functional |
-| Audit log | 🟡 Partially Done | AuditLog entity exists and is **written to** on order status changes (Approve, Reject, Ship, Deliver) and message read. AuditLog entries are displayed on Admin Profile page (recent 8). **But**: `Admin/AuditLog` action returns "ComingSoon" — no dedicated searchable audit log page |
+| Low-stock alerts & inventory health | ✅ Done | Fully implemented via `StockExpiryHelper.LowStockThreshold` (<= 10 units) across Admin Dashboard low-stock widget, Admin Stock & Expiry page, and Medicines table |
+| Stock & expiry management | ✅ Done | Dedicated page at `Views/Admin/StockExpiry.cshtml`, action `AdminController.StockExpiry()`, wired to `_db.Stocks`, featuring four filter tabs (All items, Warning, Critical & Expired, Low stock) and independent stacked badges per row |
+| Audit log | ✅ Done | Dedicated searchable audit log page at `Views/Admin/AuditLog.cshtml`, action `AdminController.AuditLog()` with search, action filtering, date filtering, and pagination |
 | Contact messages inbox | ✅ Done | `Admin/ContactMessages` with Unread/Read/All filter, mark-as-read functionality |
-| Dashboard | 🔴 Not Started | `Admin/Dashboard` returns "ComingSoon" placeholder view |
+| Dashboard | ✅ Done | Fully implemented at `Views/Admin/Dashboard.cshtml`, action `AdminController.Dashboard()` — includes low stock widget (`Stock.Quantity <= 10` via `StockExpiryHelper.LowStockThreshold`) and expiry alerts widget (warning + critical tiers) |
 
 ---
 
@@ -391,7 +428,7 @@ This is a **computed property on the ViewModel** — there is no separate low-st
 | Location | Type | Message/Page |
 |---|---|---|
 | `Home/Error` view | Error page | Shows `ErrorViewModel.RequestId` (production: `/Home/Error` via `UseExceptionHandler`) |
-| `Admin/ComingSoon` view | Placeholder page | Used by Dashboard, StockExpiry, AuditLog |
+| `Admin/ComingSoon` view | Placeholder page | Generic fallback view (Dashboard, StockExpiry, and AuditLog are fully implemented) |
 | TempData `["CategoryError"]` | Flash message | Various category CRUD errors in AdminController |
 | TempData `["CategorySuccess"]` | Flash message | Various category CRUD successes |
 | TempData `["ProductTypeError"]` / `["ProductTypeSuccess"]` | Flash message | Product type CRUD |
@@ -452,18 +489,19 @@ return allowedTypes.Contains(file.ContentType) && file.Length <= maxBytes;
 10. `DbSet<Order> Orders`
 11. `DbSet<OrderItem> OrderItems`
 12. `DbSet<Prescription> Prescriptions`
-13. `DbSet<ExpiryAlert> ExpiryAlerts`
-14. `DbSet<Notification> Notifications`
-15. `DbSet<ContactMessage> ContactMessages`
-16. `DbSet<AuditLog> AuditLogs`
-17. `DbSet<OtpCode> OtpCodes`
-18. `DbSet<Payment> Payments`
+13. `DbSet<Notification> Notifications`
+14. `DbSet<ContactMessage> ContactMessages`
+15. `DbSet<AuditLog> AuditLogs`
+16. `DbSet<OtpCode> OtpCodes`
+17. `DbSet<Payment> Payments`
+
+> **Note**: `DbSet<ExpiryAlert>` was completely deleted (`Data/ExpiryAlert.cs`, check constraints, navigation properties on `Stock.cs`, and DB table dropped via migration). This entity does not exist and must not be referenced.
 
 Plus Identity tables inherited from `IdentityDbContext<ApplicationUser>`.
 
 ### 8.2 Connection String Configuration
-- **`appsettings.json`**: Contains a fallback SQLite connection string (`DataSource=app.db;Cache=Shared`)
-- **User Secrets** (UserSecretsId: `aspnet-MediCart.Web-f12e498e-2a48-4b73-b33a-bdb02114f872`): Expected to override with Neon PostgreSQL connection string
+- **`appsettings.json`**: `DefaultConnection` is set to `"SET_VIA_USER_SECRETS"` (the real PostgreSQL/Neon connection string lives only in user secrets)
+- **User Secrets** (UserSecretsId: `aspnet-MediCart.Web-f12e498e-2a48-4b73-b33a-bdb02114f872`): Supplies the real Neon PostgreSQL connection string
 - **Program.cs line 8**: `builder.Configuration.GetConnectionString("DefaultConnection")` — reads from configuration hierarchy (user-secrets overrides appsettings.json)
 - **Cloudinary credentials**: Read from `Configuration["Cloudinary:CloudName"]`, `["Cloudinary:ApiKey"]`, `["Cloudinary:ApiSecret"]` — expected in user-secrets or App Service config
 - **Email credentials**: Read from `Configuration["Email:From"]`, `["Email:AppPassword"]` — expected in user-secrets or App Service config
