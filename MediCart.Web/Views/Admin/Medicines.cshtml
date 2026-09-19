@@ -173,14 +173,15 @@
                                 <span class="expiry-date expiry-date--danger">@med.ExpiryDate.ToString("dd MMM yyyy")</span>
                                 <span class="tag tag--expired">Expired</span>
                             }
-                            else if (med.IsExpiringSoon)
+                            else if (med.IsCriticalExpiry)
                             {
                                 <span class="expiry-date expiry-date--danger">@med.ExpiryDate.ToString("dd MMM yyyy")</span>
-                                <span class="tag tag--expiring">Expiring soon</span>
+                                <span class="tag tag--expiring">Critical — @med.DaysUntilExpiry day(s)</span>
                             }
-                            else if (med.IsNearExpiryWindow)
+                            else if (med.IsExpiringSoon)
                             {
                                 <span class="expiry-date expiry-date--warning">@med.ExpiryDate.ToString("dd MMM yyyy")</span>
+                                <span class="tag tag--expiring-warn">Warning — @med.DaysUntilExpiry days</span>
                             }
                             else
                             {

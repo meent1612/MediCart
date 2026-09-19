@@ -18,21 +18,25 @@
 <!-- Filter Toolbar Card -->
 <div class="admin-toolbar-card">
     <nav class="filter-pills-nav" aria-label="Inventory Filters">
-        <a href="~/Admin/StockExpiry?filter=All" class="filter-pill-btn @(Model.Filter == "All" ? "is-active" : "")">
+        <a href="/Admin/StockExpiry?filter=All"
+           class="filter-pill-btn @(Model.Filter == "All" ? "is-active" : "")">
             All items
             <span class="filter-pill-count">@Model.TotalCount</span>
         </a>
-        <a href="~/Admin/StockExpiry?filter=ExpiringSoon" class="filter-pill-btn @(Model.Filter == "ExpiringSoon" ? "is-active" : "")">
-            Expiring soon (&le; 30d)
-            <span class="filter-pill-count">@Model.ExpiringSoonCount</span>
+        <a href="/Admin/StockExpiry?filter=Warning"
+           class="filter-pill-btn @(Model.Filter == "Warning" ? "is-active" : "")">
+            Warning (&gt;7 &amp; &le;30 days)
+            <span class="filter-pill-count">@Model.WarningCount</span>
         </a>
-        <a href="~/Admin/StockExpiry?filter=LowStock" class="filter-pill-btn @(Model.Filter == "LowStock" ? "is-active" : "")">
-            Low stock (&lt; 10)
+        <a href="/Admin/StockExpiry?filter=CriticalExpired"
+           class="filter-pill-btn @(Model.Filter == "CriticalExpired" ? "is-active" : "")">
+            Critical &amp; Expired
+            <span class="filter-pill-count">@Model.CriticalExpiredCount</span>
+        </a>
+        <a href="/Admin/StockExpiry?filter=LowStock"
+           class="filter-pill-btn @(Model.Filter == "LowStock" ? "is-active" : "")">
+            Low stock (&le;10)
             <span class="filter-pill-count">@Model.LowStockCount</span>
-        </a>
-        <a href="~/Admin/StockExpiry?filter=Critical" class="filter-pill-btn @(Model.Filter == "Critical" ? "is-active" : "")">
-            Critical / Expired
-            <span class="filter-pill-count">@Model.CriticalCount</span>
         </a>
     </nav>
     <span class="admin-toolbar-count">@Model.Items.Count item(s) showing</span>
@@ -42,7 +46,8 @@
     @if (Model.Items.Count == 0)
     {
         <div class="admin-empty-state">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                 stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>
             </svg>
             <h3>No inventory alerts</h3>
@@ -57,9 +62,9 @@
                     <th>Medicine</th>
                     <th>Category</th>
                     <th>Stock</th>
-                    <th>Expiry Date</th>
+                    <th>Expiry date</th>
                     <th>Status</th>
-                    <th style="text-align: right;">Action</th>
+                    <th style="text-align:right;">Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -75,29 +80,47 @@
                                 }
                             </div>
                         </td>
+
                         <td>@item.CategoryName</td>
+
                         <td>
                             <div class="stock-qty-cell">
                                 <span class="stock-qty-num">@item.Quantity units</span>
                                 <div class="stock-progress" title="@item.Quantity in stock">
-                                    <div class="stock-progress__bar stock-progress__bar--@item.ProgressColor" style="width: @item.ProgressPercent%;"></div>
+                                    <div class="stock-progress__bar stock-progress__bar--@item.ProgressColor"
+                                         style="width:@item.ProgressPercent%;"></div>
                                 </div>
                             </div>
                         </td>
+
                         <td>
                             @if (item.ExpiryDate.HasValue)
                             {
                                 @if (item.DaysUntilExpiry < 0)
                                 {
-                                    <span class="expiry-cell expiry-cell--danger">@item.ExpiryDate.Value.ToString("dd MMM yyyy") (Expired)</span>
+                                    <span class="expiry-cell expiry-cell--danger">
+                                        @item.ExpiryDate.Value.ToString("dd MMM yyyy") (Expired)
+                                    </span>
+                                }
+                                else if (item.DaysUntilExpiry <= 7)
+                                {
+                                    <span class="expiry-cell expiry-cell--danger">
+                                        @item.ExpiryDate.Value.ToString("dd MMM yyyy")
+                                        (@item.DaysUntilExpiry day(s))
+                                    </span>
                                 }
                                 else if (item.DaysUntilExpiry <= 30)
                                 {
-                                    <span class="expiry-cell expiry-cell--warning">@item.ExpiryDate.Value.ToString("dd MMM yyyy") (@item.DaysUntilExpiry days)</span>
+                                    <span class="expiry-cell expiry-cell--warning">
+                                        @item.ExpiryDate.Value.ToString("dd MMM yyyy")
+                                        (@item.DaysUntilExpiry days)
+                                    </span>
                                 }
                                 else
                                 {
-                                    <span class="expiry-cell expiry-cell--normal">@item.ExpiryDate.Value.ToString("dd MMM yyyy")</span>
+                                    <span class="expiry-cell expiry-cell--normal">
+                                        @item.ExpiryDate.Value.ToString("dd MMM yyyy")
+                                    </span>
                                 }
                             }
                             else
@@ -105,22 +128,52 @@
                                 <span class="admin-table__muted">Not set</span>
                             }
                         </td>
+
+                        <!-- Status column: both badges shown vertically if both apply -->
                         <td>
-                            @if (item.StatusSeverity == "danger")
-                            {
-                                <span class="order-status-badge order-status-badge--rejected">@item.StatusBadge</span>
-                            }
-                            else if (item.StatusSeverity == "warning")
-                            {
-                                <span class="order-status-badge order-status-badge--pending">@item.StatusBadge</span>
-                            }
-                            else
-                            {
-                                <span class="order-status-badge order-status-badge--delivered">@item.StatusBadge</span>
-                            }
+                            <div class="stock-badges-cell">
+                                @if (!string.IsNullOrWhiteSpace(item.ExpiryBadgeLabel))
+                                {
+                                    @if (item.ExpiryBadgeSeverity == "danger")
+                                    {
+                                        <span class="order-status-badge order-status-badge--rejected">
+                                            @item.ExpiryBadgeLabel
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="order-status-badge order-status-badge--pending">
+                                            @item.ExpiryBadgeLabel
+                                        </span>
+                                    }
+                                }
+                                @if (!string.IsNullOrWhiteSpace(item.StockBadgeLabel))
+                                {
+                                    @if (item.StockBadgeSeverity == "danger")
+                                    {
+                                        <span class="order-status-badge order-status-badge--rejected">
+                                            @item.StockBadgeLabel
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="order-status-badge order-status-badge--pending">
+                                            @item.StockBadgeLabel
+                                        </span>
+                                    }
+                                }
+                                @if (string.IsNullOrWhiteSpace(item.ExpiryBadgeLabel) &&
+                                     string.IsNullOrWhiteSpace(item.StockBadgeLabel))
+                                {
+                                    <span class="order-status-badge order-status-badge--delivered">
+                                        In stock
+                                    </span>
+                                }
+                            </div>
                         </td>
-                        <td style="text-align: right;">
-                            <a class="btn-pill-view" href="~/Admin/EditMedicine/@item.MedicineId">Edit</a>
+
+                        <td style="text-align:right;">
+                            <a class="btn-pill-view" href="/Admin/EditMedicine/@item.MedicineId">Edit</a>
                         </td>
                     </tr>
                 }
