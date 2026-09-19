@@ -149,7 +149,19 @@
                             <p class="product-card__sub">@med.Composition &middot; @med.Manufacturer</p>
 
                             <div class="product-card__badges">
-                                @if (med.RequiresRx)
+                                @if (med.IsExpired)
+                                {
+                                    <span class="badge badge--stock-out">Expired</span>
+                                }
+                                else if (med.IsCriticalExpiry)
+                                {
+                                    <span class="badge badge--stock-out">Expiring in @med.DaysUntilExpiry day(s)</span>
+                                }
+                                else if (med.IsWarningExpiry)
+                                {
+                                    <span class="badge badge--warning-expiry">Expiring in @med.DaysUntilExpiry days</span>
+                                }
+                                else if (med.RequiresRx)
                                 {
                                     <span class="badge badge--rx">Rx required</span>
                                 }
@@ -167,7 +179,7 @@
                                     @if (!isAdmin)
                                     {
                                         <button type="button" class="btn-add" data-id="@med.Id" aria-label="Add @med.Name to cart"
-                                                @(med.Stock <= 0 ? "disabled" : "")>+</button>
+                                                @(med.IsBlockedFromCart ? "disabled" : "")>+</button>
                                     }
                                     else
                                     {
@@ -296,7 +308,12 @@
         StockStatus = m.StockStatus,
         m.Description,
         m.Dosage,
-        m.SideEffects
+        m.SideEffects,
+        m.DaysUntilExpiry,
+        m.IsBlockedFromCart,
+        m.IsExpired,
+        m.IsCriticalExpiry,
+        m.IsWarningExpiry
     })))
 </script>
 
