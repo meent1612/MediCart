@@ -1,3 +1,5 @@
+using MediCart.Web.Services;
+
 namespace MediCart.Web.Models
 {
     public class AdminStockExpiryViewModel
@@ -29,8 +31,21 @@ namespace MediCart.Web.Models
         public string? StockBadgeLabel { get; set; }
         public string? StockBadgeSeverity { get; set; }  // "danger" | "warning" | null
 
+        public string? StockBadge { get => StockBadgeLabel; set => StockBadgeLabel = value; }
+        public string? StockSeverity { get => StockBadgeSeverity; set => StockBadgeSeverity = value; }
+
         // Expiry badge — null Label means no expiry issue
         public string? ExpiryBadgeLabel { get; set; }
         public string? ExpiryBadgeSeverity { get; set; } // "danger" | "warning" | null
+
+        public string? ExpiryBadge { get => ExpiryBadgeLabel; set => ExpiryBadgeLabel = value; }
+        public string? ExpirySeverity { get => ExpiryBadgeSeverity; set => ExpiryBadgeSeverity = value; }
+
+        // Computed status booleans using StockExpiryHelper
+        public bool IsOutOfStock     => StockExpiryHelper.IsOutOfStock(Quantity);
+        public bool IsLowStock       => StockExpiryHelper.IsLowStock(Quantity);
+        public bool IsExpired        => ExpiryDate.HasValue && StockExpiryHelper.IsExpired(DaysUntilExpiry);
+        public bool IsCriticalExpiry => ExpiryDate.HasValue && StockExpiryHelper.IsCriticalExpiry(DaysUntilExpiry);
+        public bool IsWarningExpiry  => ExpiryDate.HasValue && StockExpiryHelper.IsWarningExpiry(DaysUntilExpiry);
     }
 }

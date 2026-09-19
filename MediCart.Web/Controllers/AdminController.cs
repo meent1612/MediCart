@@ -556,7 +556,7 @@ namespace MediCart.Web.Controllers
 
             if (!string.IsNullOrWhiteSpace(actionFilter) && actionFilter != "All")
             {
-                query = query.Where(a => a.Action.Contains(actionFilter));
+                query = query.Where(a => a.ActionType == actionFilter);
             }
 
             if (!string.IsNullOrWhiteSpace(adminId) && adminId != "All")
@@ -569,28 +569,35 @@ namespace MediCart.Web.Controllers
                 .Take(150)
                 .ToListAsync();
 
-            var adminUsers = await _db.AuditLogs
-                .Include(a => a.Admin)
-                .Where(a => a.Admin != null)
-                .Select(a => a.Admin!)
-                .Distinct()
-                .Select(u => new AdminUserOptionViewModel
-                {
-                    Id = u.Id,
-                    Name = !string.IsNullOrWhiteSpace(u.FullName) ? u.FullName : u.UserName!
-                })
-                .ToListAsync();
+            var adminUsers = await (from u in _db.Users
+                                    join ur in _db.UserRoles on u.Id equals ur.UserId
+                                    join r in _db.Roles on ur.RoleId equals r.Id
+                                    where r.Name == "Admin"
+                                    orderby u.FullName
+                                    select new AdminUserOptionViewModel
+                                    {
+                                        Id = u.Id,
+                                        Name = !string.IsNullOrWhiteSpace(u.FullName) ? u.FullName : (u.UserName ?? u.Email ?? "Admin")
+                                    })
+                                    .ToListAsync();
 
             var mappedRows = logs.Select(l =>
             {
                 var localTime = l.CreatedAt.ToLocalTime();
-                var actionLower = l.Action.ToLowerInvariant();
-                string actionType = "Other";
-
-                if (actionLower.Contains("add") || actionLower.Contains("created")) actionType = "Add";
-                else if (actionLower.Contains("edit") || actionLower.Contains("updated") || actionLower.Contains("marked")) actionType = "Edit";
-                else if (actionLower.Contains("delete") || actionLower.Contains("removed")) actionType = "Delete";
-                else if (actionLower.Contains("login") || actionLower.Contains("password") || actionLower.Contains("role")) actionType = "Security";
+                string actionType = l.ActionType ?? "Other";
+                if (actionType == "Other" && !string.IsNullOrWhiteSpace(l.Action))
+                {
+                    var actionLower = l.Action.ToLowerInvariant();
+                    if (actionLower.Contains("delivered")) actionType = AuditActionTypes.MarkedDelivered;
+                    else if (actionLower.Contains("shipped")) actionType = AuditActionTypes.MarkedShipped;
+                    else if (actionLower.Contains("approved")) actionType = AuditActionTypes.Approved;
+                    else if (actionLower.Contains("rejected")) actionType = AuditActionTypes.Rejected;
+                    else if (actionLower.Contains("read")) actionType = AuditActionTypes.MarkedRead;
+                    else if (actionLower.Contains("add") || actionLower.Contains("created")) actionType = AuditActionTypes.Add;
+                    else if (actionLower.Contains("delete") || actionLower.Contains("removed")) actionType = AuditActionTypes.Delete;
+                    else if (actionLower.Contains("login") || actionLower.Contains("password") || actionLower.Contains("role")) actionType = AuditActionTypes.Security;
+                    else if (actionLower.Contains("edit") || actionLower.Contains("updated") || actionLower.Contains("marked")) actionType = AuditActionTypes.Edit;
+                }
 
                 string dateLabel;
                 if (localTime.Date == DateTime.Now.Date)
@@ -714,6 +721,7 @@ namespace MediCart.Web.Controllers
                 {
                     AdminId = adminId,
                     Action = $"Marked contact message #{message.Id} as read",
+                    ActionType = AuditActionTypes.MarkedRead,
                     TableName = "ContactMessages",
                     RecordId = message.Id,
                     CreatedAt = DateTime.UtcNow
@@ -746,6 +754,7 @@ namespace MediCart.Web.Controllers
                 {
                     AdminId = adminId,
                     Action = $"Marked contact message #{message.Id} as unread",
+                    ActionType = AuditActionTypes.MarkedUnread,
                     TableName = "ContactMessages",
                     RecordId = message.Id,
                     CreatedAt = DateTime.UtcNow

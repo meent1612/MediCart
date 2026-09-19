@@ -78,36 +78,41 @@
                         <h3>@item.Name</h3>
                         <p class="cart-item__desc">@item.Description</p>
 
-                        @* Badge priority: Expired → Critical → Warning → Out of stock → Rx → In stock *@
-                        @if (item.IsExpired)
-                        {
-                            <span class="badge badge--danger">Expired — remove to proceed to checkout</span>
-                        }
-                        else if (item.IsCriticalExpiry)
-                        {
-                            <span class="badge badge--danger">Expires in @item.DaysUntilExpiry day(s) — remove to proceed</span>
-                        }
-                        else if (item.IsWarningExpiry)
-                        {
-                            <span class="badge badge--warning">Expires in @item.DaysUntilExpiry days</span>
-                        }
-                        else if (item.AvailableStock == 0)
-                        {
-                            <span class="badge badge--danger">Out of stock — wait for restock or remove</span>
-                        }
-                        else if (StockExpiryHelper.IsLowStock(item.AvailableStock))
-                        {
-                            <span class="badge badge--stock-low">Low stock</span>
-                        }
-                        else if (item.RequiresRx)
-                        {
-                            <span class="badge badge--rx">Rx required</span>
-                        }
-                        else
-                        {
-                            <span class="badge badge--stock">In stock</span>
-                        }
-                    </div>
+                        <div class="cart-item__badges">
+                            @* Expiry badge *@
+                            @if (item.IsExpired)
+                            {
+                                <span class="badge badge--danger">Expired</span>
+                            }
+                            else if (item.IsCriticalExpiry)
+                            {
+                                <span class="badge badge--danger">Critical</span>
+                            }
+                            else if (item.IsWarningExpiry)
+                            {
+                                <span class="badge badge--warning">Expires in @item.DaysUntilExpiry days</span>
+                            }
+
+                            @* Stock badge — rendered independently *@
+                            @if (item.IsOutOfStock)
+                            {
+                                <span class="badge badge--danger">Out of stock</span>
+                            }
+                            else if (item.IsLowStock)
+                            {
+                                <span class="badge badge--stock-low">Low stock</span>
+                            }
+                            else if (!item.IsExpired && !item.IsCriticalExpiry && !item.IsWarningExpiry && !item.RequiresRx)
+                            {
+                                <span class="badge badge--stock">In stock</span>
+                            }
+
+                            @* Rx required *@
+                            @if (item.RequiresRx)
+                            {
+                                <span class="badge badge--rx">Rx required</span>
+                            }
+                        </div>
 
                     <div class="qty-stepper">
                         <button type="button" class="qty-minus"
@@ -159,7 +164,7 @@
                         <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/>
                         <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
                     </svg>
-                    <span>Remove expired, near-expiry, or out-of-stock items to proceed.</span>
+                    <span>Remove expired, critical, or out-of-stock items to proceed.</span>
                 </div>
                 <button type="button" class="btn btn--pine order-summary__cta"
                         id="checkoutBtn" disabled

@@ -89,7 +89,7 @@ namespace MediCart.Web.Data
 
             builder.Entity<Order>()
                 .ToTable(t => t.HasCheckConstraint("CK_Order_Status",
-                    "\"Status\" IN ('Pending','Processing','Shipped','Delivered','Rejected')"));
+                    "\"Status\" IN ('Pending','Processing','Shipped','Delivered','Rejected','Cancelled')"));
 
             // Prescription — one-to-one with Order + check constraint
             builder.Entity<Prescription>()

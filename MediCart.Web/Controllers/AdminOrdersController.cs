@@ -37,7 +37,7 @@ namespace MediCart.Web.Controllers
 
             if (string.IsNullOrWhiteSpace(status) || status == "Active")
             {
-                query = query.Where(o => o.Status != "Delivered" && o.Status != "Rejected");
+                query = query.Where(o => o.Status != "Delivered" && o.Status != "Rejected" && o.Status != "Cancelled");
                 status = "Active";
             }
             else if (status != "All")
@@ -123,7 +123,7 @@ namespace MediCart.Web.Controllers
 
             var adminId = _userManager.GetUserId(User);
             if (adminId != null)
-                LogAction(adminId, $"Approved order MC-{10000 + order.Id}", order.Id);
+                LogAction(adminId, $"Approved order MC-{10000 + order.Id}", order.Id, AuditActionTypes.Approved);
 
             await _db.SaveChangesAsync();
 
@@ -160,7 +160,7 @@ namespace MediCart.Web.Controllers
 
             var adminId = _userManager.GetUserId(User);
             if (adminId != null)
-                LogAction(adminId, $"Rejected order MC-{10000 + order.Id}", order.Id);
+                LogAction(adminId, $"Rejected order MC-{10000 + order.Id}", order.Id, AuditActionTypes.Rejected);
 
             await _db.SaveChangesAsync();
 
@@ -190,7 +190,7 @@ namespace MediCart.Web.Controllers
 
             var adminId = _userManager.GetUserId(User);
             if (adminId != null)
-                LogAction(adminId, $"Marked order MC-{10000 + order.Id} as Shipped", order.Id);
+                LogAction(adminId, $"Marked order MC-{10000 + order.Id} as Shipped", order.Id, AuditActionTypes.MarkedShipped);
 
             await _db.SaveChangesAsync();
 
@@ -220,11 +220,41 @@ namespace MediCart.Web.Controllers
 
             var adminId = _userManager.GetUserId(User);
             if (adminId != null)
-                LogAction(adminId, $"Marked order MC-{10000 + order.Id} as Delivered", order.Id);
+                LogAction(adminId, $"Marked order MC-{10000 + order.Id} as Delivered", order.Id, AuditActionTypes.MarkedDelivered);
 
             await _db.SaveChangesAsync();
 
             TempData["OrderSuccess"] = $"Order MC-{10000 + order.Id} marked as Delivered.";
+            return RedirectToAction(nameof(OrderDetail), new { id });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CancelOrder(int id)
+        {
+            var order = await _db.Orders.FindAsync(id);
+
+            if (order == null)
+            {
+                TempData["OrderError"] = "Order not found.";
+                return RedirectToAction(nameof(IncomingOrders));
+            }
+
+            if (order.Status == "Delivered" || order.Status == "Cancelled" || order.Status == "Rejected")
+            {
+                TempData["OrderError"] = $"Cannot cancel — order is already '{order.Status}'.";
+                return RedirectToAction(nameof(OrderDetail), new { id });
+            }
+
+            order.Status = "Cancelled";
+
+            var adminId = _userManager.GetUserId(User);
+            if (adminId != null)
+                LogAction(adminId, $"Cancelled order MC-{10000 + order.Id}", order.Id, AuditActionTypes.Cancelled);
+
+            await _db.SaveChangesAsync();
+
+            TempData["OrderSuccess"] = $"Order MC-{10000 + order.Id} has been cancelled.";
             return RedirectToAction(nameof(OrderDetail), new { id });
         }
 
@@ -332,12 +362,13 @@ namespace MediCart.Web.Controllers
             return result;
         }
 
-        private void LogAction(string adminId, string action, int orderId)
+        private void LogAction(string adminId, string action, int orderId, string actionType)
         {
             _db.AuditLogs.Add(new AuditLog
             {
                 AdminId = adminId,
                 Action = action,
+                ActionType = actionType,
                 TableName = "Orders",
                 RecordId = orderId,
                 CreatedAt = DateTime.UtcNow

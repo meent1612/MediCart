@@ -147,19 +147,19 @@
                             }
                         </td>
                         <td data-label="Type" class="td--type">@med.ProductTypeName</td>
-                        <td data-label="Manufacturer" class="td--manufacturer">@(med.Manufacturer ?? "—")</td>
+                        <td data-label="Manufacturer" class="td--manufacturer" title="@(med.Manufacturer ?? "—")"><span>@(med.Manufacturer ?? "—")</span></td>
                         <td data-label="Price" class="td--price">৳@med.Price.ToString("0.00")</td>
                         <td data-label="Stock" class="td--stock stock-cell">
                             <div class="stock-cell-content">
-                                @if (med.StockQuantity == 0)
+                                @if (med.IsOutOfStock)
                                 {
                                     <span class="stock-number stock-number--danger">0</span>
-                                    <span class="tag tag--out-of-stock">Out</span>
+                                    <span class="tag tag--out-of-stock">Out of stock</span>
                                 }
                                 else if (med.IsLowStock)
                                 {
                                     <span class="stock-number stock-number--warning">@med.StockQuantity</span>
-                                    <span class="tag tag--low-stock">Low</span>
+                                    <span class="tag tag--low-stock">Low stock</span>
                                 }
                                 else
                                 {
@@ -176,12 +176,12 @@
                             else if (med.IsCriticalExpiry)
                             {
                                 <span class="expiry-date expiry-date--danger">@med.ExpiryDate.ToString("dd MMM yyyy")</span>
-                                <span class="tag tag--expiring">Critical — @med.DaysUntilExpiry day(s)</span>
+                                <span class="tag tag--critical">Critical</span>
                             }
                             else if (med.IsWarningExpiry)
                             {
                                 <span class="expiry-date expiry-date--warning">@med.ExpiryDate.ToString("dd MMM yyyy")</span>
-                                <span class="tag tag--expiring-warn">Warning — @med.DaysUntilExpiry days</span>
+                                <span class="tag tag--expiring-warn">Expires in @med.DaysUntilExpiry days</span>
                             }
                             else
                             {

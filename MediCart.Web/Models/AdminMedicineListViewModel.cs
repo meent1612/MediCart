@@ -17,14 +17,22 @@ namespace MediCart.Web.Models
         public bool RequiresPrescription { get; set; }
 
         // Computed — all use StockExpiryHelper constants
-        public int DaysUntilExpiry =>
-            (ExpiryDate.ToDateTime(TimeOnly.MinValue) - DateTime.UtcNow.Date).Days;
+        public int DaysUntilExpiry => StockExpiryHelper.DaysUntilExpiry(ExpiryDate);
 
-        public bool IsOutOfStock  => StockExpiryHelper.IsOutOfStock(StockQuantity);
-        public bool IsLowStock    => StockExpiryHelper.IsLowStock(StockQuantity);
-        public bool IsExpired     => StockExpiryHelper.IsExpired(DaysUntilExpiry);
+        public bool IsOutOfStock     => StockExpiryHelper.IsOutOfStock(StockQuantity);
+        public bool IsLowStock       => StockExpiryHelper.IsLowStock(StockQuantity);
+        public bool IsExpired        => StockExpiryHelper.IsExpired(DaysUntilExpiry);
         public bool IsCriticalExpiry => StockExpiryHelper.IsCriticalExpiry(DaysUntilExpiry);
         public bool IsWarningExpiry  => StockExpiryHelper.IsWarningExpiry(DaysUntilExpiry);
+        public bool IsBlockedFromCart => StockExpiryHelper.IsBlockedFromCart(DaysUntilExpiry) || IsOutOfStock;
+
+        public string StockStatus =>
+            StockQuantity <= 0 ? "Out of stock" :
+            IsLowStock         ? "Low stock"    : "In stock";
+
+        public string StockCssClass =>
+            StockQuantity <= 0 ? "out" :
+            IsLowStock         ? "low" : "in";
     }
 
     public class AdminMedicinesPageViewModel

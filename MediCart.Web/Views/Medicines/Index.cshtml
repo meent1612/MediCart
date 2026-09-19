@@ -156,36 +156,30 @@
                                 }
                                 else if (med.IsCriticalExpiry)
                                 {
-                                    <span class="badge badge--stock-out">Expiring in @med.DaysUntilExpiry day(s)</span>
+                                    <span class="badge badge--stock-out">Critical</span>
                                 }
                                 else if (med.IsWarningExpiry)
                                 {
-                                    <span class="badge badge--warning-expiry">Expiring in @med.DaysUntilExpiry days</span>
+                                    <span class="badge badge--warning-expiry">Expires in @med.DaysUntilExpiry days</span>
                                 }
 
-                                @* Stock badge — always shown unless expiry already covers it as "Expired" *@
-                                @if (!med.IsExpired)
+                                @* Stock badge — rendered independently of expiry badge *@
+                                @if (med.IsOutOfStock)
                                 {
-                                    @if (med.Stock <= 0)
-                                    {
-                                        <span class="badge badge--stock-out">Out of Stock</span>
-                                    }
-                                    else if (med.IsLowStock)
-                                    {
-                                        <span class="badge badge--stock-low">Low Stock</span>
-                                    }
-                                    else if (!med.IsCriticalExpiry && !med.IsWarningExpiry)
-                                    {
-                                        @* Only show In Stock / Rx when no expiry warning is already shown *@
-                                        @if (med.RequiresRx)
-                                        {
-                                            <span class="badge badge--rx">Rx required</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge badge--stock-@med.StockCssClass">@med.StockStatus</span>
-                                        }
-                                    }
+                                    <span class="badge badge--stock-out">Out of stock</span>
+                                }
+                                else if (med.IsLowStock)
+                                {
+                                    <span class="badge badge--stock-low">Low stock</span>
+                                }
+                                else if (!med.IsExpired && !med.IsCriticalExpiry && !med.IsWarningExpiry && !med.RequiresRx)
+                                {
+                                    <span class="badge badge--stock-in">In stock</span>
+                                }
+
+                                @if (med.RequiresRx)
+                                {
+                                    <span class="badge badge--rx">Rx required</span>
                                 }
                             </div>
 
