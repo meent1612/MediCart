@@ -125,6 +125,14 @@
     margin: 0 0 8px;
 }
 
+.cart-item__badges {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    margin-top: 4px;
+}
+
 .badge {
     font-family: var(--font-mono);
     font-size: 0.7rem;
@@ -312,18 +320,18 @@
 }
 
 .badge--danger {
-    background: var(--danger-100);
-    color: var(--danger-700);
+    background: rgba(179, 65, 62, 0.15);
+    color: var(--color-danger);
 }
 
 .badge--warning {
     background: rgba(217, 140, 59, 0.15);
-    color: #a85f00;
+    color: var(--color-warning);
 }
 
 .badge--stock-low {
     background: rgba(217, 140, 59, 0.15);
-    color: #a85f00;
+    color: var(--color-warning);
 }
 
 /* Checkout block banner — shown in order summary when blocked items exist */

@@ -26,10 +26,22 @@ namespace MediCart.Web.Models
         public bool IsCriticalExpiry => StockExpiryHelper.IsCriticalExpiry(DaysUntilExpiry);
         public bool IsWarningExpiry  => StockExpiryHelper.IsWarningExpiry(DaysUntilExpiry);
 
+        // Stock state
+        public bool IsOutOfStock => StockExpiryHelper.IsOutOfStock(AvailableStock);
+        public bool IsLowStock   => StockExpiryHelper.IsLowStock(AvailableStock);
+
         // Blocked from checkout: expired OR critical expiry OR out of stock
         public bool IsBlockedFromCheckout =>
             StockExpiryHelper.IsBlockedFromCart(DaysUntilExpiry) ||
-            AvailableStock == 0;
+            IsOutOfStock;
+
+        public string StockStatus =>
+            AvailableStock <= 0 ? "Out of stock" :
+            IsLowStock          ? "Low stock"    : "In stock";
+
+        public string StockCssClass =>
+            AvailableStock <= 0 ? "out" :
+            IsLowStock          ? "low" : "in";
 
         public decimal LineTotal => UnitPrice * Quantity;
     }
