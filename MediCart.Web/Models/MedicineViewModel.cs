@@ -1,12 +1,11 @@
-using System;
-using System.Collections.Generic;
+using MediCart.Web.Services;
 
 namespace MediCart.Web.Models
 {
     public class SideEffectViewModel
     {
         public string Effect { get; set; } = string.Empty;
-        public string Severity { get; set; } = string.Empty; // "Mild" | "Moderate" | "High"
+        public string Severity { get; set; } = string.Empty;
     }
 
     public class MedicineViewModel
@@ -28,7 +27,7 @@ namespace MediCart.Web.Models
         public decimal Price { get; set; }
         public int Stock { get; set; }
         public string? Unit { get; set; }
-        public DateOnly? ExpiryDate { get; set; }   // <-- DateOnly?, matches Stock.cs
+        public DateOnly? ExpiryDate { get; set; }
 
         public bool RequiresRx { get; set; }
         public string Description { get; set; } = string.Empty;
@@ -37,21 +36,32 @@ namespace MediCart.Web.Models
         public string? ImageUrl { get; set; }
         public List<SideEffectViewModel> SideEffects { get; set; } = new();
 
-        // SensitivityLevel is intentionally NOT a property here — never map
-        // it onto this ViewModel. Only the Admin ViewModel should read
-        // Medicine.SensitivityLevel.
+        // Days until expiry — 9999 when no expiry date is set
+        public int DaysUntilExpiry =>
+            ExpiryDate.HasValue
+                ? ExpiryDate.Value.DayNumber - DateOnly.FromDateTime(DateTime.UtcNow).DayNumber
+                : 9999;
 
+        // Expiry state — uses StockExpiryHelper constants
+        public bool IsExpired        => StockExpiryHelper.IsExpired(DaysUntilExpiry);
+        public bool IsCriticalExpiry => StockExpiryHelper.IsCriticalExpiry(DaysUntilExpiry);
+        public bool IsExpiringSoon   => StockExpiryHelper.IsWarningExpiry(DaysUntilExpiry);
+
+        // Stock state
+        public bool IsOutOfStock => StockExpiryHelper.IsOutOfStock(Stock);
+        public bool IsLowStock   => StockExpiryHelper.IsLowStock(Stock);
+
+        // Blocked from cart: expired or critical expiry
+        public bool IsBlockedFromCart =>
+            StockExpiryHelper.IsBlockedFromCart(DaysUntilExpiry) || IsOutOfStock;
+
+        // Display helpers used by the browse page cards and badges
         public string StockStatus =>
-            Stock <= 0 ? "Out of stock" : Stock <= 10 ? "Low stock" : "In stock";
+            Stock <= 0      ? "Out of stock" :
+            IsLowStock      ? "Low stock"    : "In stock";
 
         public string StockCssClass =>
-            Stock <= 0 ? "out" : Stock <= 10 ? "low" : "in";
-
-        public bool IsExpired =>
-            ExpiryDate.HasValue && ExpiryDate.Value < DateOnly.FromDateTime(DateTime.UtcNow);
-
-        public bool IsExpiringSoon =>
-            ExpiryDate.HasValue && !IsExpired &&
-            ExpiryDate.Value.DayNumber - DateOnly.FromDateTime(DateTime.UtcNow).DayNumber <= 90;
+            Stock <= 0  ? "out" :
+            IsLowStock  ? "low" : "in";
     }
 }
