@@ -348,6 +348,11 @@
 .tag--sensitivity-mid { background: rgba(217, 140, 59, 0.16); color: var(--color-warning); border: 1px solid rgba(217, 140, 59, 0.25); }
 .tag--sensitivity-high { background: rgba(179, 65, 62, 0.15); color: var(--color-danger); border: 1px solid rgba(179, 65, 62, 0.25); }
 
+.tag--expiring-warn {
+    background: rgba(217, 140, 59, 0.15);
+    color: var(--color-warning);
+}
+
 /* Empty State */
 .admin-empty-state {
     text-align: center;
