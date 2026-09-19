@@ -149,6 +149,7 @@
                             <p class="product-card__sub">@med.Composition &middot; @med.Manufacturer</p>
 
                             <div class="product-card__badges">
+                                @* Expiry badge — shown independently of stock *@
                                 @if (med.IsExpired)
                                 {
                                     <span class="badge badge--stock-out">Expired</span>
@@ -161,13 +162,30 @@
                                 {
                                     <span class="badge badge--warning-expiry">Expiring in @med.DaysUntilExpiry days</span>
                                 }
-                                else if (med.RequiresRx)
+
+                                @* Stock badge — always shown unless expiry already covers it as "Expired" *@
+                                @if (!med.IsExpired)
                                 {
-                                    <span class="badge badge--rx">Rx required</span>
-                                }
-                                else
-                                {
-                                    <span class="badge badge--stock-@med.StockCssClass">@med.StockStatus</span>
+                                    @if (med.Stock <= 0)
+                                    {
+                                        <span class="badge badge--stock-out">Out of Stock</span>
+                                    }
+                                    else if (med.IsLowStock)
+                                    {
+                                        <span class="badge badge--stock-low">Low Stock</span>
+                                    }
+                                    else if (!med.IsCriticalExpiry && !med.IsWarningExpiry)
+                                    {
+                                        @* Only show In Stock / Rx when no expiry warning is already shown *@
+                                        @if (med.RequiresRx)
+                                        {
+                                            <span class="badge badge--rx">Rx required</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge badge--stock-@med.StockCssClass">@med.StockStatus</span>
+                                        }
+                                    }
                                 }
                             </div>
 
