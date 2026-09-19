@@ -4,6 +4,74 @@
     Layout = "_AdminLayout";
 }
 
+@functions {
+    string? GetRecordUrl(string? tableName, int? recordId, string? actionType, string? actionText)
+    {
+        if (string.IsNullOrWhiteSpace(tableName))
+            return null;
+
+        var table = tableName.Trim();
+
+        if (string.Equals(table, "Orders", StringComparison.OrdinalIgnoreCase) || 
+            string.Equals(table, "Order", StringComparison.OrdinalIgnoreCase))
+        {
+            if (recordId.HasValue)
+            {
+                return Url.Action("OrderDetail", "AdminOrders", new { id = recordId.Value });
+            }
+            return Url.Action("IncomingOrders", "AdminOrders");
+        }
+
+        if (string.Equals(table, "ContactMessages", StringComparison.OrdinalIgnoreCase) || 
+            string.Equals(table, "ContactMessage", StringComparison.OrdinalIgnoreCase))
+        {
+            if (recordId.HasValue)
+            {
+                return Url.Action("ContactMessages", "Admin", new { status = "All" }) + $"#msg-{recordId.Value}";
+            }
+            return Url.Action("ContactMessages", "Admin");
+        }
+
+        if (string.Equals(table, "Medicines", StringComparison.OrdinalIgnoreCase) || 
+            string.Equals(table, "Medicine", StringComparison.OrdinalIgnoreCase))
+        {
+            bool isDeleted = string.Equals(actionType, "Delete", StringComparison.OrdinalIgnoreCase) ||
+                             (actionText != null && actionText.Contains("delete", StringComparison.OrdinalIgnoreCase));
+            if (recordId.HasValue && !isDeleted)
+            {
+                return Url.Action("EditMedicine", "Admin", new { id = recordId.Value });
+            }
+            return Url.Action("Medicines", "Admin");
+        }
+
+        if (string.Equals(table, "Categories", StringComparison.OrdinalIgnoreCase) || 
+            string.Equals(table, "Category", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(table, "SubCategories", StringComparison.OrdinalIgnoreCase) || 
+            string.Equals(table, "SubCategory", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(table, "ProductTypes", StringComparison.OrdinalIgnoreCase) || 
+            string.Equals(table, "ProductType", StringComparison.OrdinalIgnoreCase))
+        {
+            return Url.Action("Categories", "Admin");
+        }
+
+        if (string.Equals(table, "Stocks", StringComparison.OrdinalIgnoreCase) || 
+            string.Equals(table, "Stock", StringComparison.OrdinalIgnoreCase))
+        {
+            return Url.Action("StockAndExpiry", "Admin");
+        }
+
+        if (string.Equals(table, "Users", StringComparison.OrdinalIgnoreCase) || 
+            string.Equals(table, "User", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(table, "AspNetUsers", StringComparison.OrdinalIgnoreCase) || 
+            string.Equals(table, "Admins", StringComparison.OrdinalIgnoreCase))
+        {
+            return Url.Action("Users", "Admin");
+        }
+
+        return null;
+    }
+}
+
 @section Styles {
     <link rel="stylesheet" href="~/css/admin-medicines.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/admin-orders.css" asp-append-version="true" />
@@ -23,10 +91,18 @@
                 <label for="actionFilter">Action</label>
                 <select id="actionFilter" name="actionFilter" onchange="this.form.submit()">
                     <option value="All" selected="@(Model.ActionFilter == "All")">All actions</option>
-                    <option value="Add" selected="@(Model.ActionFilter == "Add")">Adds / Creations</option>
-                    <option value="Edit" selected="@(Model.ActionFilter == "Edit")">Edits / Updates</option>
-                    <option value="Delete" selected="@(Model.ActionFilter == "Delete")">Deletions</option>
-                    <option value="Security" selected="@(Model.ActionFilter == "Security")">Auth &amp; Security</option>
+                    <optgroup label="General categories">
+                        <option value="Add" selected="@(Model.ActionFilter == "Add")">Adds / Creations</option>
+                        <option value="Edit" selected="@(Model.ActionFilter == "Edit")">Edits / Updates</option>
+                        <option value="Delete" selected="@(Model.ActionFilter == "Delete")">Deletions</option>
+                        <option value="Security" selected="@(Model.ActionFilter == "Security")">Auth &amp; Security</option>
+                    </optgroup>
+                    <optgroup label="Order &amp; message actions">
+                        <option value="MarkedRead" selected="@(Model.ActionFilter == "MarkedRead")">Marked as read</option>
+                        <option value="Approved" selected="@(Model.ActionFilter == "Approved")">Approved orders</option>
+                        <option value="MarkedShipped" selected="@(Model.ActionFilter == "MarkedShipped")">Marked as shipped</option>
+                        <option value="MarkedDelivered" selected="@(Model.ActionFilter == "MarkedDelivered")">Marked as delivered</option>
+                    </optgroup>
                 </select>
             </div>
 
@@ -100,6 +176,35 @@ else
                                             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
                                         </svg>
                                     }
+                                    else if (entry.ActionType == "Approved")
+                                    {
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="20 6 9 17 4 12"/>
+                                        </svg>
+                                    }
+                                    else if (entry.ActionType == "MarkedShipped")
+                                    {
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <rect x="1" y="3" width="15" height="13"/>
+                                            <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+                                            <circle cx="5.5" cy="18.5" r="2.5"/>
+                                            <circle cx="18.5" cy="18.5" r="2.5"/>
+                                        </svg>
+                                    }
+                                    else if (entry.ActionType == "MarkedDelivered")
+                                    {
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                            <polyline points="22 4 12 14.01 9 11.01"/>
+                                        </svg>
+                                    }
+                                    else if (entry.ActionType == "MarkedRead")
+                                    {
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                                            <circle cx="12" cy="12" r="3"/>
+                                        </svg>
+                                    }
                                     else
                                     {
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -113,9 +218,21 @@ else
                                         <span class="audit-entry__actor">@entry.AdminName</span>
                                         @if (!string.IsNullOrWhiteSpace(entry.TableName))
                                         {
-                                            <span class="audit-entry__table-tag">@entry.TableName</span>
+                                            var targetUrl = GetRecordUrl(entry.TableName, entry.RecordId, entry.ActionType, entry.Action);
+                                            var tagLabel = entry.TableName + (entry.RecordId.HasValue ? $" #{entry.RecordId.Value}" : "");
+
+                                            if (!string.IsNullOrEmpty(targetUrl))
+                                            {
+                                                <a href="@targetUrl" class="audit-entry__table-tag audit-entry__table-tag--link" title="Go to @tagLabel">
+                                                    @tagLabel
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <span class="audit-entry__table-tag">@tagLabel</span>
+                                            }
                                         }
-                                        @if (entry.RecordId.HasValue)
+                                        else if (entry.RecordId.HasValue)
                                         {
                                             <span>#@entry.RecordId.Value</span>
                                         }
