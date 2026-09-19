@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore;
 using MediCart.Web.Data;
 using MediCart.Web.Models;
 using MediCart.Web.Services;
-// using Microsoft.AspNetCore.Authorization; // enable once every teammate has tested login with the Admin role
+using Microsoft.AspNetCore.Authorization;
 
 namespace MediCart.Web.Controllers
 {
-    // [Authorize(Roles = "Admin")] // TODO: turn this on before demo — matches AdminController's current state
+    [Authorize(Roles = "Admin")]
     public class AdminOrdersController : Controller
     {
         private readonly ApplicationDbContext _db;
