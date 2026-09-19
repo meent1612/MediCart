@@ -78,9 +78,9 @@
     border-radius: 16px;
     box-shadow: 0 1px 3px rgba(21, 46, 25, 0.08);
     border: 1px solid rgba(21, 46, 25, 0.08);
-    overflow: auto;
+    width: 100%;
     max-height: calc(100vh - 270px);
-    min-height: 280px;
+    overflow: auto;
     margin-bottom: 24px;
     scrollbar-width: thin;
     scrollbar-color: rgba(21, 46, 25, 0.2) transparent;
@@ -119,7 +119,7 @@
     letter-spacing: 0.05em;
     color: var(--color-text);
     font-weight: 600;
-    padding: 14px 16px;
+    padding: 14px 12px;
     border-bottom: 1px solid rgba(21, 46, 25, 0.1);
     border-top: none;
     border-left: none;
@@ -134,9 +134,11 @@
 
 #medicineTable thead th:first-child {
     border-top-left-radius: 15px;
+    padding-left: 18px;
 }
 #medicineTable thead th:last-child {
     border-top-right-radius: 15px;
+    padding-right: 18px;
 }
 
 /* Sort carets */
@@ -173,7 +175,7 @@
 
 /* 3. BODY ROWS */
 #medicineTable tbody td {
-    padding: 16px;
+    padding: 16px 12px;
     border-bottom: 1px solid rgba(21, 46, 25, 0.06);
     border-top: none;
     border-left: none;
@@ -184,7 +186,15 @@
     line-height: 1.45;
 }
 
+#medicineTable tbody td:first-child {
+    padding-left: 18px;
+}
+#medicineTable tbody td:last-child {
+    padding-right: 18px;
+}
+
 #medicineTable tbody tr {
+    background: #ffffff;
     height: 64px;
     min-height: 64px;
     transition: background 0.15s ease;
@@ -196,13 +206,15 @@
 
 #medicineTable tbody tr:hover,
 #medicineTable tr.med-row:hover {
-    background: rgba(133, 155, 119, 0.08) !important;
+    background: #F5F7F4 !important;
 }
 
-/* 4. COLUMN ALIGNMENT */
-/* Name Column: left aligned, slightly larger, font-weight 600 */
+/* 4. COLUMN PROPORTIONS & ALIGNMENT (Horizontal widths only) */
+/* Name Column: 22% flexible width to absorb extra horizontal space without looking sparse */
 #medicineTable th.th--name,
 #medicineTable td.td--name {
+    width: 22%;
+    min-width: 170px;
     text-align: left;
 }
 #medicineTable td.td--name strong {
@@ -212,12 +224,53 @@
     display: inline-block;
 }
 
+/* Category & Sub-category & Type */
+#medicineTable th.th--category,
+#medicineTable td.td--category {
+    width: 11%;
+    min-width: 100px;
+    white-space: nowrap;
+}
+#medicineTable th.th--subcategory,
+#medicineTable td.td--subcategory {
+    width: 11%;
+    min-width: 100px;
+    white-space: nowrap;
+}
+#medicineTable th.th--type,
+#medicineTable td.td--type {
+    width: 8%;
+    min-width: 75px;
+    white-space: nowrap;
+}
+
+/* Manufacturer Column: 16% width with ellipsis for ultra-long names */
+#medicineTable th.th--manufacturer,
+#medicineTable td.td--manufacturer {
+    width: 16%;
+    min-width: 130px;
+    max-width: 220px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+#medicineTable td.td--manufacturer span {
+    display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+}
+
 /* Price Column: Right align */
 #medicineTable th.th--price,
 #medicineTable td.td--price {
+    width: 8%;
+    min-width: 75px;
     text-align: right;
     font-variant-numeric: tabular-nums;
     font-weight: 500;
+    white-space: nowrap;
 }
 #medicineTable th.sort-th--right .sort-th__label {
     justify-content: flex-end;
@@ -227,7 +280,10 @@
 /* Stock Column: Right align */
 #medicineTable th.th--stock,
 #medicineTable td.td--stock {
+    width: 9%;
+    min-width: 85px;
     text-align: right;
+    white-space: nowrap;
 }
 #medicineTable td.td--stock .stock-cell-content {
     display: inline-flex;
@@ -251,6 +307,12 @@
 }
 
 /* Expiry Column */
+#medicineTable th.th--expiry,
+#medicineTable td.td--expiry {
+    width: 11%;
+    min-width: 115px;
+    white-space: nowrap;
+}
 .expiry-cell-wrap {
     white-space: nowrap;
 }
@@ -267,19 +329,38 @@
     font-weight: 600;
 }
 
-/* 5. EDIT / DELETE PILL BUTTONS */
+/* Sensitivity Column */
+#medicineTable th.th--sensitivity,
+#medicineTable td.td--sensitivity {
+    width: 8%;
+    min-width: 80px;
+    white-space: nowrap;
+}
+
+/* 5. EDIT / DELETE PILL BUTTONS (Normal Table Flow) */
 #medicineTable th.th--actions,
 #medicineTable td.td--actions {
     text-align: right;
-    width: 170px;
-    min-width: 170px;
-    padding-right: 20px;
+    width: 140px;
+    min-width: 140px;
+    max-width: 140px;
+    white-space: nowrap;
+    padding-right: 18px;
 }
+
 .admin-table__actions-wrap {
     display: inline-flex;
     align-items: center;
     justify-content: flex-end;
     gap: 8px;
+    margin: 0;
+    padding: 0;
+}
+
+.admin-table__actions-wrap .inline-form {
+    display: inline-flex;
+    margin: 0;
+    padding: 0;
 }
 
 .btn-pill-action {
@@ -343,6 +424,7 @@
 .tag--low-stock { background: rgba(217, 140, 59, 0.16); color: var(--color-warning); border: 1px solid rgba(217, 140, 59, 0.3); }
 .tag--out-of-stock { background: rgba(179, 65, 62, 0.15); color: var(--color-danger); border: 1px solid rgba(179, 65, 62, 0.3); }
 .tag--expired { background: rgba(179, 65, 62, 0.15); color: var(--color-danger); border: 1px solid rgba(179, 65, 62, 0.3); }
+.tag--critical { background: rgba(179, 65, 62, 0.15); color: var(--color-danger); border: 1px solid rgba(179, 65, 62, 0.3); }
 .tag--expiring { background: rgba(217, 140, 59, 0.16); color: var(--color-warning); border: 1px solid rgba(217, 140, 59, 0.3); }
 .tag--sensitivity-low { background: rgba(91, 138, 100, 0.16); color: var(--color-success); border: 1px solid rgba(91, 138, 100, 0.25); }
 .tag--sensitivity-mid { background: rgba(217, 140, 59, 0.16); color: var(--color-warning); border: 1px solid rgba(217, 140, 59, 0.25); }
@@ -387,7 +469,7 @@
 }
 @keyframes med-row-in {
     from { opacity: 0; transform: translateY(6px); }
-    to { opacity: 1; transform: translateY(0); }
+    to { opacity: 1; transform: none; }
 }
 @media (prefers-reduced-motion: reduce) {
     .med-row { animation: none; }
