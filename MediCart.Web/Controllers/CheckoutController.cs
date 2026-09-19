@@ -47,6 +47,17 @@ namespace MediCart.Web.Controllers
             if (cartItems.Count == 0)
                 return RedirectToAction("Index", "Cart");
 
+            // Block checkout if any item is expired or in critical expiry tier.
+            // The customer must remove those items before proceeding.
+            var blockedItems = cartItems.Where(ci => ci.IsBlockedFromCheckout).ToList();
+            if (blockedItems.Count > 0)
+            {
+                TempData["CheckoutError"] =
+                    "Your cart contains expired or near-expiry medicines (expiring within 7 days). " +
+                    "Please remove them before proceeding to checkout.";
+                return RedirectToAction("Index", "Cart");
+            }
+
             // Load all divisions with their cities in one query.
             var divisions = await _db.Divisions
                 .Include(d => d.Cities)
