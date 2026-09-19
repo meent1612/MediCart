@@ -470,102 +470,78 @@ namespace MediCart.Web.Controllers
         }
 
         [HttpGet]
+        [HttpGet]
         public async Task<IActionResult> StockExpiry(string? filter)
         {
-            var today = DateOnly.FromDateTime(DateTime.UtcNow);
-            var expiryThreshold = today.AddDays(30);
-
-            var query = _db.Medicines
+            var allStocks = await _db.Medicines
                 .Include(m => m.Category)
                 .Include(m => m.Stock)
-                .AsQueryable();
+                .ToListAsync();
 
-            var allList = await query.ToListAsync();
-
-            var rowList = allList.Select(m =>
+            var rowList = allStocks.Select(m =>
             {
                 var qty = m.Stock?.Quantity ?? 0;
-                var exp = m.Stock?.ExpiryDate;
-                var daysUntil = exp.HasValue
-                    ? (exp.Value.ToDateTime(TimeOnly.MinValue) - DateTime.UtcNow.Date).Days
+                var expiry = m.Stock?.ExpiryDate;
+                var daysUntil = expiry.HasValue
+                    ? StockExpiryHelper.DaysUntilExpiry(expiry.Value)
                     : 9999;
 
-                string badge;
-                string severity;
+                var (stockLabel, stockSev) = StockExpiryHelper.GetStockBadge(qty);
+                var (expiryLabel, expirySev) = expiry.HasValue
+                    ? StockExpiryHelper.GetExpiryBadge(daysUntil)
+                    : (null, null);
 
-                if (qty == 0)
-                {
-                    badge = "Out of stock";
-                    severity = "danger";
-                }
-                else if (daysUntil < 0)
-                {
-                    badge = "Expired";
-                    severity = "danger";
-                }
-                else if (daysUntil <= 30)
-                {
-                    badge = "Expiring soon";
-                    severity = "warning";
-                }
-                else if (qty < 10)
-                {
-                    badge = "Low stock";
-                    severity = "warning";
-                }
-                else
-                {
-                    badge = "In stock";
-                    severity = "success";
-                }
-
-                var percent = Math.Clamp((qty * 100) / 50, 0, 100);
-                var progressColor = qty == 0 ? "red" : (qty < 10 ? "amber" : "green");
+                var progressPercent = Math.Clamp((qty * 100) / 50, 0, 100);
+                var progressColor = qty == 0 ? "red" : (qty <= StockExpiryHelper.LowStockThreshold ? "amber" : "green");
 
                 return new AdminStockExpiryRowViewModel
                 {
                     MedicineId = m.Id,
                     MedicineName = m.Name,
-                    GenericName = m.GenericName,
+                    GenericName = m.GenericName ?? string.Empty,
                     CategoryName = m.Category?.Name ?? "Uncategorized",
                     Quantity = qty,
-                    ExpiryDate = exp,
+                    ExpiryDate = expiry,
                     DaysUntilExpiry = daysUntil,
-                    StatusBadge = badge,
-                    StatusSeverity = severity,
-                    ProgressPercent = percent,
+                    StockBadgeLabel = stockLabel,
+                    StockBadgeSeverity = stockSev,
+                    ExpiryBadgeLabel = expiryLabel,
+                    ExpiryBadgeSeverity = expirySev,
+                    ProgressPercent = progressPercent,
                     ProgressColor = progressColor
                 };
             }).ToList();
 
-            var totalCount = rowList.Count;
-            var expiringCount = rowList.Count(r => r.DaysUntilExpiry >= 0 && r.DaysUntilExpiry <= 30);
-            var lowStockCount = rowList.Count(r => r.Quantity < 10 && r.Quantity > 0);
-            var criticalCount = rowList.Count(r => r.Quantity == 0 || r.DaysUntilExpiry < 0);
+            var totalCount           = rowList.Count;
+            var warningCount         = rowList.Count(r => StockExpiryHelper.IsWarningExpiry(r.DaysUntilExpiry));
+            var criticalExpiredCount = rowList.Count(r =>
+                r.ExpiryDate.HasValue && StockExpiryHelper.IsBlockedFromCart(r.DaysUntilExpiry));
+            var lowStockCount        = rowList.Count(r => StockExpiryHelper.IsLowStock(r.Quantity));
 
             var activeFilter = filter ?? "All";
+
             var filtered = activeFilter switch
             {
-                "ExpiringSoon" => rowList.Where(r => r.DaysUntilExpiry >= 0 && r.DaysUntilExpiry <= 30).ToList(),
-                "LowStock" => rowList.Where(r => r.Quantity < 10).ToList(),
-                "Critical" => rowList.Where(r => r.Quantity == 0 || r.DaysUntilExpiry < 0).ToList(),
-                _ => rowList
+                "Warning"         => rowList.Where(r => StockExpiryHelper.IsWarningExpiry(r.DaysUntilExpiry)).ToList(),
+                "CriticalExpired" => rowList.Where(r =>
+                    r.ExpiryDate.HasValue && StockExpiryHelper.IsBlockedFromCart(r.DaysUntilExpiry)).ToList(),
+                "LowStock"        => rowList.Where(r => StockExpiryHelper.IsLowStock(r.Quantity)).ToList(),
+                _                 => rowList
             };
 
             filtered = filtered
-                .OrderBy(r => r.ExpiryDate.HasValue ? 0 : 1)
-                .ThenBy(r => r.ExpiryDate)
+                .OrderBy(r => r.DaysUntilExpiry >= 0 ? r.DaysUntilExpiry : int.MinValue - r.DaysUntilExpiry)
                 .ThenBy(r => r.Quantity)
                 .ToList();
 
             var vm = new AdminStockExpiryViewModel
             {
-                Filter = activeFilter,
-                TotalCount = totalCount,
-                ExpiringSoonCount = expiringCount,
-                LowStockCount = lowStockCount,
-                CriticalCount = criticalCount,
-                Items = filtered
+                Filter               = activeFilter,
+                TotalCount           = totalCount,
+                WarningCount         = warningCount,
+                CriticalExpiredCount = criticalExpiredCount,
+                LowStockCount        = lowStockCount,
+                Items                = filtered
             };
 
             return View(vm);
