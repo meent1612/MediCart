@@ -2,12 +2,52 @@
 @{
     ViewData["Title"] = "Order " + Model.OrderNumber;
     Layout = "_AdminLayout";
+
+    // Compute initials for the customer avatar
+    var initials = "CU";
+    if (!string.IsNullOrWhiteSpace(Model.CustomerName))
+    {
+        var parts = Model.CustomerName.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 1)
+        {
+            initials = parts[0].Substring(0, Math.Min(2, parts[0].Length)).ToUpperInvariant();
+        }
+        else if (parts.Length >= 2)
+        {
+            initials = $"{parts[0][0]}{parts[^1][0]}".ToUpperInvariant();
+        }
+    }
+
+    // Status timeline step mapping: 1 = Placed, 2 = Processing, 3 = Shipped, 4 = Delivered
+    var status = Model.Status?.Trim();
+    int currentStep = status switch
+    {
+        "Pending" => 1,
+        "Processing" => 2,
+        "Shipped" => 3,
+        "Delivered" => 4,
+        _ => 1
+    };
+    bool isCancelled = string.Equals(status, "Cancelled", StringComparison.OrdinalIgnoreCase);
+    bool isRejected = string.Equals(status, "Rejected", StringComparison.OrdinalIgnoreCase);
+
+    var stepNames = new[] { "Placed", "Processing", "Shipped", "Delivered" };
 }
 
 @section Styles {
     <link rel="stylesheet" href="~/css/admin-medicines.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/admin-orders.css" asp-append-version="true" />
 }
+
+<!-- Top breadcrumb navigation -->
+<div class="order-detail-breadcrumb">
+    <a asp-action="IncomingOrders" class="admin-back-link">
+        <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
+            <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+        </svg>
+        Back to incoming orders
+    </a>
+</div>
 
 @if (TempData["OrderSuccess"] != null)
 {
@@ -18,126 +58,346 @@
     <div class="admin-alert admin-alert--danger"><span>@TempData["OrderError"]</span></div>
 }
 
+<!-- Page Header: MC-10001, Status badge, and Placed date -->
 <div class="order-detail-head">
-    <div>
-        <h2>@Model.OrderNumber</h2>
-        <p class="admin-table__muted">Placed @Model.CreatedAt.ToLocalTime().ToString("dd MMM yyyy, h:mm tt")</p>
+    <div class="order-detail-head__info">
+        <h2 class="order-detail-head__number">@Model.OrderNumber</h2>
+        <p class="order-detail-head__date">Placed @Model.CreatedAt.ToLocalTime().ToString("dd MMM yyyy, h:mm tt")</p>
     </div>
-    <span class="order-status-badge order-status-badge--@Model.Status.ToLower()">@Model.Status</span>
-    @if (Model.IsFlagged)
-    {
-        <span class="tag tag--rx">Flagged</span>
-    }
+    <div class="order-detail-head__badges">
+        <span class="order-status-badge order-status-badge--@(Model.Status?.ToLower() ?? "pending")">@Model.Status</span>
+        @if (Model.IsFlagged)
+        {
+            <span class="tag tag--rx">Flagged</span>
+        }
+    </div>
 </div>
 
+<!-- Two-column card layout -->
 <div class="order-detail-grid">
-    <div>
-        <section class="info-card">
-            <h3>Customer</h3>
-            <p class="info-card__name">@Model.CustomerName</p>
-            <p>@Model.CustomerEmail</p>
-            <p>@Model.Phone</p>
+    <!-- LEFT COLUMN: Customer, Delivery address, Payment (+ Flagged/Prescription/Rejection if any) -->
+    <div class="order-detail-col">
+        <!-- a) Customer Card -->
+        <section class="order-card">
+            <div class="order-card__head">
+                <div class="order-card__title-wrap">
+                    <svg class="order-card__title-icon" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                    </svg>
+                    <h3 class="order-card__title">Customer</h3>
+                </div>
+            </div>
+            <div class="order-card__body">
+                <div class="customer-info-row">
+                    <span class="customer-avatar" title="@Model.CustomerName">@initials</span>
+                    <span class="customer-name-text">@Model.CustomerName</span>
+                </div>
+                <div class="customer-meta-list">
+                    <div class="customer-meta-item">
+                        <svg class="customer-meta-icon" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                            <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                        </svg>
+                        <span class="customer-meta-val">@Model.CustomerEmail</span>
+                    </div>
+                    <div class="customer-meta-item">
+                        <svg class="customer-meta-icon" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                        </svg>
+                        <span class="customer-meta-val">@(string.IsNullOrWhiteSpace(Model.Phone) ? "Not provided" : Model.Phone)</span>
+                    </div>
+                </div>
+            </div>
         </section>
 
-        <section class="info-card">
-            <h3>Delivery address</h3>
-            <p>@Model.DeliveryAddress</p>
+        <!-- b) Delivery Address Card -->
+        <section class="order-card">
+            <div class="order-card__head">
+                <div class="order-card__title-wrap">
+                    <svg class="order-card__title-icon" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+                    </svg>
+                    <h3 class="order-card__title">Delivery address</h3>
+                </div>
+            </div>
+            <div class="order-card__body">
+                <p class="order-card__text">@Model.DeliveryAddress</p>
+            </div>
         </section>
 
-        <section class="info-card">
-            <h3>Payment</h3>
-            <p>@Model.PaymentMethod</p>
+        <!-- c) Payment Card -->
+        <section class="order-card">
+            <div class="order-card__head">
+                <div class="order-card__title-wrap">
+                    <svg class="order-card__title-icon" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z" />
+                        <path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd" />
+                    </svg>
+                    <h3 class="order-card__title">Payment</h3>
+                </div>
+            </div>
+            <div class="order-card__body">
+                <div class="order-payment-method">
+                    <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
+                    </svg>
+                    <span>@(string.IsNullOrWhiteSpace(Model.PaymentMethod) ? "Cash on delivery" : Model.PaymentMethod)</span>
+                </div>
+            </div>
         </section>
 
         @if (Model.IsFlagged)
         {
-            <section class="info-card">
-                <h3>Sensitivity flags</h3>
-                <ul class="flagged-items-list">
-                    @foreach (var item in Model.FlaggedItems)
-                    {
-                        <li>
-                            <span class="tag tag--sensitivity-@item.SensitivityLevel">@item.SensitivityLevel</span>
-                            @item.MedicineName &mdash; ordered @item.Quantity (threshold @item.Threshold)
-                        </li>
-                    }
-                </ul>
+            <section class="order-card order-card--warning">
+                <div class="order-card__head">
+                    <div class="order-card__title-wrap">
+                        <svg class="order-card__title-icon order-card__title-icon--warn" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                        </svg>
+                        <h3 class="order-card__title">Sensitivity flags</h3>
+                    </div>
+                </div>
+                <div class="order-card__body">
+                    <ul class="flagged-items-list">
+                        @foreach (var item in Model.FlaggedItems)
+                        {
+                            <li>
+                                <span class="tag tag--sensitivity-@item.SensitivityLevel">@item.SensitivityLevel</span>
+                                <strong>@item.MedicineName</strong> &mdash; ordered @item.Quantity (threshold @item.Threshold)
+                            </li>
+                        }
+                    </ul>
+                </div>
             </section>
         }
 
         @if (!string.IsNullOrWhiteSpace(Model.PrescriptionImageUrl))
         {
-            <section class="info-card">
-                <h3>Prescription</h3>
-                <a href="@Model.PrescriptionImageUrl" target="_blank" rel="noopener">
-                    <img src="@Model.PrescriptionImageUrl" alt="Prescription" class="prescription-image" />
-                </a>
-                <p class="admin-table__muted">Status: @(Model.PrescriptionStatus ?? "pending")</p>
+            <section class="order-card">
+                <div class="order-card__head">
+                    <div class="order-card__title-wrap">
+                        <svg class="order-card__title-icon" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd" />
+                        </svg>
+                        <h3 class="order-card__title">Prescription</h3>
+                    </div>
+                </div>
+                <div class="order-card__body">
+                    <a href="@Model.PrescriptionImageUrl" target="_blank" rel="noopener">
+                        <img src="@Model.PrescriptionImageUrl" alt="Prescription" class="prescription-image" />
+                    </a>
+                    <p class="admin-table__muted" style="margin-top: 8px;">Status: @(Model.PrescriptionStatus ?? "pending")</p>
+                </div>
             </section>
         }
 
         @if (!string.IsNullOrWhiteSpace(Model.RejectionReason))
         {
-            <section class="info-card">
-                <h3>Rejection reason</h3>
-                <p>@Model.RejectionReason</p>
+            <section class="order-card order-card--danger">
+                <div class="order-card__head">
+                    <div class="order-card__title-wrap">
+                        <svg class="order-card__title-icon order-card__title-icon--danger" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                        </svg>
+                        <h3 class="order-card__title">Rejection reason</h3>
+                    </div>
+                </div>
+                <div class="order-card__body">
+                    <p class="order-card__text" style="color: var(--color-danger); font-weight: 500;">@Model.RejectionReason</p>
+                </div>
             </section>
         }
     </div>
 
-    <section class="info-card">
-        <h3>Items</h3>
-        <div class="items-list">
-            @foreach (var item in Model.Items)
-            {
-                <div class="items-list__row">
-                    <span>@item.MedicineName &times; @item.Quantity</span>
-                    <span>৳@item.LineTotal.ToString("0")</span>
+    <!-- RIGHT COLUMN: Items table + Order status mini-timeline stepper -->
+    <div class="order-detail-col">
+        <!-- d) Items Card -->
+        <section class="order-card">
+            <div class="order-card__head">
+                <div class="order-card__title-wrap">
+                    <svg class="order-card__title-icon" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 2a4 4 0 00-4 4v1H5a1 1 0 00-.994.89l-1 9A1 1 0 004 18h12a1 1 0 00.994-1.11l-1-9A1 1 0 0015 7h-1V6a4 4 0 00-4-4zm2 5V6a2 2 0 10-4 0v1h4zm-6 3a1 1 0 112 0 1 1 0 01-2 0zm7-1a1 1 0 100 2 1 1 0 000-2z" clip-rule="evenodd" />
+                    </svg>
+                    <h3 class="order-card__title">Items</h3>
                 </div>
-            }
-            <div class="items-list__row">
-                <span>Delivery</span>
-                <span>৳@Model.DeliveryCharge.ToString("0")</span>
+                <span class="order-items-count-pill">@Model.Items.Count @(Model.Items.Count == 1 ? "item" : "items")</span>
             </div>
-            <div class="items-list__row items-list__row--total">
-                <span>Total</span>
-                <span>৳@Model.Total.ToString("0")</span>
+            <div class="order-card__body">
+                <!-- Mini-table list of ordered items -->
+                <div class="order-items-table">
+                    @foreach (var item in Model.Items)
+                    {
+                        <div class="order-item-row">
+                            <div class="order-item-info">
+                                <span class="order-item-name">@item.MedicineName</span>
+                                <span class="order-item-qty-pill">Qty: @item.Quantity</span>
+                            </div>
+                            <span class="order-item-price">৳@item.LineTotal.ToString("0")</span>
+                        </div>
+                    }
+                </div>
+
+                <!-- Summary block: Delivery and Total -->
+                <div class="order-summary-box">
+                    <div class="order-summary-row">
+                        <span>Delivery</span>
+                        <span class="order-summary-val">৳@Model.DeliveryCharge.ToString("0")</span>
+                    </div>
+                    <div class="order-summary-divider"></div>
+                    <div class="order-summary-row order-summary-row--total">
+                        <span class="order-summary-total-label">Total</span>
+                        <span class="order-summary-total-val">৳@Model.Total.ToString("0")</span>
+                    </div>
+                </div>
             </div>
-        </div>
-    </section>
+        </section>
+
+        <!-- e) Order Status Mini-Timeline Stepper -->
+        <section class="order-card">
+            <div class="order-card__head">
+                <div class="order-card__title-wrap">
+                    <svg class="order-card__title-icon" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
+                    </svg>
+                    <h3 class="order-card__title">Order status</h3>
+                </div>
+            </div>
+            <div class="order-card__body">
+                @if (isCancelled)
+                {
+                    <div class="order-cancelled-notice">
+                        <span class="order-status-badge order-status-badge--cancelled">Order Cancelled</span>
+                        <span class="admin-table__muted">This order was cancelled and will not proceed further.</span>
+                    </div>
+                }
+                else if (isRejected)
+                {
+                    <div class="order-rejected-notice">
+                        <span class="order-status-badge order-status-badge--rejected">Order Rejected</span>
+                        <span class="admin-table__muted">This order was rejected and will not proceed further.</span>
+                    </div>
+                }
+                else
+                {
+                    <div class="status-stepper">
+                        @for (int i = 1; i <= 4; i++)
+                        {
+                            var stepName = stepNames[i - 1];
+                            bool isComplete = i <= currentStep;
+                            bool isCurrent = i == currentStep;
+                            var stepClass = $"status-stepper__step{(isComplete ? " is-complete" : "")}{(isCurrent ? " is-current" : "")}";
+
+                            <div class="@stepClass">
+                                <div class="status-stepper__node">
+                                    <div class="status-stepper__circle">
+                                        @if (i < currentStep || (i == 4 && currentStep == 4))
+                                        {
+                                            <svg viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                            </svg>
+                                        }
+                                        else
+                                        {
+                                            <span>@i</span>
+                                        }
+                                    </div>
+                                    @if (i < 4)
+                                    {
+                                        <div class="status-stepper__line"></div>
+                                    }
+                                </div>
+                                <div class="status-stepper__label-wrap">
+                                    <span class="status-stepper__title">@stepName</span>
+                                    @if (isCurrent)
+                                    {
+                                        <span class="status-stepper__current-pill">Current</span>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </section>
+    </div>
 </div>
 
-<div class="order-actions">
+<!-- 3. Actions: solid --color-primary button for primary actions (Mark as Shipped / Approve / Deliver), plus secondary Cancel order -->
+<div class="order-detail-actions-card">
     @if (Model.CanApprove)
     {
-        <form method="post" asp-action="Approve" asp-route-id="@Model.Id" style="display:inline;">
+        <form method="post" asp-action="Approve" asp-route-id="@Model.Id" class="inline-form">
             @Html.AntiForgeryToken()
-            <button type="submit" class="btn">Approve</button>
+            <button type="submit" class="btn-order-primary">
+                <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414 1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                </svg>
+                Approve Order
+            </button>
         </form>
-        <button type="button" class="btn btn--danger" id="openRejectModal">Reject</button>
+        <button type="button" class="btn-order-danger" id="openRejectModal">
+            <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
+                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+            </svg>
+            Reject
+        </button>
     }
     @if (Model.CanMarkShipped)
     {
-        <form method="post" asp-action="MarkShipped" asp-route-id="@Model.Id" style="display:inline;">
+        <form method="post" asp-action="MarkShipped" asp-route-id="@Model.Id" class="inline-form">
             @Html.AntiForgeryToken()
-            <button type="submit" class="btn">Mark as Shipped</button>
+            <button type="submit" class="btn-order-primary">
+                <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
+                    <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
+                    <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7h-2v4h4V9.414a1 1 0 00-.293-.707l-1.414-1.414A1 1 0 0014 7z" />
+                </svg>
+                Mark as Shipped
+            </button>
         </form>
     }
     @if (Model.CanMarkDelivered)
     {
-        <form method="post" asp-action="MarkDelivered" asp-route-id="@Model.Id" style="display:inline;">
+        <form method="post" asp-action="MarkDelivered" asp-route-id="@Model.Id" class="inline-form">
             @Html.AntiForgeryToken()
-            <button type="submit" class="btn">Mark as Delivered</button>
+            <button type="submit" class="btn-order-primary">
+                <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                </svg>
+                Mark as Delivered
+            </button>
         </form>
     }
-    @if (!Model.CanApprove && !Model.CanMarkShipped && !Model.CanMarkDelivered)
+    @if (Model.CanCancel)
     {
-        <p class="admin-table__muted">No further action available for this order.</p>
+        <button type="button" class="btn-order-cancel" id="openCancelModal">
+            <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+            </svg>
+            Cancel order
+        </button>
+    }
+    @if (!Model.CanApprove && !Model.CanMarkShipped && !Model.CanMarkDelivered && !Model.CanCancel)
+    {
+        <div class="order-no-actions">
+            <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+            </svg>
+            <span>No further action available for this order.</span>
+        </div>
     }
 </div>
 
-<a asp-action="IncomingOrders" class="admin-back-link">&larr; Back to incoming orders</a>
+<!-- Bottom breadcrumb link -->
+<div class="order-detail-footer">
+    <a asp-action="IncomingOrders" class="admin-back-link">
+        <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
+            <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+        </svg>
+        Back to incoming orders
+    </a>
+</div>
 
+<!-- Rejection Modal -->
 @if (Model.CanReject)
 {
     <div class="modal-overlay" id="rejectModal">
@@ -147,11 +407,31 @@
                 @Html.AntiForgeryToken()
                 <div class="admin-form__field">
                     <label for="reason">Reason for rejection</label>
-                    <textarea id="reason" name="reason" rows="3" required></textarea>
+                    <textarea id="reason" name="reason" rows="3" required placeholder="State the reason for rejecting this order..."></textarea>
                 </div>
                 <div class="modal-card__actions">
                     <button type="button" class="btn" id="closeRejectModal">Cancel</button>
                     <button type="submit" class="btn btn--danger">Reject order</button>
+                </div>
+            </form>
+        </div>
+    </div>
+}
+
+<!-- Cancel Confirmation Modal -->
+@if (Model.CanCancel)
+{
+    <div class="modal-overlay" id="cancelModal">
+        <div class="modal-card">
+            <h3>Cancel @Model.OrderNumber</h3>
+            <p style="color: var(--color-text-secondary, #4a6350); margin: 12px 0 24px; font-size: 14px; line-height: 1.5;">
+                Cancel this order? This can't be undone.
+            </p>
+            <form method="post" asp-action="CancelOrder" asp-route-id="@Model.Id">
+                @Html.AntiForgeryToken()
+                <div class="modal-card__actions">
+                    <button type="button" class="btn" id="closeCancelModal">Back</button>
+                    <button type="submit" class="btn btn--danger">Confirm</button>
                 </div>
             </form>
         </div>
