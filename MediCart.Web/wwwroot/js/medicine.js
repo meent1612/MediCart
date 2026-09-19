@@ -324,17 +324,17 @@
             var daysLeft = med.DaysUntilExpiry;
             expiryEl.textContent = formatExpiry(med.ExpiryDate);
 
-            if (daysLeft < 0) {
+            if (med.IsExpired) {
                 // Expired
                 expiryEl.textContent += " (Expired)";
                 expiryEl.classList.add("modal__value--danger");
-            } else if (daysLeft <= 7) {
+            } else if (med.IsCriticalExpiry) {
                 // Critical — <= 7 days
                 expiryEl.textContent += " (" + daysLeft + " day(s) left — Critical)";
                 expiryEl.classList.add("modal__value--danger");
-            } else if (daysLeft <= 30) {
+            } else if (med.IsWarningExpiry) {
                 // Warning — > 7 and <= 30 days
-                expiryEl.textContent += " (" + daysLeft + " days left — Warning)";
+                expiryEl.textContent += " (Expires in " + daysLeft + " days)";
                 expiryEl.classList.add("modal__value--warning");
             }
             // else: normal — no class, no suffix
