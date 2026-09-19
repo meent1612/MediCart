@@ -58,6 +58,13 @@
     background: var(--color-danger);
 }
 
+.stock-badges-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: flex-start;
+}
+
 .expiry-cell {
     font-size: 13px;
 }

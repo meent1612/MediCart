@@ -791,3 +791,9 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* Warning expiry badge on browse cards — amber, not danger red */
+.badge--warning-expiry {
+    background: rgba(217, 140, 59, 0.18);
+    color: var(--color-warning);
+}
