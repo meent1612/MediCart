@@ -4,8 +4,6 @@ using MediCart.Web.Models;
 
 namespace MediCart.Web.Services
 {
-    // What the controller and background service talk to.
-    // Never touches the DB directly — always goes through CartService.
     public interface ICartService
     {
         Task<List<CartItemViewModel>> GetCartAsync(string userId);
@@ -16,13 +14,11 @@ namespace MediCart.Web.Services
         Task ReleaseExpiredCartItemsAsync(string? userId = null);
     }
 
-    // Returned by every write operation so the controller can send
-    // a clear JSON response back to the frontend JS.
     public class CartOperationResult
     {
         public bool Success { get; set; }
         public string? ErrorMessage { get; set; }
-        public string? WarningMessage { get; set; }  // non-null = added OK but show this warning
+        public string? WarningMessage { get; set; }
         public int? NewQuantity { get; set; }
         public int? NewStockQuantity { get; set; }
         public int CartItemCount { get; set; }
@@ -59,12 +55,6 @@ namespace MediCart.Web.Services
         // Cart items older than this are expired and stock is returned.
         private static readonly TimeSpan CartExpiry = TimeSpan.FromDays(3);
 
-        // A medicine expiring within this many days blocks checkout.
-        private static readonly int CriticalExpiryDays = 7;
-
-        // A medicine expiring within this many days shows a soft warning.
-        private static readonly int WarningExpiryDays = 30;
-
         public CartService(ApplicationDbContext db)
         {
             _db = db;
@@ -72,14 +62,11 @@ namespace MediCart.Web.Services
 
         // =====================================================================
         // ReleaseExpiredCartItemsAsync
-        // Called by the background service (all users) and as a lazy safety net
-        // at the start of every cart operation (current user only).
         // =====================================================================
         public async Task ReleaseExpiredCartItemsAsync(string? userId = null)
         {
             var cutoff = DateTime.UtcNow - CartExpiry;
 
-            // Build query — if userId is provided, only release that user's items.
             var expiredItems = await _db.CartItems
                 .Include(ci => ci.Medicine)
                     .ThenInclude(m => m.Stock)
@@ -90,7 +77,6 @@ namespace MediCart.Web.Services
             if (expiredItems.Count == 0)
                 return;
 
-            // Return each expired item's quantity back to stock.
             foreach (var item in expiredItems)
             {
                 if (item.Medicine?.Stock != null)
@@ -109,10 +95,7 @@ namespace MediCart.Web.Services
         // =====================================================================
         public async Task<List<CartItemViewModel>> GetCartAsync(string userId)
         {
-            // Lazy safety net — release this user's expired items first.
             await ReleaseExpiredCartItemsAsync(userId);
-
-            var today = DateOnly.FromDateTime(DateTime.UtcNow);
 
             var items = await _db.CartItems
                 .Include(ci => ci.Medicine)
@@ -127,7 +110,7 @@ namespace MediCart.Web.Services
             {
                 var stock = ci.Medicine.Stock;
                 var expiryDate = stock?.ExpiryDate ?? DateOnly.MaxValue;
-                var daysToExpiry = expiryDate.DayNumber - today.DayNumber;
+                var daysUntilExpiry = StockExpiryHelper.DaysUntilExpiry(expiryDate);
 
                 return new CartItemViewModel
                 {
@@ -143,8 +126,7 @@ namespace MediCart.Web.Services
                     AvailableStock = stock?.Quantity ?? 0,
                     AddedAt = ci.AddedAt,
                     UpdatedAt = ci.UpdatedAt,
-                    IsCriticalExpiry = daysToExpiry <= CriticalExpiryDays,
-                    IsWarningExpiry = daysToExpiry <= WarningExpiryDays && daysToExpiry > CriticalExpiryDays
+                    DaysUntilExpiry = daysUntilExpiry
                 };
             }).ToList();
         }
@@ -158,7 +140,6 @@ namespace MediCart.Web.Services
             if (quantity <= 0)
                 return CartOperationResult.Fail("Quantity must be at least 1.");
 
-            // Lazy safety net.
             await ReleaseExpiredCartItemsAsync(userId);
 
             await using var transaction = await _db.Database.BeginTransactionAsync();
@@ -175,32 +156,33 @@ namespace MediCart.Web.Services
                 if (medicine.Stock == null)
                     return CartOperationResult.Fail("This medicine has no stock record.");
 
-                // Block if medicine is in critical expiry tier.
-                var today = DateOnly.FromDateTime(DateTime.UtcNow);
-                var daysToExpiry = medicine.Stock.ExpiryDate.DayNumber - today.DayNumber;
+                var daysUntilExpiry = StockExpiryHelper.DaysUntilExpiry(medicine.Stock.ExpiryDate);
 
-                if (daysToExpiry <= CriticalExpiryDays)
+                // Block expired medicines
+                if (StockExpiryHelper.IsExpired(daysUntilExpiry))
                     return CartOperationResult.Fail(
-                        "This medicine is expiring very soon and cannot be added to cart.");
+                        "This medicine has expired and cannot be added to cart.");
+
+                // Block critical expiry (<=7 days)
+                if (StockExpiryHelper.IsCriticalExpiry(daysUntilExpiry))
+                    return CartOperationResult.Fail(
+                        "This medicine expires within 7 days and cannot be added to cart.");
 
                 if (medicine.Stock.Quantity < quantity)
                     return CartOperationResult.Fail(
                         $"Only {medicine.Stock.Quantity} unit(s) available.");
 
-                // Check if this medicine is already in the customer's cart.
                 var existingItem = await _db.CartItems
                     .FirstOrDefaultAsync(ci =>
                         ci.UserId == userId && ci.MedicineId == medicineId);
 
                 if (existingItem != null)
                 {
-                    // Already in cart — increase quantity.
                     existingItem.Quantity += quantity;
                     existingItem.UpdatedAt = DateTime.UtcNow;
                 }
                 else
                 {
-                    // New cart item.
                     _db.CartItems.Add(new CartItem
                     {
                         UserId = userId,
@@ -211,7 +193,6 @@ namespace MediCart.Web.Services
                     });
                 }
 
-                // Deduct from stock.
                 medicine.Stock.Quantity -= quantity;
                 medicine.Stock.UpdatedAt = DateTime.UtcNow;
 
@@ -219,10 +200,18 @@ namespace MediCart.Web.Services
                 await transaction.CommitAsync();
 
                 var cartCount = await GetCartItemCountAsync(userId);
-                return CartOperationResult.Ok(
-                    existingItem?.Quantity ?? quantity,
-                    medicine.Stock.Quantity,
-                    cartCount);
+                var newQty = existingItem?.Quantity ?? quantity;
+                var newStock = medicine.Stock.Quantity;
+
+                // Soft warning for <=30 day medicines (allowed but warn the customer)
+                if (StockExpiryHelper.IsWarningExpiry(daysUntilExpiry))
+                {
+                    return CartOperationResult.OkWithWarning(
+                        newQty, newStock, cartCount,
+                        $"Added to cart — note: this medicine expires in {daysUntilExpiry} days.");
+                }
+
+                return CartOperationResult.Ok(newQty, newStock, cartCount);
             }
             catch
             {
@@ -240,7 +229,6 @@ namespace MediCart.Web.Services
             if (newQuantity <= 0)
                 return CartOperationResult.Fail("Quantity must be at least 1.");
 
-            // Lazy safety net.
             await ReleaseExpiredCartItemsAsync(userId);
 
             await using var transaction = await _db.Database.BeginTransactionAsync();
@@ -263,7 +251,6 @@ namespace MediCart.Web.Services
 
                 if (difference > 0)
                 {
-                    // Customer wants more — check stock.
                     if (cartItem.Medicine.Stock.Quantity < difference)
                         return CartOperationResult.Fail(
                             $"Only {cartItem.Medicine.Stock.Quantity} more unit(s) available.");
@@ -272,7 +259,6 @@ namespace MediCart.Web.Services
                 }
                 else if (difference < 0)
                 {
-                    // Customer wants fewer — return the difference to stock.
                     cartItem.Medicine.Stock.Quantity += Math.Abs(difference);
                 }
 
@@ -302,7 +288,6 @@ namespace MediCart.Web.Services
         public async Task<CartOperationResult> RemoveItemAsync(
             string userId, int cartItemId)
         {
-            // Lazy safety net.
             await ReleaseExpiredCartItemsAsync(userId);
 
             await using var transaction = await _db.Database.BeginTransactionAsync();
@@ -318,7 +303,6 @@ namespace MediCart.Web.Services
                 if (cartItem == null)
                     return CartOperationResult.Fail("Cart item not found.");
 
-                // Return quantity to stock.
                 if (cartItem.Medicine.Stock != null)
                 {
                     cartItem.Medicine.Stock.Quantity += cartItem.Quantity;
@@ -356,8 +340,6 @@ namespace MediCart.Web.Services
 
         private static string BuildDescription(Medicine medicine)
         {
-            // Builds the subtitle line shown under the medicine name in the cart.
-            // e.g. "Omeprazole 20mg · strip of 10"
             var parts = new List<string>();
 
             if (!string.IsNullOrWhiteSpace(medicine.GenericName))
