@@ -22,13 +22,24 @@ namespace MediCart.Web.Services
     {
         public bool Success { get; set; }
         public string? ErrorMessage { get; set; }
-        public int? NewQuantity { get; set; }       // updated quantity after the operation
-        public int? NewStockQuantity { get; set; }  // remaining stock after the operation
-        public int CartItemCount { get; set; }       // total items in cart after the operation
+        public string? WarningMessage { get; set; }  // non-null = added OK but show this warning
+        public int? NewQuantity { get; set; }
+        public int? NewStockQuantity { get; set; }
+        public int CartItemCount { get; set; }
 
         public static CartOperationResult Ok(int newQuantity, int newStock, int cartCount) => new()
         {
             Success = true,
+            NewQuantity = newQuantity,
+            NewStockQuantity = newStock,
+            CartItemCount = cartCount
+        };
+
+        public static CartOperationResult OkWithWarning(
+            int newQuantity, int newStock, int cartCount, string warning) => new()
+        {
+            Success = true,
+            WarningMessage = warning,
             NewQuantity = newQuantity,
             NewStockQuantity = newStock,
             CartItemCount = cartCount
