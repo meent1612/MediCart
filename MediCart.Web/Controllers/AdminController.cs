@@ -253,7 +253,7 @@ namespace MediCart.Web.Controllers
 
             var lowStockQuery = _db.Stocks
                 .Include(s => s.Medicine)
-                .Where(s => s.Quantity < 10)
+                .Where(s => s.Quantity <= StockExpiryHelper.LowStockThreshold)
                 .OrderBy(s => s.Quantity);
 
             var totalLowStockCount = await lowStockQuery.CountAsync();
