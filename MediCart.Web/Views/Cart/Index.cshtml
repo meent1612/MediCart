@@ -87,7 +87,7 @@
                         }
                         else if (item.IsWarningExpiry)
                         {
-                            <span class="badge badge--warning">Expires within 30 days</span>
+                            <span class="badge badge--warning">Expires in @item.DaysUntilExpiry days</span>
                         }
                         else if (item.AvailableStock == 0)
                         {
