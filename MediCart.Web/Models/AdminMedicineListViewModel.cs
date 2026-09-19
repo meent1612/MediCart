@@ -24,11 +24,7 @@ namespace MediCart.Web.Models
         public bool IsLowStock    => StockExpiryHelper.IsLowStock(StockQuantity);
         public bool IsExpired     => StockExpiryHelper.IsExpired(DaysUntilExpiry);
         public bool IsCriticalExpiry => StockExpiryHelper.IsCriticalExpiry(DaysUntilExpiry);
-        public bool IsExpiringSoon   => StockExpiryHelper.IsWarningExpiry(DaysUntilExpiry);
-
-        // IsNearExpiryWindow was used in the old Medicines view for a softer
-        // colour — kept for backward compat but now maps to IsExpiringSoon.
-        public bool IsNearExpiryWindow => IsExpiringSoon;
+        public bool IsWarningExpiry  => StockExpiryHelper.IsWarningExpiry(DaysUntilExpiry);
     }
 
     public class AdminMedicinesPageViewModel

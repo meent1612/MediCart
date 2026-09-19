@@ -45,7 +45,6 @@ namespace MediCart.Web.Models
         // Expiry state — uses StockExpiryHelper constants
         public bool IsExpired        => StockExpiryHelper.IsExpired(DaysUntilExpiry);
         public bool IsCriticalExpiry => StockExpiryHelper.IsCriticalExpiry(DaysUntilExpiry);
-        public bool IsExpiringSoon   => StockExpiryHelper.IsWarningExpiry(DaysUntilExpiry);
         public bool IsWarningExpiry  => StockExpiryHelper.IsWarningExpiry(DaysUntilExpiry);
 
         // Stock state
