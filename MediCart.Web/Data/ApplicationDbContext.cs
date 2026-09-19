@@ -18,7 +18,6 @@ namespace MediCart.Web.Data
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }
         public DbSet<Prescription> Prescriptions { get; set; }
-        public DbSet<ExpiryAlert> ExpiryAlerts { get; set; }
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<ContactMessage> ContactMessages { get; set; }
         public DbSet<AuditLog> AuditLogs { get; set; }
@@ -102,11 +101,6 @@ namespace MediCart.Web.Data
             builder.Entity<Prescription>()
                 .ToTable(t => t.HasCheckConstraint("CK_Prescription_Status",
                     "\"Status\" IN ('pending','verified','rejected')"));
-
-            // ExpiryAlert — check constraint on AlertLevel
-            builder.Entity<ExpiryAlert>()
-                .ToTable(t => t.HasCheckConstraint("CK_ExpiryAlert_AlertLevel",
-                    "\"AlertLevel\" IN ('warning','critical')"));
 
             // AuditLog — AdminId is a string FK to AspNetUsers
             builder.Entity<AuditLog>()
