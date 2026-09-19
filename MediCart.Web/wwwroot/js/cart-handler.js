@@ -1,5 +1,4 @@
 // MediCart — Shared Cart & Authorization Handler
-// Handles Add-to-Cart logic, auth checks, and admin-order restrictions uniformly across all entry points.
 (function () {
     "use strict";
 
@@ -23,17 +22,17 @@
         if (!toast) return;
         var textEl = toast.querySelector(".toast__text");
         if (textEl) textEl.textContent = message;
-
         toast.classList.add("is-visible");
         clearTimeout(showToast._timer);
         showToast._timer = setTimeout(function () {
             toast.classList.remove("is-visible");
-        }, 2400);
+        }, 2800);
     }
 
     function updateCartBadge(cartItemCount) {
         var cartButton = document.querySelector(".cart-button");
-        var cartBadge = document.getElementById("cartBadge") || document.querySelector(".cart-button__badge");
+        var cartBadge = document.getElementById("cartBadge") ||
+                        document.querySelector(".cart-button__badge");
 
         if (cartBadge) {
             cartBadge.textContent = String(cartItemCount);
@@ -53,8 +52,10 @@
 
     function redirectToLogin(customReturnUrl) {
         var auth = getAuthState();
-        var returnUrl = customReturnUrl || (window.location.pathname + window.location.search);
-        window.location.href = auth.loginUrl + "?ReturnUrl=" + encodeURIComponent(returnUrl);
+        var returnUrl = customReturnUrl ||
+            (window.location.pathname + window.location.search);
+        window.location.href = auth.loginUrl +
+            "?ReturnUrl=" + encodeURIComponent(returnUrl);
     }
 
     function add(options) {
@@ -64,22 +65,22 @@
         var quantity = options.quantity || 1;
         var btn = options.button;
 
-        // 1. Role Check: Admin cannot place orders
+        // 1. Admin cannot place orders
         if (auth.isAdmin) {
-            showToast("Admins cannot place orders");
+            showToast("Admins cannot place orders.");
             if (typeof options.onError === "function") {
-                options.onError("Admins cannot place orders");
+                options.onError("Admins cannot place orders.");
             }
             return;
         }
 
-        // 2. Auth Check: Guest / not logged in -> redirect to Login page with ReturnUrl
+        // 2. Guest / not logged in → redirect to login
         if (!auth.isAuthenticated || !auth.isCustomer) {
             redirectToLogin(options.returnUrl);
             return;
         }
 
-        // 3. Customer: call POST /Cart/Add
+        // 3. Customer → POST /Cart/Add
         if (btn) btn.disabled = true;
 
         var body = new URLSearchParams();
@@ -107,7 +108,17 @@
         .then(function (data) {
             if (btn) btn.disabled = false;
             updateCartBadge(data.cartItemCount);
-            showToast(quantity === 1 ? "Added to cart" : quantity + " items added to cart");
+
+            // If server returned a warning (<=30 day medicine), show that.
+            // Otherwise show the standard success toast.
+            if (data.warningMessage) {
+                showToast(data.warningMessage);
+            } else {
+                showToast(quantity === 1
+                    ? "Added to cart"
+                    : quantity + " items added to cart");
+            }
+
             if (typeof options.onSuccess === "function") {
                 options.onSuccess(data);
             }
@@ -130,4 +141,5 @@
         showToast: showToast,
         updateCartBadge: updateCartBadge
     };
+
 })();

@@ -66,7 +66,7 @@
         visibleCards.sort(function (a, b) {
             if (sortBy === "price-asc") return parseFloat(a.dataset.price) - parseFloat(b.dataset.price);
             if (sortBy === "price-desc") return parseFloat(b.dataset.price) - parseFloat(a.dataset.price);
-            return a.dataset.name.localeCompare(b.dataset.name); // default: name-asc
+            return a.dataset.name.localeCompare(b.dataset.name);
         });
 
         visibleCards.forEach(function (card) { grid.appendChild(card); });
@@ -149,8 +149,7 @@
         applyFilters();
     });
 
-    /* ----- Add to cart from card (real server call) ----- */
-
+    // ── Auth state ──────────────────────────────────────────────────────────
     var isCustomer = grid.dataset.isCustomer === "true";
     var isAdmin = grid.dataset.isAdmin === "true";
     var loginUrl = grid.dataset.loginUrl || "/Identity/Account/Login";
@@ -163,30 +162,6 @@
     function redirectToLogin() {
         var returnUrl = window.location.pathname + window.location.search;
         window.location.href = loginUrl + "?ReturnUrl=" + encodeURIComponent(returnUrl);
-    }
-
-    function addToCartOnServer(medicineId, quantity) {
-        var body = new URLSearchParams();
-        body.set("medicineId", medicineId);
-        body.set("quantity", quantity);
-        body.set("__RequestVerificationToken", getAntiForgeryToken());
-
-        return fetch("/Cart/Add", {
-            method: "POST",
-            body: body
-        }).then(function (res) {
-            if (res.redirected || res.status === 401 || res.status === 403) {
-                redirectToLogin();
-                return Promise.reject(null);
-            }
-
-            return res.json().then(function (data) {
-                if (!res.ok) {
-                    return Promise.reject(data.error || "Could not add this to your cart.");
-                }
-                return data;
-            });
-        });
     }
 
     function updateCartBadge(cartItemCount) {
@@ -211,7 +186,7 @@
         toast.querySelector(".toast__text").textContent = message;
         toast.classList.add("is-visible");
         clearTimeout(showToast._t);
-        showToast._t = setTimeout(function () { toast.classList.remove("is-visible"); }, 2200);
+        showToast._t = setTimeout(function () { toast.classList.remove("is-visible"); }, 2800);
     }
 
     function showSearchNoticeToast(message) {
@@ -230,28 +205,46 @@
             toast.classList.remove("is-visible");
             setTimeout(function () {
                 toast.classList.remove("toast--search-notice");
-                if (icon && prevSvg) {
-                    icon.innerHTML = prevSvg;
-                }
+                if (icon && prevSvg) icon.innerHTML = prevSvg;
             }, 300);
         }, 3600);
     }
 
+    // ── Add to cart from card ───────────────────────────────────────────────
     grid.addEventListener("click", function (e) {
         var addBtn = e.target.closest(".btn-add");
         if (addBtn) {
             var medicineId = addBtn.dataset.id;
             if (!medicineId) return;
 
+            // Find the medicine data to check expiry state before hitting server
+            var med = medicineData.find(function (m) { return String(m.Id) === String(medicineId); });
+
+            if (med) {
+                if (med.IsExpired) {
+                    showToast("This medicine has expired and cannot be added to cart.");
+                    return;
+                }
+                if (med.IsCriticalExpiry) {
+                    showToast("This medicine expires within 7 days and cannot be added to cart.");
+                    return;
+                }
+            }
+
             window.MediCartCart.add({
                 medicineId: medicineId,
                 quantity: 1,
                 button: addBtn,
-                onSuccess: function () {
+                onSuccess: function (data) {
                     addBtn.classList.add("added");
-                    setTimeout(function () {
-                        addBtn.classList.remove("added");
-                    }, 350);
+                    setTimeout(function () { addBtn.classList.remove("added"); }, 350);
+                    // Show warning toast if server returned one
+                    if (data && data.warningMessage) {
+                        showToast(data.warningMessage);
+                    }
+                },
+                onError: function (err) {
+                    showToast(err);
                 }
             });
 
@@ -264,7 +257,7 @@
         }
     });
 
-    /* ----- Modal ----- */
+    // ── Modal ───────────────────────────────────────────────────────────────
     var overlay = document.getElementById("modalOverlay");
     var modalClose = document.getElementById("modalClose");
     var qtyInput = document.getElementById("modalQtyInput");
@@ -285,8 +278,14 @@
 
     function formatExpiry(dateStr) {
         var parts = dateStr.split("-");
-        var d = new Date(Date.UTC(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10)));
-        return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric", timeZone: "UTC" });
+        var d = new Date(Date.UTC(
+            parseInt(parts[0], 10),
+            parseInt(parts[1], 10) - 1,
+            parseInt(parts[2], 10)
+        ));
+        return d.toLocaleDateString("en-GB", {
+            day: "2-digit", month: "short", year: "numeric", timeZone: "UTC"
+        });
     }
 
     function openModal(id) {
@@ -308,22 +307,37 @@
         unitEl.textContent = med.Unit || NOT_AVAILABLE;
         unitEl.classList.toggle("modal__value--muted", !med.Unit);
 
-        document.getElementById("modalStock").textContent = med.Stock > 0 ? (med.Stock + " units") : "Out of stock";
+        document.getElementById("modalStock").textContent =
+            med.Stock > 0 ? (med.Stock + " units") : "Out of stock";
+
         document.getElementById("modalPrice").textContent = "\u09F3" + med.Price;
 
+        // ── Expiry display with correct tiers ──────────────────────────────
         var expiryEl = document.getElementById("modalExpiry");
-        expiryEl.classList.remove("modal__value--muted", "modal__value--warning", "modal__value--danger");
-        if (med.ExpiryDate) {
-            var expiryDate = new Date(med.ExpiryDate + "T00:00:00Z");
-            var today = new Date();
-            var daysLeft = Math.floor((expiryDate - today) / (1000 * 60 * 60 * 24));
+        expiryEl.classList.remove(
+            "modal__value--muted",
+            "modal__value--warning",
+            "modal__value--danger"
+        );
 
+        if (med.ExpiryDate) {
+            var daysLeft = med.DaysUntilExpiry;
             expiryEl.textContent = formatExpiry(med.ExpiryDate);
+
             if (daysLeft < 0) {
+                // Expired
+                expiryEl.textContent += " (Expired)";
                 expiryEl.classList.add("modal__value--danger");
-            } else if (daysLeft <= 90) {
+            } else if (daysLeft <= 7) {
+                // Critical — <= 7 days
+                expiryEl.textContent += " (" + daysLeft + " day(s) left — Critical)";
+                expiryEl.classList.add("modal__value--danger");
+            } else if (daysLeft <= 30) {
+                // Warning — > 7 and <= 30 days
+                expiryEl.textContent += " (" + daysLeft + " days left — Warning)";
                 expiryEl.classList.add("modal__value--warning");
             }
+            // else: normal — no class, no suffix
         } else {
             expiryEl.textContent = NOT_AVAILABLE;
             expiryEl.classList.add("modal__value--muted");
@@ -337,7 +351,6 @@
 
         var rxBadge = document.getElementById("modalRxBadge");
         rxBadge.hidden = !med.RequiresRx;
-        rxBadge.textContent = med.RequiresRx ? "Rx" : "OTC";
 
         var sideEffectsBox = document.getElementById("modalSideEffects");
         sideEffectsBox.innerHTML = "";
@@ -352,10 +365,23 @@
             qtyInput.value = 1;
             qtyInput.max = med.Stock > 0 ? med.Stock : 1;
         }
+
+        // ── Add to cart button state ────────────────────────────────────────
         if (addToCartBtn) {
             addToCartBtn.textContent = "Add to cart";
             addToCartBtn.classList.remove("added");
-            addToCartBtn.disabled = isAdmin || med.Stock <= 0;
+
+            // Disable for admin, out of stock, expired, or critical expiry
+            var blocked = isAdmin || med.Stock <= 0 || med.IsBlockedFromCart;
+            addToCartBtn.disabled = blocked;
+
+            if (med.IsExpired) {
+                addToCartBtn.textContent = "Expired — unavailable";
+            } else if (med.IsCriticalExpiry) {
+                addToCartBtn.textContent = "Expiring too soon";
+            } else if (med.Stock <= 0) {
+                addToCartBtn.textContent = "Out of stock";
+            }
         }
 
         overlay.hidden = false;
@@ -401,9 +427,20 @@
         });
     }
 
+    // ── Modal add to cart ───────────────────────────────────────────────────
     if (addToCartBtn) {
         addToCartBtn.addEventListener("click", function () {
             if (!currentMedicine) return;
+
+            // Client-side guard — server also enforces these
+            if (currentMedicine.IsExpired) {
+                showToast("This medicine has expired and cannot be added to cart.");
+                return;
+            }
+            if (currentMedicine.IsCriticalExpiry) {
+                showToast("This medicine expires within 7 days and cannot be added to cart.");
+                return;
+            }
 
             var qty = qtyInput ? (parseInt(qtyInput.value, 10) || 1) : 1;
 
@@ -411,10 +448,18 @@
                 medicineId: currentMedicine.Id,
                 quantity: qty,
                 button: addToCartBtn,
-                onSuccess: function () {
-                    addToCartBtn.textContent = "Added";
-                    addToCartBtn.classList.add("added");
-                    setTimeout(closeModal, 500);
+                onSuccess: function (data) {
+                    // Show warning toast if server returned one (<=30 day medicine)
+                    if (data && data.warningMessage) {
+                        showToast(data.warningMessage);
+                    } else {
+                        addToCartBtn.textContent = "Added";
+                        addToCartBtn.classList.add("added");
+                    }
+                    setTimeout(closeModal, 600);
+                },
+                onError: function (err) {
+                    showToast(err);
                 }
             });
         });
@@ -423,11 +468,11 @@
     var adminModalBtn = document.querySelector(".btn-add-cart--admin");
     if (adminModalBtn) {
         adminModalBtn.addEventListener("click", function () {
-            window.MediCartCart.showToast("Admins cannot place orders");
+            window.MediCartCart.showToast("Admins cannot place orders.");
         });
     }
 
-    /* Pre-select filters from URL parameters (?category=..., ?productType=..., ?categoryId=..., ?type=..., ?search=...) */
+    // ── URL param pre-selection ─────────────────────────────────────────────
     var urlParams = new URLSearchParams(window.location.search);
     var categoryParam = (urlParams.get("category") || "").toLowerCase().trim();
     var categoryIdParam = (urlParams.get("categoryId") || "").trim();
@@ -461,11 +506,9 @@
         if (browseSearchClear) browseSearchClear.hidden = false;
     }
 
-    /* initial render */
     priceRangeValue.textContent = "\u09F3" + priceRange.value;
     applyFilters();
 
-    /* Check openDetails query param from FIX 2 */
     if (openDetailsParam) {
         openModal(openDetailsParam);
         var cleanParams = new URLSearchParams(window.location.search);
@@ -475,17 +518,17 @@
         window.history.replaceState(null, "", cleanUrl);
     }
 
-    /* Check notFound query param from FIX 2 */
     if (notFoundParam) {
         var term = searchParam;
         var msg = term
             ? "No medicine named \u2018" + term + "\u2019 found \u2014 browse the full catalogue below"
             : "No matching medicine found \u2014 browse the full catalogue below";
         showSearchNoticeToast(msg);
-        var cleanParams = new URLSearchParams(window.location.search);
-        cleanParams.delete("notFound");
-        var cleanQuery = cleanParams.toString();
-        var cleanUrl = window.location.pathname + (cleanQuery ? "?" + cleanQuery : "");
-        window.history.replaceState(null, "", cleanUrl);
+        var cleanParams2 = new URLSearchParams(window.location.search);
+        cleanParams2.delete("notFound");
+        var cleanQuery2 = cleanParams2.toString();
+        var cleanUrl2 = window.location.pathname + (cleanQuery2 ? "?" + cleanQuery2 : "");
+        window.history.replaceState(null, "", cleanUrl2);
     }
+
 })();

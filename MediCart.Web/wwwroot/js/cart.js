@@ -13,6 +13,8 @@
     var rxNoteCount     = document.getElementById("rxNoteCount");
     var rxNotePlural    = document.getElementById("rxNotePlural");
     var rxNoteVerb      = document.getElementById("rxNoteVerb");
+    var checkoutBtn     = document.getElementById("checkoutBtn");
+    var checkoutBlock   = document.getElementById("checkoutBlockBanner");
 
     function getToken() {
         var input = document.querySelector('input[name="__RequestVerificationToken"]');
@@ -34,6 +36,50 @@
             cartItemsBox.querySelectorAll(".cart-item"));
     }
 
+    function showToast(message) {
+        var toast = document.getElementById("toast");
+        if (!toast) return;
+        toast.querySelector(".toast__text").textContent = message;
+        toast.classList.add("is-visible");
+        clearTimeout(showToast._t);
+        showToast._t = setTimeout(function () {
+            toast.classList.remove("is-visible");
+        }, 2800);
+    }
+
+    function updateBadge(count) {
+        var badge = document.getElementById("cartBadge");
+        if (!badge) return;
+        badge.textContent = count;
+        badge.classList.toggle("is-visible", count > 0);
+    }
+
+    // ── Checkout block check ───────────────────────────────────────────────
+    // Scans all rows and disables the checkout button if any row is
+    // expired, critical, or out of stock.
+    function updateCheckoutBlock() {
+        var rows = getRows();
+        var hasBlocked = rows.some(function (row) {
+            var isExpired  = row.dataset.isExpired  === "true";
+            var isCritical = row.dataset.isCritical === "true";
+            var stock      = parseInt(row.dataset.availableStock, 10) || 0;
+            var qty        = parseInt(row.querySelector(".qty-input").value, 10) || 0;
+            // Out of stock means available stock is 0 AND the item is in cart
+            var isOutOfStock = stock === 0 && qty > 0;
+            return isExpired || isCritical || isOutOfStock;
+        });
+
+        if (checkoutBtn) {
+            checkoutBtn.disabled = hasBlocked;
+            checkoutBtn.style.opacity = hasBlocked ? "0.5" : "";
+            checkoutBtn.style.cursor  = hasBlocked ? "not-allowed" : "";
+        }
+        if (checkoutBlock) {
+            checkoutBlock.style.display = hasBlocked ? "" : "none";
+        }
+    }
+
+    // ── Recalculate totals and heading ─────────────────────────────────────
     function recalculate() {
         var rows = getRows();
         var subtotal = 0;
@@ -48,10 +94,13 @@
             if (row.dataset.requiresRx === "true") rxCount++;
         });
 
-        summarySubtotal.textContent = "\u09F3" + subtotal.toFixed(0);
-        summaryTotal.textContent    = "\u09F3" + subtotal.toFixed(0);
-        cartHeading.textContent = "Your cart (" + rows.length +
-            " item" + (rows.length === 1 ? "" : "s") + ")";
+        if (summarySubtotal) summarySubtotal.textContent = "\u09F3" + subtotal.toFixed(0);
+        if (summaryTotal)    summaryTotal.textContent    = "\u09F3" + subtotal.toFixed(0);
+
+        if (cartHeading) {
+            cartHeading.textContent = "Your cart (" + rows.length +
+                " item" + (rows.length === 1 ? "" : "s") + ")";
+        }
 
         if (rxNote) {
             rxNote.hidden            = rxCount === 0;
@@ -64,29 +113,24 @@
             return sum + (parseInt(row.querySelector(".qty-input").value, 10) || 0);
         }, 0));
 
+        updateCheckoutBlock();
+
         if (rows.length === 0) {
             if (orderSummary) orderSummary.hidden = true;
             if (cartEmpty)    cartEmpty.hidden    = false;
         }
     }
 
-    function updateBadge(count) {
-        var badge = document.getElementById("cartBadge");
-        if (!badge) return;
-        badge.textContent = count;
-        badge.classList.toggle("is-visible", count > 0);
-    }
-
-    function showToast(message) {
-        var toast = document.getElementById("toast");
-        if (!toast) return;
-        toast.querySelector(".toast__text").textContent = message;
-        toast.classList.add("is-visible");
-        clearTimeout(showToast._t);
-        showToast._t = setTimeout(function () {
-            toast.classList.remove("is-visible");
-        }, 2200);
-    }
+    // ── Disable + button on page load when stock is 0 ─────────────────────
+    // The view already sets disabled via Razor, but this runs as a
+    // safety net in case the attribute was not rendered.
+    getRows().forEach(function (row) {
+        var stock   = parseInt(row.dataset.availableStock, 10) || 0;
+        var plusBtn = row.querySelector(".qty-plus");
+        if (plusBtn && stock <= 0) {
+            plusBtn.disabled = true;
+        }
+    });
 
     // ── Click handler (minus / plus / remove) ──────────────────────────────
     cartItemsBox.addEventListener("click", function (e) {
@@ -120,7 +164,10 @@
 
         // ── Increase ──
         if (e.target.classList.contains("qty-plus")) {
-            if (availableStock <= 0) return;
+            if (availableStock <= 0) {
+                showToast("No more stock available for this item.");
+                return;
+            }
             post("/Cart/UpdateQuantity", {
                 cartItemId: cartItemId,
                 newQuantity: currentQty + 1
@@ -181,11 +228,13 @@
     // Block non-digit keystrokes in the qty input
     cartItemsBox.addEventListener("keydown", function (e) {
         if (!e.target.classList.contains("qty-input")) return;
-        var allowed = ["Backspace","Delete","ArrowLeft","ArrowRight","Tab","Enter"];
+        var allowed = ["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab", "Enter"];
         if (allowed.indexOf(e.key) === -1 && !/^\d$/.test(e.key)) {
             e.preventDefault();
         }
     });
 
+    // ── Initial render ─────────────────────────────────────────────────────
     recalculate();
+
 })();
