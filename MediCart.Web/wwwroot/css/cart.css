@@ -143,16 +143,6 @@
     color: var(--color-dark);
 }
 
-.badge--warning {
-    background: var(--color-warning);
-    color: var(--color-dark);
-}
-
-.badge--danger {
-    background: var(--color-danger);
-    color: #ffffff;
-}
-
 .qty-stepper {
     display: flex;
     align-items: center;
@@ -327,8 +317,13 @@
 }
 
 .badge--warning {
-    background: var(--amber-100);
-    color: var(--amber-700);
+    background: rgba(217, 140, 59, 0.15);
+    color: #a85f00;
+}
+
+.badge--stock-low {
+    background: rgba(217, 140, 59, 0.15);
+    color: #a85f00;
 }
 
 /* Checkout block banner — shown in order summary when blocked items exist */
