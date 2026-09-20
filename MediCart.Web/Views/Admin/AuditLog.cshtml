@@ -95,11 +95,11 @@
                         <option value="Add" selected="@(Model.ActionFilter == "Add")">Adds / Creations</option>
                         <option value="Edit" selected="@(Model.ActionFilter == "Edit")">Edits / Updates</option>
                         <option value="Delete" selected="@(Model.ActionFilter == "Delete")">Deletions</option>
-                        <option value="Security" selected="@(Model.ActionFilter == "Security")">Auth &amp; Security</option>
                     </optgroup>
                     <optgroup label="Order &amp; message actions">
                         <option value="MarkedRead" selected="@(Model.ActionFilter == "MarkedRead")">Marked as read</option>
                         <option value="Approved" selected="@(Model.ActionFilter == "Approved")">Approved orders</option>
+                        <option value="Rejected" selected="@(Model.ActionFilter == "Rejected")">Reject order</option>
                         <option value="MarkedShipped" selected="@(Model.ActionFilter == "MarkedShipped")">Marked as shipped</option>
                         <option value="MarkedDelivered" selected="@(Model.ActionFilter == "MarkedDelivered")">Marked as delivered</option>
                     </optgroup>
@@ -180,6 +180,12 @@ else
                                     {
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                                             <polyline points="20 6 9 17 4 12"/>
+                                        </svg>
+                                    }
+                                    else if (entry.ActionType == "Rejected")
+                                    {
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                            <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
                                         </svg>
                                     }
                                     else if (entry.ActionType == "MarkedShipped")
