@@ -101,6 +101,11 @@
     color: var(--color-success);
 }
 
+.audit-entry__icon--rejected {
+    background: rgba(179, 65, 62, 0.14);
+    color: var(--color-danger);
+}
+
 .audit-entry__icon--markedshipped {
     background: rgba(59, 130, 246, 0.14);
     color: #2563eb;

@@ -43,6 +43,6 @@ namespace MediCart.Web.Models
         public bool CanReject => Status == "Pending";
         public bool CanMarkShipped => Status == "Processing";
         public bool CanMarkDelivered => Status == "Shipped";
-        public bool CanCancel => Status != "Delivered" && Status != "Cancelled" && Status != "Rejected";
+        public bool CanCancel => Status != "Pending" && Status != "Delivered" && Status != "Cancelled" && Status != "Rejected";
     }
 }

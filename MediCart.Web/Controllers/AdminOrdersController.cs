@@ -229,11 +229,15 @@ namespace MediCart.Web.Controllers
         // Stock is restored inside OrderService.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CancelOrder(int id, string? reason)
+        public async Task<IActionResult> CancelOrder(int id, string reason)
         {
-            var adminId = _userManager.GetUserId(User);
-            if (adminId == null)
-                return Challenge();
+            if (string.IsNullOrWhiteSpace(reason))
+            {
+                TempData["OrderError"] = "Enter a reason for cancelling this order.";
+                return RedirectToAction(nameof(OrderDetail), new { id });
+            }
+
+            var order = await _db.Orders.FindAsync(id);
 
             var result = await _orderService.CancelOrderAsync(id, reason, adminId);
 
@@ -241,8 +245,8 @@ namespace MediCart.Web.Controllers
             {
                 TempData["OrderError"] = result.ErrorMessage;
 
-                if (result.NotFound)
-                    return RedirectToAction(nameof(IncomingOrders));
+            order.Status = "Cancelled";
+            order.RejectionReason = reason.Trim();
 
                 return RedirectToAction(nameof(OrderDetail), new { id });
             }

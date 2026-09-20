@@ -237,7 +237,7 @@ namespace MediCart.Web.Controllers
 
             var flaggedOrdersQuery = _db.Orders
                 .Include(o => o.User)
-                .Where(o => o.IsFlagged && o.Status != "Delivered" && o.Status != "Rejected")
+                .Where(o => o.IsFlagged && o.Status != "Delivered" && o.Status != "Rejected" && o.Status != "Cancelled")
                 .OrderByDescending(o => o.CreatedAt);
 
             var totalFlaggedCount = await flaggedOrdersQuery.CountAsync();
