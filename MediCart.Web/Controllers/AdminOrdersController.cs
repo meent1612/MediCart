@@ -225,8 +225,8 @@ namespace MediCart.Web.Controllers
             return RedirectToAction(nameof(OrderDetail), new { id });
         }
 
-        // Cancel: Processing or Shipped orders only. Reason is optional.
-        // Stock is restored inside OrderService.
+        // Cancel: Processing or Shipped orders only. A reason is required.
+        // Status change, stock restore and audit log are all handled inside OrderService.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CancelOrder(int id, string reason)
@@ -237,17 +237,15 @@ namespace MediCart.Web.Controllers
                 return RedirectToAction(nameof(OrderDetail), new { id });
             }
 
-            var order = await _db.Orders.FindAsync(id);
+            var adminId = _userManager.GetUserId(User);
+            if (adminId == null)
+                return Challenge();
 
             var result = await _orderService.CancelOrderAsync(id, reason, adminId);
 
             if (!result.Success)
             {
                 TempData["OrderError"] = result.ErrorMessage;
-
-            order.Status = "Cancelled";
-            order.RejectionReason = reason.Trim();
-
                 return RedirectToAction(nameof(OrderDetail), new { id });
             }
 
