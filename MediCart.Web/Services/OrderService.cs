@@ -7,6 +7,8 @@ namespace MediCart.Web.Services
     public interface IOrderService
     {
         Task<OrderPlacementResult> PlaceOrderAsync(PlaceOrderRequest request);
+        Task<OrderStatusChangeResult> RejectOrderAsync(int orderId, string reason, string adminId);
+        Task<OrderStatusChangeResult> CancelOrderAsync(int orderId, string? reason, string adminId);
     }
 
     public class OrderPlacementResult
@@ -22,6 +24,28 @@ namespace MediCart.Web.Services
         };
 
         public static OrderPlacementResult Fail(string message) => new()
+        {
+            Success = false,
+            ErrorMessage = message
+        };
+    }
+
+    public class OrderStatusChangeResult
+    {
+        public bool Success { get; set; }
+        public bool NotFound { get; set; }
+        public string? ErrorMessage { get; set; }
+
+        public static OrderStatusChangeResult Ok() => new() { Success = true };
+
+        public static OrderStatusChangeResult Missing() => new()
+        {
+            Success = false,
+            NotFound = true,
+            ErrorMessage = "Order not found."
+        };
+
+        public static OrderStatusChangeResult Fail(string message) => new()
         {
             Success = false,
             ErrorMessage = message
@@ -145,13 +169,124 @@ namespace MediCart.Web.Services
                     CreatedAt = DateTime.UtcNow
                 });
 
-                // Clear the cart
+                // Clear the cart. Stock was already deducted when each item was
+                // added to the cart, so the order now owns that reservation.
                 _db.CartItems.RemoveRange(cartItems);
 
                 await _db.SaveChangesAsync();
                 await transaction.CommitAsync();
 
                 return OrderPlacementResult.Ok(order.Id);
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        }
+
+        // =====================================================================
+        // Reject (Pending only) and Cancel (Processing / Shipped only).
+        // Both end the order, so both give the reserved stock back.
+        // =====================================================================
+
+        public Task<OrderStatusChangeResult> RejectOrderAsync(int orderId, string reason, string adminId)
+        {
+            return CloseOrderAsync(
+                orderId,
+                newStatus: "Rejected",
+                allowedFrom: new[] { "Pending" },
+                reason: reason.Trim(),
+                adminId: adminId,
+                auditType: AuditActionTypes.Rejected);
+        }
+
+        public Task<OrderStatusChangeResult> CancelOrderAsync(int orderId, string? reason, string adminId)
+        {
+            return CloseOrderAsync(
+                orderId,
+                newStatus: "Cancelled",
+                allowedFrom: new[] { "Processing", "Shipped" },
+                reason: string.IsNullOrWhiteSpace(reason) ? null : reason.Trim(),
+                adminId: adminId,
+                auditType: AuditActionTypes.Cancelled);
+        }
+
+        private async Task<OrderStatusChangeResult> CloseOrderAsync(
+            int orderId,
+            string newStatus,
+            string[] allowedFrom,
+            string? reason,
+            string adminId,
+            string auditType)
+        {
+            await using var transaction = await _db.Database.BeginTransactionAsync();
+
+            try
+            {
+                // 1. Change the status only if the order is still in an allowed state.
+                //    This is one atomic UPDATE, so if two admins click at the same time
+                //    only one of them gets rowsChanged == 1 and restores stock.
+                int rowsChanged = await _db.Orders
+                    .Where(o => o.Id == orderId && allowedFrom.Contains(o.Status))
+                    .ExecuteUpdateAsync(s => s
+                        .SetProperty(o => o.Status, newStatus)
+                        .SetProperty(o => o.RejectionReason, reason));
+
+                if (rowsChanged == 0)
+                {
+                    var currentStatus = await _db.Orders
+                        .AsNoTracking()
+                        .Where(o => o.Id == orderId)
+                        .Select(o => o.Status)
+                        .FirstOrDefaultAsync();
+
+                    await transaction.RollbackAsync();
+
+                    if (currentStatus == null)
+                        return OrderStatusChangeResult.Missing();
+
+                    string verb = newStatus == "Rejected" ? "reject" : "cancel";
+                    string message = $"Cannot {verb} — order is '{currentStatus}'.";
+
+                    if (newStatus == "Cancelled" && currentStatus == "Pending")
+                        message += " A Pending order must be rejected instead.";
+
+                    return OrderStatusChangeResult.Fail(message);
+                }
+
+                // 2. Give the reserved stock back (atomic add, no read-then-write).
+                var items = await _db.OrderItems
+                    .Where(oi => oi.OrderId == orderId)
+                    .Select(oi => new { oi.MedicineId, oi.Quantity })
+                    .ToListAsync();
+
+                var now = DateTime.UtcNow;
+
+                foreach (var item in items)
+                {
+                    await _db.Stocks
+                        .Where(s => s.MedicineId == item.MedicineId)
+                        .ExecuteUpdateAsync(s => s
+                            .SetProperty(x => x.Quantity, x => x.Quantity + item.Quantity)
+                            .SetProperty(x => x.UpdatedAt, now));
+                }
+
+                // 3. Audit log: only the admin's Reject/Cancel action, not the stock restore.
+                _db.AuditLogs.Add(new AuditLog
+                {
+                    AdminId = adminId,
+                    Action = $"{newStatus} order MC-{10000 + orderId}",
+                    ActionType = auditType,
+                    TableName = "Orders",
+                    RecordId = orderId,
+                    CreatedAt = now
+                });
+
+                await _db.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return OrderStatusChangeResult.Ok();
             }
             catch
             {
