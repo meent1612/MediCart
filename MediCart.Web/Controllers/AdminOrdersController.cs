@@ -230,8 +230,14 @@ namespace MediCart.Web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CancelOrder(int id)
+        public async Task<IActionResult> CancelOrder(int id, string reason)
         {
+            if (string.IsNullOrWhiteSpace(reason))
+            {
+                TempData["OrderError"] = "Enter a reason for cancelling this order.";
+                return RedirectToAction(nameof(OrderDetail), new { id });
+            }
+
             var order = await _db.Orders.FindAsync(id);
 
             if (order == null)
@@ -247,6 +253,7 @@ namespace MediCart.Web.Controllers
             }
 
             order.Status = "Cancelled";
+            order.RejectionReason = reason.Trim();
 
             var adminId = _userManager.GetUserId(User);
             if (adminId != null)
