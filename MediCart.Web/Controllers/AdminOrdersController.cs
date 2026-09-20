@@ -13,13 +13,16 @@ namespace MediCart.Web.Controllers
     {
         private readonly ApplicationDbContext _db;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IOrderService _orderService;
 
         public AdminOrdersController(
             ApplicationDbContext db,
-            UserManager<ApplicationUser> userManager)
+            UserManager<ApplicationUser> userManager,
+            IOrderService orderService)
         {
             _db = db;
             _userManager = userManager;
+            _orderService = orderService;
         }
 
         // =====================
@@ -98,7 +101,7 @@ namespace MediCart.Web.Controllers
         }
 
         // =====================
-        // Approve / Reject / Ship / Deliver
+        // Approve / Reject / Ship / Deliver / Cancel
         // =====================
 
         [HttpPost]
@@ -131,6 +134,7 @@ namespace MediCart.Web.Controllers
             return RedirectToAction(nameof(OrderDetail), new { id });
         }
 
+        // Reject: Pending orders only. Stock is restored inside OrderService.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Reject(int id, string reason)
@@ -141,30 +145,23 @@ namespace MediCart.Web.Controllers
                 return RedirectToAction(nameof(OrderDetail), new { id });
             }
 
-            var order = await _db.Orders.FindAsync(id);
+            var adminId = _userManager.GetUserId(User);
+            if (adminId == null)
+                return Challenge();
 
-            if (order == null)
-            {
-                TempData["OrderError"] = "Order not found.";
-                return RedirectToAction(nameof(IncomingOrders));
-            }
+            var result = await _orderService.RejectOrderAsync(id, reason, adminId);
 
-            if (order.Status != "Pending")
+            if (!result.Success)
             {
-                TempData["OrderError"] = $"Cannot reject — order is already '{order.Status}'.";
+                TempData["OrderError"] = result.ErrorMessage;
+
+                if (result.NotFound)
+                    return RedirectToAction(nameof(IncomingOrders));
+
                 return RedirectToAction(nameof(OrderDetail), new { id });
             }
 
-            order.Status = "Rejected";
-            order.RejectionReason = reason.Trim();
-
-            var adminId = _userManager.GetUserId(User);
-            if (adminId != null)
-                LogAction(adminId, $"Rejected order MC-{10000 + order.Id}", order.Id, AuditActionTypes.Rejected);
-
-            await _db.SaveChangesAsync();
-
-            TempData["OrderSuccess"] = $"Order MC-{10000 + order.Id} rejected.";
+            TempData["OrderSuccess"] = $"Order MC-{10000 + id} rejected.";
             return RedirectToAction(nameof(OrderDetail), new { id });
         }
 
@@ -228,33 +225,29 @@ namespace MediCart.Web.Controllers
             return RedirectToAction(nameof(OrderDetail), new { id });
         }
 
+        // Cancel: Processing or Shipped orders only. Reason is optional.
+        // Stock is restored inside OrderService.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CancelOrder(int id)
+        public async Task<IActionResult> CancelOrder(int id, string? reason)
         {
-            var order = await _db.Orders.FindAsync(id);
+            var adminId = _userManager.GetUserId(User);
+            if (adminId == null)
+                return Challenge();
 
-            if (order == null)
-            {
-                TempData["OrderError"] = "Order not found.";
-                return RedirectToAction(nameof(IncomingOrders));
-            }
+            var result = await _orderService.CancelOrderAsync(id, reason, adminId);
 
-            if (order.Status == "Delivered" || order.Status == "Cancelled" || order.Status == "Rejected")
+            if (!result.Success)
             {
-                TempData["OrderError"] = $"Cannot cancel — order is already '{order.Status}'.";
+                TempData["OrderError"] = result.ErrorMessage;
+
+                if (result.NotFound)
+                    return RedirectToAction(nameof(IncomingOrders));
+
                 return RedirectToAction(nameof(OrderDetail), new { id });
             }
 
-            order.Status = "Cancelled";
-
-            var adminId = _userManager.GetUserId(User);
-            if (adminId != null)
-                LogAction(adminId, $"Cancelled order MC-{10000 + order.Id}", order.Id, AuditActionTypes.Cancelled);
-
-            await _db.SaveChangesAsync();
-
-            TempData["OrderSuccess"] = $"Order MC-{10000 + order.Id} has been cancelled.";
+            TempData["OrderSuccess"] = $"Order MC-{10000 + id} has been cancelled.";
             return RedirectToAction(nameof(OrderDetail), new { id });
         }
 
@@ -262,7 +255,7 @@ namespace MediCart.Web.Controllers
         // Flagged Orders
         // =====================
 
-               [HttpGet]
+        [HttpGet]
         public async Task<IActionResult> FlaggedOrders(string? tier)
         {
             tier ??= "All";
@@ -302,6 +295,7 @@ namespace MediCart.Web.Controllers
 
             return View(model);
         }
+
         // =====================
         // Helpers
         // =====================
