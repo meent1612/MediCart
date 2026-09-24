@@ -138,6 +138,10 @@
     font-size: 1.1rem;
     margin-bottom: 14px;
 }
+.team-card__avatar--photo {
+    object-fit: cover;
+    background: none;
+}
 .team-card h3 {
     font-size: 1.02rem;
     margin: 0 0 4px;
