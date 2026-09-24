@@ -80,7 +80,6 @@
     font-size: 0.9rem;
     font-weight: 500;
     color: var(--slate-700);
-    cursor: pointer;
     transition: background-color .15s var(--ease), color .15s var(--ease);
 }
 
@@ -108,11 +107,6 @@
     border-radius: var(--radius-lg);
     padding: 28px 30px 30px;
     scroll-margin-top: 90px;
-}
-
-/* ----- Tab visibility ----- */
-.up-card--hidden {
-    display: none;
 }
 
 .up-card h2 {
