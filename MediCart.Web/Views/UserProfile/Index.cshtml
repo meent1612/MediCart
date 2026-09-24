@@ -22,9 +22,9 @@
             </div>
 
             <nav class="up-nav">
-                <a href="#" class="up-nav__link is-active" data-target="profile-details">Profile details</a>
-                <a href="#" class="up-nav__link" data-target="order-history">Order history</a>
-                <a href="#" class="up-nav__link" data-target="my-messages">My messages</a>
+                <a href="#profile-details" class="up-nav__link">Profile details</a>
+                <a href="#order-history" class="up-nav__link is-active">Order history</a>
+                <a href="#my-messages" class="up-nav__link">My messages</a>
             </nav>
         </aside>
 
@@ -32,7 +32,7 @@
         <main class="up-main">
 
             <!-- Order history -->
-            <section class="up-card up-card--hidden" id="order-history">
+            <section class="up-card" id="order-history">
                 <h2>Order history</h2>
                 <p class="up-card__sub">All orders placed from your account.</p>
 
@@ -82,7 +82,7 @@
             </section>
 
             <!-- My messages -->
-            <section class="up-card up-card--hidden" id="my-messages">
+            <section class="up-card" id="my-messages">
                 <h2>My messages</h2>
                 <p class="up-card__sub">Messages you've sent us through the Contact page. We reply by email.</p>
 
@@ -119,7 +119,7 @@
                 }
             </section>
 
-            <!-- Profile details (default visible) -->
+            <!-- Profile details -->
             <section class="up-card" id="profile-details">
                 <h2>Profile details</h2>
                 <p class="up-card__sub">Keep your contact information up to date for delivery.</p>
@@ -161,32 +161,3 @@
         </main>
     </div>
 </div>
-
-@section Scripts {
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            var navLinks = document.querySelectorAll('.up-nav__link');
-            var sections = document.querySelectorAll('.up-main .up-card');
-
-            navLinks.forEach(function (link) {
-                link.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    var targetId = link.getAttribute('data-target');
-
-                    // Toggle active class on nav
-                    navLinks.forEach(function (l) { l.classList.remove('is-active'); });
-                    link.classList.add('is-active');
-
-                    // Show only the matching section
-                    sections.forEach(function (section) {
-                        if (section.id === targetId) {
-                            section.classList.remove('up-card--hidden');
-                        } else {
-                            section.classList.add('up-card--hidden');
-                        }
-                    });
-                });
-            });
-        });
-    </script>
-}
