@@ -199,7 +199,9 @@ namespace MediCart.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> MarkDelivered(int id)
         {
-            var order = await _db.Orders.FindAsync(id);
+            var order = await _db.Orders
+                .Include(o => o.Payments)
+                .FirstOrDefaultAsync(o => o.Id == id);
 
             if (order == null)
             {
@@ -219,15 +221,10 @@ namespace MediCart.Web.Controllers
             // Payment as completed now that delivery has happened. bKash/Card
             // payments were already completed at order placement (see
             // OrderService.PlaceOrderAsync) and are left untouched here.
-            //
-            // Queried directly by OrderId rather than via order.Payments:
-            // that navigation is backed by an unused shadow FK
-            // (Payment.OrderId1, never set anywhere) and is always empty.
-            // Same direct-query pattern as OrderService.CloseOrderAsync.
-            var payment = await _db.Payments.FirstOrDefaultAsync(p => p.OrderId == id);
+            var payment = order.Payments.FirstOrDefault();
             if (payment != null && payment.Method == PaymentMethods.CashOnDelivery)
             {
-                payment.Status = PaymentStatuses.Completed;
+                payment.Status = "completed";
                 payment.PaidAt = DateTime.UtcNow;
             }
 
@@ -274,7 +271,7 @@ namespace MediCart.Web.Controllers
         // Flagged Orders
         // =====================
 
-                       [HttpGet]
+                [HttpGet]
         public async Task<IActionResult> FlaggedOrders(string? tier)
         {
             tier ??= "All";
