@@ -73,7 +73,7 @@ namespace MediCart.Web.Data
                 .OnDelete(DeleteBehavior.Cascade);
 
             // Stock — quantity can never go negative (Report 02, risk T3 /
-            // decisions.md item #2). Enforced at the DB level so a bug in
+            // decisions item #2). Enforced at the DB level so a bug in
             // application logic can't silently oversell.
             builder.Entity<Stock>()
                 .ToTable(t => t.HasCheckConstraint("CK_Stock_Quantity",
@@ -120,16 +120,16 @@ namespace MediCart.Web.Data
                 .HasIndex(o => o.Email);
 
             // Payment — FK to Order and User + check constraint on Status.
-            // 'refunded' (bKash/Card money returned on reject/cancel) and
-            // 'cancelled' (COD order closed with no money ever collected)
-            // added per decisions.md payment-status-on-close policy.
+            // 'refunded' = bKash/Card money already taken, returned on
+            // reject/cancel. 'failed' also covers a COD order closed with
+            // no money ever collected (see OrderService.CloseOrderAsync).
             builder.Entity<Payment>()
                 .Property(p => p.Amount)
                 .HasColumnType("numeric(10,2)");
 
             builder.Entity<Payment>()
                 .ToTable(t => t.HasCheckConstraint("CK_Payment_Status",
-                    "\"Status\" IN ('pending','completed','failed','refunded','cancelled')"));
+                    "\"Status\" IN ('pending','completed','failed','refunded')"));
 
             builder.Entity<Payment>()
                 .HasOne(p => p.Order)
