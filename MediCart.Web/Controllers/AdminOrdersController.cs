@@ -274,16 +274,28 @@ namespace MediCart.Web.Controllers
         // Flagged Orders
         // =====================
 
-        [HttpGet]
+                       [HttpGet]
         public async Task<IActionResult> FlaggedOrders(string? tier)
         {
             tier ??= "All";
 
+            // Flagged Orders is a "needs initial review" queue only — it
+            // shows a flagged order for as long as no admin action has
+            // been taken on it (Status == Pending). The moment it's
+            // Approved (-> Processing) or Rejected (-> Rejected), it drops
+            // off this list for good, even though IsFlagged stays true on
+            // the row forever. A later Cancel (only possible after
+            // Approve, from Processing/Shipped) never needs handling here
+            // separately, since the order already left this list at the
+            // Approve step. Full status history for a flagged order,
+            // including Cancelled, is still visible in IncomingOrders via
+            // its own status dropdown (Active/All/Pending/Processing/
+            // Shipped/Delivered/Rejected/Cancelled).
             var orders = await _db.Orders
                 .Include(o => o.User)
                 .Include(o => o.OrderItems)
                     .ThenInclude(oi => oi.Medicine)
-                .Where(o => o.IsFlagged)
+                .Where(o => o.IsFlagged && o.Status == "Pending")
                 .OrderByDescending(o => o.CreatedAt)
                 .ToListAsync();
 
