@@ -834,6 +834,7 @@ namespace MediCart.Web.Controllers
             }
 
             var name = form.Name.Trim();
+            var adminId = _userManager.GetUserId(User);
 
             if (form.ParentCategoryId is null)
             {
@@ -846,12 +847,21 @@ namespace MediCart.Web.Controllers
                     return RedirectToAction(nameof(Categories));
                 }
 
-                _db.Categories.Add(new Category
+                var category = new Category
                 {
                     Name = name,
                     Description = string.IsNullOrWhiteSpace(form.Description) ? null : form.Description.Trim(),
                     CreatedAt = DateTime.UtcNow
-                });
+                };
+
+                _db.Categories.Add(category);
+                await _db.SaveChangesAsync(); // generates category.Id
+
+                if (adminId != null)
+                {
+                    LogAction(adminId, $"Added category '{category.Name}'", AuditActionTypes.Add, "Categories", category.Id);
+                    await _db.SaveChangesAsync();
+                }
 
                 TempData["CategorySuccess"] = $"Category '{name}' added.";
             }
@@ -874,18 +884,26 @@ namespace MediCart.Web.Controllers
                     return RedirectToAction(nameof(Categories));
                 }
 
-                _db.SubCategories.Add(new SubCategory
+                var subCategory = new SubCategory
                 {
                     CategoryId = form.ParentCategoryId.Value,
                     Name = name,
                     Description = string.IsNullOrWhiteSpace(form.Description) ? null : form.Description.Trim(),
                     CreatedAt = DateTime.UtcNow
-                });
+                };
+
+                _db.SubCategories.Add(subCategory);
+                await _db.SaveChangesAsync(); // generates subCategory.Id
+
+                if (adminId != null)
+                {
+                    LogAction(adminId, $"Added subcategory '{subCategory.Name}'", AuditActionTypes.Add, "SubCategories", subCategory.Id);
+                    await _db.SaveChangesAsync();
+                }
 
                 TempData["CategorySuccess"] = $"Subcategory '{name}' added.";
             }
 
-            await _db.SaveChangesAsync();
             return RedirectToAction(nameof(Categories));
         }
 
@@ -916,6 +934,8 @@ namespace MediCart.Web.Controllers
                 return RedirectToAction(nameof(Categories));
             }
 
+            var adminId = _userManager.GetUserId(User);
+
             if (form.Kind == "category")
             {
                 var category = await _db.Categories.FindAsync(form.Id.Value);
@@ -936,6 +956,9 @@ namespace MediCart.Web.Controllers
 
                 category.Name = name;
                 category.Description = string.IsNullOrWhiteSpace(form.Description) ? null : form.Description.Trim();
+
+                if (adminId != null)
+                    LogAction(adminId, $"Edited category '{category.Name}'", AuditActionTypes.Edit, "Categories", category.Id);
             }
             else
             {
@@ -960,6 +983,9 @@ namespace MediCart.Web.Controllers
                 subCategory.Name = name;
                 subCategory.Description = string.IsNullOrWhiteSpace(form.Description) ? null : form.Description.Trim();
                 subCategory.CategoryId = form.ParentCategoryId!.Value;
+
+                if (adminId != null)
+                    LogAction(adminId, $"Edited subcategory '{subCategory.Name}'", AuditActionTypes.Edit, "SubCategories", subCategory.Id);
             }
 
             await _db.SaveChangesAsync();
@@ -997,10 +1023,18 @@ namespace MediCart.Web.Controllers
                 return RedirectToAction(nameof(Categories));
             }
 
+            var categoryName = category.Name;
+            var categoryId = category.Id;
+
             _db.Categories.Remove(category);
+
+            var adminId = _userManager.GetUserId(User);
+            if (adminId != null)
+                LogAction(adminId, $"Deleted category '{categoryName}'", AuditActionTypes.Delete, "Categories", categoryId);
+
             await _db.SaveChangesAsync();
 
-            TempData["CategorySuccess"] = $"Category '{category.Name}' deleted.";
+            TempData["CategorySuccess"] = $"Category '{categoryName}' deleted.";
             return RedirectToAction(nameof(Categories));
         }
 
@@ -1025,10 +1059,18 @@ namespace MediCart.Web.Controllers
                 return RedirectToAction(nameof(Categories));
             }
 
+            var subCategoryName = subCategory.Name;
+            var subCategoryId = subCategory.Id;
+
             _db.SubCategories.Remove(subCategory);
+
+            var adminId = _userManager.GetUserId(User);
+            if (adminId != null)
+                LogAction(adminId, $"Deleted subcategory '{subCategoryName}'", AuditActionTypes.Delete, "SubCategories", subCategoryId);
+
             await _db.SaveChangesAsync();
 
-            TempData["CategorySuccess"] = $"Subcategory '{subCategory.Name}' deleted.";
+            TempData["CategorySuccess"] = $"Subcategory '{subCategoryName}' deleted.";
             return RedirectToAction(nameof(Categories));
         }
 
@@ -1058,12 +1100,20 @@ namespace MediCart.Web.Controllers
                 return RedirectToAction(nameof(Categories));
             }
 
-            _db.ProductTypes.Add(new ProductType
+            var productType = new ProductType
             {
                 Name = form.Name.Trim()
-            });
+            };
 
-            await _db.SaveChangesAsync();
+            _db.ProductTypes.Add(productType);
+            await _db.SaveChangesAsync(); // generates productType.Id
+
+            var adminId = _userManager.GetUserId(User);
+            if (adminId != null)
+            {
+                LogAction(adminId, $"Added product type '{productType.Name}'", AuditActionTypes.Add, "ProductTypes", productType.Id);
+                await _db.SaveChangesAsync();
+            }
 
             TempData["ProductTypeSuccess"] =
                 $"Product type '{form.Name}' added.";
@@ -1111,6 +1161,10 @@ namespace MediCart.Web.Controllers
 
             productType.Name = form.Name.Trim();
 
+            var adminId = _userManager.GetUserId(User);
+            if (adminId != null)
+                LogAction(adminId, $"Edited product type '{productType.Name}'", AuditActionTypes.Edit, "ProductTypes", productType.Id);
+
             await _db.SaveChangesAsync();
 
             TempData["ProductTypeSuccess"] =
@@ -1144,11 +1198,19 @@ namespace MediCart.Web.Controllers
                 return RedirectToAction(nameof(Categories));
             }
 
+            var productTypeName = productType.Name;
+            var productTypeId = productType.Id;
+
             _db.ProductTypes.Remove(productType);
+
+            var adminId = _userManager.GetUserId(User);
+            if (adminId != null)
+                LogAction(adminId, $"Deleted product type '{productTypeName}'", AuditActionTypes.Delete, "ProductTypes", productTypeId);
+
             await _db.SaveChangesAsync();
 
             TempData["ProductTypeSuccess"] =
-                $"Product type '{productType.Name}' deleted.";
+                $"Product type '{productTypeName}' deleted.";
 
             return RedirectToAction(nameof(Categories));
         }
@@ -1337,7 +1399,14 @@ namespace MediCart.Web.Controllers
             };
 
             _db.Medicines.Add(medicine);
-            await _db.SaveChangesAsync();
+            await _db.SaveChangesAsync(); // generates medicine.Id
+
+            var adminId = _userManager.GetUserId(User);
+            if (adminId != null)
+            {
+                LogAction(adminId, $"Added medicine '{medicine.Name}'", AuditActionTypes.Add, "Medicines", medicine.Id);
+                await _db.SaveChangesAsync();
+            }
 
             TempData["MedicineSuccess"] =
                 $"Medicine '{medicine.Name}' added.";
@@ -1619,6 +1688,10 @@ namespace MediCart.Web.Controllers
                     })
                     .ToList();
 
+            var adminId = _userManager.GetUserId(User);
+            if (adminId != null)
+                LogAction(adminId, $"Edited medicine '{medicine.Name}'", AuditActionTypes.Edit, "Medicines", medicine.Id);
+
             await _db.SaveChangesAsync();
 
             TempData["MedicineSuccess"] =
@@ -1660,11 +1733,19 @@ namespace MediCart.Web.Controllers
                     new { id = medicine.Id });
             }
 
+            var medicineName = medicine.Name;
+            var medicineId = medicine.Id;
+
             _db.Medicines.Remove(medicine);
+
+            var adminId = _userManager.GetUserId(User);
+            if (adminId != null)
+                LogAction(adminId, $"Deleted medicine '{medicineName}'", AuditActionTypes.Delete, "Medicines", medicineId);
+
             await _db.SaveChangesAsync();
 
             TempData["MedicineSuccess"] =
-                $"Medicine '{medicine.Name}' deleted.";
+                $"Medicine '{medicineName}' deleted.";
 
             return RedirectToAction(nameof(AddMedicine));
         }
@@ -1673,6 +1754,19 @@ namespace MediCart.Web.Controllers
         // =====================
         // Helpers
         // =====================
+
+        private void LogAction(string adminId, string action, string actionType, string tableName, int? recordId)
+        {
+            _db.AuditLogs.Add(new AuditLog
+            {
+                AdminId = adminId,
+                Action = action,
+                ActionType = actionType,
+                TableName = tableName,
+                RecordId = recordId,
+                CreatedAt = DateTime.UtcNow
+            });
+        }
 
         private async Task<AdminCategoriesViewModel> BuildCategoriesViewModelAsync()
         {
