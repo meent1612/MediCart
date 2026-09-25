@@ -193,11 +193,24 @@ namespace MediCart.Web.Controllers
             var todayDateOnly = DateOnly.FromDateTime(DateTime.UtcNow);
             var expiryThreshold = todayDateOnly.AddDays(StockExpiryHelper.WarningExpiryDays);
 
+            // Order-count KPIs are operational volume, not money — they
+            // intentionally count every order regardless of status.
             var totalOrders = await _db.Orders.CountAsync();
-            var totalRevenue = await _db.Orders.SumAsync(o => (decimal?)o.TotalAmount) ?? 0m;
             var pendingProcessing = await _db.Orders.CountAsync(o => o.Status == "Pending" || o.Status == "Processing");
             var flaggedCount = await _db.Orders.CountAsync(o => o.IsFlagged);
             var lowStockCount = await _db.Stocks.CountAsync(s => s.Quantity <= StockExpiryHelper.LowStockThreshold);
+
+            // Revenue is money actually earned — only counts orders that
+            // completed the full lifecycle to Delivered. A bKash/Card order
+            // that was Rejected or Cancelled before delivery never reaches
+            // "Delivered", so it's excluded here even though its Payment
+            // row shows "completed" at placement time (it will have been
+            // flipped to "refunded" by OrderService.CloseOrderAsync).
+            var deliveredOrdersQuery = _db.Orders.Where(o => o.Status == "Delivered");
+
+            var deliveredCount = await deliveredOrdersQuery.CountAsync();
+            var totalRevenue = await deliveredOrdersQuery.SumAsync(o => (decimal?)o.TotalAmount) ?? 0m;
+            var avgOrderValue = deliveredCount > 0 ? totalRevenue / deliveredCount : 0m;
 
             var ordersLast7Days = await _db.Orders
                 .Where(o => o.CreatedAt >= sevenDaysAgo)
@@ -237,11 +250,10 @@ namespace MediCart.Web.Controllers
 
             var flaggedOrdersQuery = _db.Orders
                 .Include(o => o.User)
-                .Where(o => o.IsFlagged && o.Status != "Delivered" && o.Status != "Rejected" && o.Status != "Cancelled")
-                .OrderByDescending(o => o.CreatedAt);
+                .Where(o => o.IsFlagged && o.Status != "Delivered" && o.Status != "Rejected" && o.Status != "Cancelled");
 
             var totalFlaggedCount = await flaggedOrdersQuery.CountAsync();
-            var flaggedOrders = await flaggedOrdersQuery.Take(4).ToListAsync();
+            var flaggedOrders = await flaggedOrdersQuery.OrderByDescending(o => o.CreatedAt).Take(4).ToListAsync();
 
             var expiringQuery = _db.Stocks
                 .Include(s => s.Medicine)
@@ -337,11 +349,13 @@ namespace MediCart.Web.Controllers
                 });
             }
 
-            var avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0m;
-
-            // Best Selling Medicines (Top 5 by units sold)
+            // Best Selling Medicines (Top 5 by units sold) — revenue-bearing,
+            // so restricted to Delivered orders like every other money figure
+            // on this dashboard.
             var bestSellingGroup = await _db.OrderItems
                 .Include(oi => oi.Medicine)
+                .Include(oi => oi.Order)
+                .Where(oi => oi.Order.Status == "Delivered")
                 .GroupBy(oi => new { oi.MedicineId, oi.Medicine.Name })
                 .Select(g => new
                 {
@@ -364,11 +378,13 @@ namespace MediCart.Web.Controllers
                 Revenue = item.Revenue
             }).ToList();
 
-            // Top Categories breakdown (by revenue share)
+            // Top Categories breakdown (by revenue share) — same Delivered-only rule.
             var categoryRevenueGroup = await _db.OrderItems
                 .Include(oi => oi.Medicine)
                     .ThenInclude(m => m.Category)
-                .Where(oi => oi.Medicine != null && oi.Medicine.Category != null)
+                .Include(oi => oi.Order)
+                .Where(oi => oi.Order.Status == "Delivered" &&
+                             oi.Medicine != null && oi.Medicine.Category != null)
                 .GroupBy(oi => oi.Medicine.Category.Name)
                 .Select(g => new
                 {
@@ -391,7 +407,7 @@ namespace MediCart.Web.Controllers
             {
                 TotalRevenue = totalRevenue,
                 AverageOrderValue = avgOrderValue,
-                RevenuePeriodLabel = "Lifetime store revenue",
+                RevenuePeriodLabel = "Lifetime store revenue (delivered orders)",
                 TotalOrdersCount = totalOrders,
                 PendingProcessingCount = pendingProcessing,
                 FlaggedOrdersCount = flaggedCount,
@@ -441,11 +457,20 @@ namespace MediCart.Web.Controllers
                 default:
                     startDate = null;
                     endDate = null;
-                    label = "Lifetime store revenue";
+                    label = "Lifetime store revenue (delivered orders)";
                     break;
             }
 
-            var query = _db.Orders.AsQueryable();
+            // Revenue-bearing endpoint — Delivered orders only, same rule as
+            // the Dashboard() KPI card. The date range still filters on
+            // CreatedAt (order placement date), since the schema has no
+            // DeliveredAt column — an order placed in one period but
+            // delivered in the next is counted toward its placement
+            // period's revenue. A DeliveredAt column would make this exact
+            // by delivery date instead; flagged as a future-work item, not
+            // built here.
+            var query = _db.Orders.Where(o => o.Status == "Delivered");
+
             if (startDate.HasValue)
             {
                 query = query.Where(o => o.CreatedAt >= startDate.Value);
