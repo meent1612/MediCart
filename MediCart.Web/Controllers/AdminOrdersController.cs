@@ -134,7 +134,7 @@ namespace MediCart.Web.Controllers
             return RedirectToAction(nameof(OrderDetail), new { id });
         }
 
-        // Reject: Pending orders only. Stock is restored inside OrderService.
+        // Reject: Pending orders only. Stock and Payment are restored/closed inside OrderService.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Reject(int id, string reason)
@@ -215,6 +215,22 @@ namespace MediCart.Web.Controllers
 
             order.Status = "Delivered";
 
+            // Cash on delivery is only ever collected at the door — mark the
+            // Payment as completed now that delivery has happened. bKash/Card
+            // payments were already completed at order placement (see
+            // OrderService.PlaceOrderAsync) and are left untouched here.
+            //
+            // Queried directly by OrderId rather than via order.Payments:
+            // that navigation is backed by an unused shadow FK
+            // (Payment.OrderId1, never set anywhere) and is always empty.
+            // Same direct-query pattern as OrderService.CloseOrderAsync.
+            var payment = await _db.Payments.FirstOrDefaultAsync(p => p.OrderId == id);
+            if (payment != null && payment.Method == PaymentMethods.CashOnDelivery)
+            {
+                payment.Status = PaymentStatuses.Completed;
+                payment.PaidAt = DateTime.UtcNow;
+            }
+
             var adminId = _userManager.GetUserId(User);
             if (adminId != null)
                 LogAction(adminId, $"Marked order MC-{10000 + order.Id} as Delivered", order.Id, AuditActionTypes.MarkedDelivered);
@@ -226,7 +242,8 @@ namespace MediCart.Web.Controllers
         }
 
         // Cancel: Processing or Shipped orders only. A reason is required.
-        // Status change, stock restore and audit log are all handled inside OrderService.
+        // Status change, stock restore, Payment close-out, and audit log are
+        // all handled inside OrderService.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CancelOrder(int id, string reason)
