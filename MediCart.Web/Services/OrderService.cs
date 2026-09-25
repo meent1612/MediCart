@@ -157,15 +157,21 @@ namespace MediCart.Web.Services
                     });
                 }
 
-                // Create payment record
+                // Create payment record.
+                // bKash/Card money is collected at order time (the OTP-verify
+                // step IS the payment succeeding), so those go straight to
+                // "completed". Cash on delivery is only ever collected at the
+                // door, so it starts "pending" and is resolved later by
+                // CloseOrderAsync (reject/cancel -> "failed") or by
+                // AdminOrdersController.MarkDelivered (-> "completed").
                 _db.Payments.Add(new Payment
                 {
                     OrderId = order.Id,
                     UserId = request.UserId,
                     Amount = totalAmount,
                     Method = request.PaymentMethod,
-                    Status = request.PaymentMethod == "Cash on delivery" ? "pending" : "completed",
-                    PaidAt = request.PaymentMethod == "Cash on delivery" ? null : DateTime.UtcNow,
+                    Status = request.PaymentMethod == PaymentMethods.CashOnDelivery ? "pending" : "completed",
+                    PaidAt = request.PaymentMethod == PaymentMethods.CashOnDelivery ? null : DateTime.UtcNow,
                     CreatedAt = DateTime.UtcNow
                 });
 
@@ -187,7 +193,8 @@ namespace MediCart.Web.Services
 
         // =====================================================================
         // Reject (Pending only) and Cancel (Processing / Shipped only).
-        // Both end the order, so both give the reserved stock back.
+        // Both end the order, so both give the reserved stock back and both
+        // close out the Payment record (see CloseOrderAsync).
         // =====================================================================
 
         public Task<OrderStatusChangeResult> RejectOrderAsync(int orderId, string reason, string adminId)
@@ -272,7 +279,27 @@ namespace MediCart.Web.Services
                             .SetProperty(x => x.UpdatedAt, now));
                 }
 
-                // 3. Audit log: only the admin's Reject/Cancel action, not the stock restore.
+                // 3. Close out the Payment record.
+                //    - bKash/Card: money was already taken at order time -> refunded.
+                //    - Cash on delivery: nothing was ever collected -> failed
+                //      (matches CK_Payment_Status: pending/completed/failed/refunded —
+                //      "cancelled" is NOT an allowed value, do not use it here).
+                //    An order always has exactly one Payment row (created in
+                //    PlaceOrderAsync), so this should never be null in practice;
+                //    the null-check just avoids a crash if that invariant is
+                //    ever broken by future changes.
+                var payment = await _db.Payments
+                    .FirstOrDefaultAsync(p => p.OrderId == orderId);
+
+                if (payment != null)
+                {
+                    payment.Status = payment.Method == PaymentMethods.CashOnDelivery
+                        ? "failed"
+                        : "refunded";
+                }
+
+                // 4. Audit log: only the admin's Reject/Cancel action, not the
+                //    stock restore or payment close-out.
                 _db.AuditLogs.Add(new AuditLog
                 {
                     AdminId = adminId,

@@ -18,7 +18,6 @@ namespace MediCart.Web.Data
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }
         public DbSet<Prescription> Prescriptions { get; set; }
-        public DbSet<Notification> Notifications { get; set; }
         public DbSet<ContactMessage> ContactMessages { get; set; }
         public DbSet<AuditLog> AuditLogs { get; set; }
         public DbSet<OtpCode> OtpCodes { get; set; }
@@ -73,6 +72,13 @@ namespace MediCart.Web.Data
                 .HasForeignKey<Stock>(s => s.MedicineId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // Stock — quantity can never go negative (Report 02, risk T3 /
+            // decisions item #2). Enforced at the DB level so a bug in
+            // application logic can't silently oversell.
+            builder.Entity<Stock>()
+                .ToTable(t => t.HasCheckConstraint("CK_Stock_Quantity",
+                    "\"Quantity\" >= 0"));
+
             // CartItem — unique constraint on (UserId, MedicineId)
             builder.Entity<CartItem>()
                 .HasIndex(c => new { c.UserId, c.MedicineId })
@@ -113,14 +119,17 @@ namespace MediCart.Web.Data
             builder.Entity<OtpCode>()
                 .HasIndex(o => o.Email);
 
-            // Payment — FK to Order and User + check constraint on Status
+            // Payment — FK to Order and User + check constraint on Status.
+            // 'refunded' = bKash/Card money already taken, returned on
+            // reject/cancel. 'failed' also covers a COD order closed with
+            // no money ever collected (see OrderService.CloseOrderAsync).
             builder.Entity<Payment>()
                 .Property(p => p.Amount)
                 .HasColumnType("numeric(10,2)");
 
             builder.Entity<Payment>()
                 .ToTable(t => t.HasCheckConstraint("CK_Payment_Status",
-                    "\"Status\" IN ('pending','completed','failed')"));
+                    "\"Status\" IN ('pending','completed','failed','refunded')"));
 
             builder.Entity<Payment>()
                 .HasOne(p => p.Order)
