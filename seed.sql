@@ -883,30 +883,177 @@ FROM (VALUES
 JOIN "Medicines" med ON med."Name" = s."MedicineName"
 ON CONFLICT ("MedicineId") DO NOTHING;
  
--- ============================================================
--- 6. Side effects for the above medicines
--- ============================================================
 
+-- ============================================================
+-- SIDE EFFECTS
+-- mild   : common, non-serious
+-- moderate : needs monitoring
+-- severe : rare but serious — requires Rx justification
+-- No side effects: devices, test kits, pads, hair cream
+-- ============================================================
+ 
 INSERT INTO "SideEffects" ("MedicineId", "Effect", "Severity")
 SELECT med."Id", se."Effect", se."Severity"
 FROM (VALUES
-    ('Arlin 600',     'Stomach upset',                       'mild'),
-    ('Arlin 600',     'Heartburn',                            'mild'),
-    ('Augment 500',   'Diarrhea',                              'moderate'),
-    ('Augment 500',   'Nausea',                                'mild'),
-    ('Basak',         'Mild drowsiness',                       'mild'),
-    ('Fexo 120',      'Headache',                              'mild'),
-    ('Fexo 120',      'Dry mouth',                             'mild'),
-    ('Multivit Plus', 'Mild nausea if taken on empty stomach', 'mild'),
-    ('Napa Extra',    'Nausea',                                'mild'),
-    ('Napa Extra',    'Insomnia (due to caffeine)',            'mild'),
-    ('Nexum 40',      'Headache',                              'mild'),
-    ('Nexum 40',      'Abdominal pain',                        'moderate'),
-    ('Lanso D',       'Dry mouth',                             'mild'),
-    ('Lanso D',       'Dizziness',                             'moderate')
+ 
+    -- Fexo 120 (mild)
+    ('Fexo 120',        'Headache',                       'mild'),
+    ('Fexo 120',        'Dry mouth',                      'mild'),
+ 
+    -- Montela 10mg (mild + moderate)
+    ('Montela 10mg',    'Headache',                       'mild'),
+    ('Montela 10mg',    'Abdominal pain',                 'moderate'),
+ 
+    -- Gaba 300mg (mild + moderate + severe)
+    ('Gaba 300mg',      'Dizziness and drowsiness',       'mild'),
+    ('Gaba 300mg',      'Difficulty with coordination',   'moderate'),
+    ('Gaba 300mg',      'Mood changes or suicidal thoughts', 'severe'),
+ 
+    -- Cazep 200mg (mild + severe)
+    ('Cazep 200mg',     'Dizziness',                      'mild'),
+    ('Cazep 200mg',     'Nausea',                         'mild'),
+    ('Cazep 200mg',     'Severe skin rash (Stevens-Johnson Syndrome)', 'severe'),
+ 
+    -- Napa Extra (mild)
+    ('Napa Extra',      'Nausea',                         'mild'),
+    ('Napa Extra',      'Insomnia due to caffeine',       'mild'),
+ 
+    -- Arlin 600 (mild + moderate)
+    ('Arlin 600',       'Stomach upset',                  'mild'),
+    ('Arlin 600',       'Heartburn',                      'mild'),
+    ('Arlin 600',       'Gastrointestinal bleeding',      'moderate'),
+ 
+    -- Nexum 40 (mild + moderate)
+    ('Nexum 40',        'Headache',                       'mild'),
+    ('Nexum 40',        'Abdominal pain',                 'moderate'),
+ 
+    -- Lanso D (mild)
+    ('Lanso D',         'Dry mouth',                      'mild'),
+    ('Lanso D',         'Dizziness',                      'mild'),
+ 
+    -- Augment 500 (mild + moderate)
+    ('Augment 500',     'Diarrhea',                       'moderate'),
+    ('Augment 500',     'Nausea',                         'mild'),
+    ('Augment 500',     'Skin rash',                      'moderate'),
+ 
+    -- Zimax 500 (mild + moderate)
+    ('Zimax 500',       'Nausea',                         'mild'),
+    ('Zimax 500',       'Diarrhea',                       'moderate'),
+ 
+    -- Bislol 5mg (mild + moderate)
+    ('Bislol 5mg',      'Fatigue',                        'mild'),
+    ('Bislol 5mg',      'Cold hands and feet',            'mild'),
+    ('Bislol 5mg',      'Bradycardia (slow heart rate)',  'moderate'),
+ 
+    -- Amlor 5mg (mild)
+    ('Amlor 5mg',       'Ankle swelling',                 'mild'),
+    ('Amlor 5mg',       'Flushing',                       'mild'),
+ 
+    -- Metform 500mg (mild)
+    ('Metform 500mg',   'Nausea and vomiting',            'mild'),
+    ('Metform 500mg',   'Diarrhea',                       'mild'),
+ 
+    -- Glucophage 500mg (mild)
+    ('Glucophage 500mg','Nausea',                         'mild'),
+    ('Glucophage 500mg','Metallic taste',                 'mild'),
+ 
+    -- Thyronorm 50mcg (mild + moderate)
+    ('Thyronorm 50mcg', 'Heart palpitations if overdosed','moderate'),
+    ('Thyronorm 50mcg', 'Insomnia',                       'mild'),
+ 
+    -- Cloma 2 (mild + moderate + severe)
+    ('Cloma 2',         'Hot flashes',                    'mild'),
+    ('Cloma 2',         'Abdominal bloating',             'moderate'),
+    ('Cloma 2',         'Ovarian hyperstimulation syndrome', 'severe'),
+ 
+    -- Serenace 5mg (moderate + severe)
+    ('Serenace 5mg',    'Drowsiness',                     'mild'),
+    ('Serenace 5mg',    'Muscle stiffness (extrapyramidal effects)', 'moderate'),
+    ('Serenace 5mg',    'Tardive dyskinesia with long-term use', 'severe'),
+ 
+    -- Flunil 20mg (mild + moderate + severe)
+    ('Flunil 20mg',     'Nausea',                         'mild'),
+    ('Flunil 20mg',     'Insomnia',                       'mild'),
+    ('Flunil 20mg',     'Increased suicidal ideation in first weeks', 'severe'),
+ 
+    -- Supravit-S (mild)
+    ('Supravit-S',      'Mild nausea on empty stomach',   'mild'),
+ 
+    -- Revital Woman (mild)
+    ('Revital Woman',   'Mild stomach upset',             'mild'),
+ 
+    -- Caltrate 600+D (mild)
+    ('Caltrate 600+D',  'Constipation',                   'mild'),
+    ('Caltrate 600+D',  'Bloating',                       'mild'),
+ 
+    -- Biovit B Complex (mild)
+    ('Biovit B Complex','Urine discoloration (harmless)', 'mild'),
+ 
+    -- NOW Omega-3 (mild)
+    ('NOW Omega-3 1000mg', 'Fishy aftertaste',            'mild'),
+    ('NOW Omega-3 1000mg', 'Mild nausea',                 'mild'),
+ 
+    -- Truemed Turmeric (mild)
+    ('Truemed Turmeric','Stomach upset in high doses',    'mild'),
+ 
+    -- Basak Syrup (mild)
+    ('Basak Syrup',     'Mild drowsiness',                'mild'),
+ 
+    -- Gintex (mild)
+    ('Gintex 500mg',    'Headache',                       'mild'),
+    ('Gintex 500mg',    'Digestive upset',                'mild'),
+ 
+    -- Protinex (mild)
+    ('Protinex Chocolate', 'Bloating if lactose sensitive', 'mild'),
+ 
+    -- NovoRapid (moderate + severe)
+    ('NovoRapid Penfill','Hypoglycemia (low blood sugar)', 'moderate'),
+    ('NovoRapid Penfill','Severe hypoglycemia with overdose', 'severe'),
+ 
+    -- NovoMix (moderate + severe)
+    ('NovoMix 30 Penfill','Hypoglycemia',                 'moderate'),
+    ('NovoMix 30 Penfill','Injection site reaction',      'mild'),
+ 
+    -- Tresiba FlexTouch (moderate)
+    ('Tresiba FlexTouch','Hypoglycemia',                  'moderate'),
+    ('Tresiba FlexTouch','Injection site lipodystrophy',  'mild'),
+ 
+    -- Trulicity (mild + moderate)
+    ('Trulicity 0.75mg','Nausea',                         'mild'),
+    ('Trulicity 0.75mg','Vomiting',                       'moderate'),
+ 
+    -- Empa 10mg (mild + moderate)
+    ('Empa 10mg',       'Urinary tract infection',        'mild'),
+    ('Empa 10mg',       'Genital yeast infection',        'moderate'),
+ 
+    -- Jardiance 10mg (mild + moderate)
+    ('Jardiance 10mg',  'Increased urination',            'mild'),
+    ('Jardiance 10mg',  'Urinary tract infection',        'moderate'),
+ 
+    -- Femicon (mild + moderate)
+    ('Femicon',         'Nausea',                         'mild'),
+    ('Femicon',         'Mood changes',                   'mild'),
+    ('Femicon',         'Increased blood pressure risk',  'moderate'),
+ 
+    -- Marvelon (mild + moderate)
+    ('Marvelon',        'Headache',                       'mild'),
+    ('Marvelon',        'Breast tenderness',              'mild'),
+    ('Marvelon',        'Thromboembolism risk',           'moderate'),
+ 
+    -- Cloma 2 already done above
+ 
+    -- Bobcare Ointment (mild)
+    ('Bobcare Ointment','Mild skin irritation',           'mild')
+ 
+    -- No side effects for:
+    -- Accu-Chek Active, GlucoSure Star, Accu-Chek Strips, OneTouch Strips,
+    -- Accu-Chek Lancets, BD Lancets, Freedom Pads, Senora Pads,
+    -- Pregna News, Get Sure HCG, Wonica Cream, Powerlift, Thyronorm already done
+ 
 ) AS se("MedicineName", "Effect", "Severity")
 JOIN "Medicines" med ON med."Name" = se."MedicineName"
 WHERE NOT EXISTS (
     SELECT 1 FROM "SideEffects" existing
-    WHERE existing."MedicineId" = med."Id" AND existing."Effect" = se."Effect"
+    WHERE existing."MedicineId" = med."Id"
+      AND existing."Effect" = se."Effect"
 );
