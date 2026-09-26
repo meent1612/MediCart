@@ -297,14 +297,14 @@ SELECT
     m."Description", m."Dosage",
     m."RequiresPrescription"::boolean,
     m."SensitivityLevel",
-    'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/placeholder.jpg',
+    m."ImageUrl",
     NOW()
 FROM (VALUES
- 
+
     -- ==============================================================
     -- CATEGORY: Medicine
     -- ==============================================================
- 
+
     -- SubCat: Allergies & Asthma (2)
     ('Fexo 120',
      'Fexofenadine Hydrochloride 120mg',
@@ -313,8 +313,9 @@ FROM (VALUES
      'Antihistamine tablet for seasonal allergies, hay fever, and allergic rhinitis.',
      'Adults: 1 tablet once daily. Not for children under 12.',
      'false', null,
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
      'Medicine', 'Allergies & Asthma', 'Tablet / Caplet'),
- 
+
     ('Montela 10mg',
      'Montelukast Sodium 10mg',
      'Square Pharmaceuticals Ltd.',
@@ -322,8 +323,9 @@ FROM (VALUES
      'Leukotriene receptor antagonist for chronic asthma and allergic rhinitis.',
      'Adults 15+: 1 tablet (10mg) once daily in the evening.',
      'false', null,
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
      'Medicine', 'Allergies & Asthma', 'Tablet / Caplet'),
- 
+
     -- SubCat: Epilepsy & Neurological (2) — sensitivity: high (flag >=5), mid (flag >=15)
     ('Gaba 300mg',
      'Gabapentin 300mg',
@@ -332,8 +334,9 @@ FROM (VALUES
      'Anticonvulsant for epilepsy and neuropathic pain.',
      'Adults: 300mg 3 times daily, adjusted by physician. Do not stop abruptly.',
      'true', 'high',
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
      'Medicine', 'Epilepsy & Neurological', 'Capsule'),
- 
+
     ('Cazep 200mg',
      'Carbamazepine 200mg',
      'Beximco Pharmaceuticals Ltd.',
@@ -341,8 +344,9 @@ FROM (VALUES
      'Anticonvulsant for epilepsy, trigeminal neuralgia, and bipolar disorder.',
      'Adults: 200mg twice daily initially; dose adjusted by physician.',
      'true', 'mid',
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
      'Medicine', 'Epilepsy & Neurological', 'Tablet / Caplet'),
- 
+
     -- SubCat: Pain Relief (Analgesics) (2)
     ('Napa Extra',
      'Paracetamol 500mg + Caffeine 65mg',
@@ -351,8 +355,9 @@ FROM (VALUES
      'Fast-acting pain reliever and fever reducer with caffeine for enhanced effect.',
      'Adults: 1-2 tablets every 4-6 hours. Max 8 tablets in 24 hours.',
      'false', null,
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
      'Medicine', 'Pain Relief (Analgesics)', 'Tablet / Caplet'),
- 
+
     ('Arlin 600',
      'Ibuprofen 600mg',
      'Beacon Pharmaceuticals Ltd.',
@@ -360,8 +365,9 @@ FROM (VALUES
      'NSAID for pain, fever, and inflammation including headache and muscle pain.',
      'Adults: 1 tablet every 6-8 hours after meals. Max 3 tablets/day.',
      'false', null,
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
      'Medicine', 'Pain Relief (Analgesics)', 'Tablet / Caplet'),
- 
+
     -- SubCat: Gastrointestinal (2)
     ('Nexum 40',
      'Esomeprazole 40mg',
@@ -370,8 +376,9 @@ FROM (VALUES
      'Proton pump inhibitor for acid reflux, GERD, and stomach ulcers.',
      'Adults: 1 capsule daily before breakfast for 4-8 weeks or as directed.',
      'true', null,
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
      'Medicine', 'Gastrointestinal', 'Capsule'),
- 
+
     ('Lanso D',
      'Lansoprazole 30mg + Domperidone 10mg',
      'ACME Laboratories Ltd.',
@@ -379,8 +386,9 @@ FROM (VALUES
      'Combination for acid reflux with nausea or bloating.',
      'Adults: 1 capsule once daily before breakfast.',
      'true', null,
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
      'Medicine', 'Gastrointestinal', 'Capsule'),
- 
+
     -- SubCat: Antibiotics & Anti-infectives (2) — sensitivity: mid (flag >=15)
     ('Augment 500',
      'Amoxicillin 500mg + Clavulanic Acid 125mg',
@@ -389,8 +397,9 @@ FROM (VALUES
      'Broad-spectrum antibiotic for respiratory, ear, and skin infections.',
      'Adults: 1 tablet every 12 hours for 5-7 days. Complete the full course.',
      'true', 'mid',
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
      'Medicine', 'Antibiotics & Anti-infectives', 'Tablet / Caplet'),
- 
+
     ('Zimax 500',
      'Azithromycin 500mg',
      'Square Pharmaceuticals Ltd.',
@@ -398,8 +407,9 @@ FROM (VALUES
      'Macrolide antibiotic for respiratory tract and skin infections.',
      'Adults: 500mg once daily for 3 days, or as prescribed.',
      'true', null,
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
      'Medicine', 'Antibiotics & Anti-infectives', 'Tablet / Caplet'),
- 
+
     -- SubCat: Cardiac & Blood Pressure (2)
     ('Bislol 5mg',
      'Bisoprolol Fumarate 5mg',
@@ -408,8 +418,9 @@ FROM (VALUES
      'Beta-blocker for hypertension, angina, and heart failure management.',
      'Adults: 5mg once daily in the morning; dose adjusted by physician.',
      'true', null,
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
      'Medicine', 'Cardiac & Blood Pressure', 'Tablet / Caplet'),
- 
+
     ('Amlor 5mg',
      'Amlodipine Besylate 5mg',
      'Pfizer Bangladesh Ltd.',
@@ -417,8 +428,9 @@ FROM (VALUES
      'Calcium channel blocker for hypertension and chronic stable angina.',
      'Adults: 5mg once daily. May be increased to 10mg based on response.',
      'true', null,
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
      'Medicine', 'Cardiac & Blood Pressure', 'Tablet / Caplet'),
- 
+
     -- SubCat: Diabetes (Medicine category) (2) — sensitivity: low (flag >=30)
     ('Metform 500mg',
      'Metformin Hydrochloride 500mg',
@@ -427,8 +439,9 @@ FROM (VALUES
      'First-line oral antidiabetic for Type 2 diabetes management.',
      'Adults: 1 tablet twice daily with meals. Dose adjusted by physician.',
      'true', 'low',
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
      'Medicine', 'Diabetes', 'Tablet / Caplet'),
- 
+
     ('Glucophage 500mg',
      'Metformin Hydrochloride 500mg',
      'Merck (Bangladesh) Ltd.',
@@ -436,8 +449,9 @@ FROM (VALUES
      'Brand-name metformin for blood glucose control in Type 2 diabetes.',
      'Adults: 1 tablet 2-3 times daily with meals as prescribed.',
      'true', 'low',
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
      'Medicine', 'Diabetes', 'Tablet / Caplet'),
- 
+
     -- SubCat: Hormonal & Endocrine (2)
     ('Thyronorm 50mcg',
      'Levothyroxine Sodium 50mcg',
@@ -446,8 +460,9 @@ FROM (VALUES
      'Thyroid hormone replacement for hypothyroidism.',
      'Adults: As prescribed. Taken on empty stomach 30 min before breakfast.',
      'true', null,
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
      'Medicine', 'Hormonal & Endocrine', 'Tablet / Caplet'),
- 
+
     ('Cloma 2',
      'Clomiphene Citrate 2mg',
      'Square Pharmaceuticals Ltd.',
@@ -455,8 +470,9 @@ FROM (VALUES
      'Ovulation stimulant used in female infertility treatment.',
      'As prescribed by physician. Not for self-medication.',
      'true', 'high',
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
      'Medicine', 'Hormonal & Endocrine', 'Tablet / Caplet'),
- 
+
     -- SubCat: Mental Health (2)
     ('Serenace 5mg',
      'Haloperidol 5mg',
@@ -465,8 +481,9 @@ FROM (VALUES
      'Antipsychotic for schizophrenia, acute psychosis, and severe agitation.',
      'Adults: 5-10mg/day in divided doses as prescribed by psychiatrist.',
      'true', null,
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
      'Medicine', 'Mental Health', 'Tablet / Caplet'),
- 
+
     ('Flunil 20mg',
      'Fluoxetine Hydrochloride 20mg',
      'Incepta Pharmaceuticals Ltd.',
@@ -474,12 +491,13 @@ FROM (VALUES
      'SSRI antidepressant for depression, OCD, and panic disorder.',
      'Adults: 20mg once daily in the morning. Dose adjusted after 4 weeks.',
      'true', null,
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
      'Medicine', 'Mental Health', 'Capsule'),
- 
+
     -- ==============================================================
     -- CATEGORY: Vitamins & Supplements
     -- ==============================================================
- 
+
     -- SubCat: Multivitamin (2)
     ('Supravit-S',
      'Multivitamin + Multimineral',
@@ -488,8 +506,9 @@ FROM (VALUES
      'Complete daily multivitamin and mineral supplement for general health.',
      'Adults: 1 capsule daily after breakfast.',
      'false', null,
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
      'Vitamins & Supplements', 'Multivitamin', 'Capsule'),
- 
+
     ('Revital Woman',
      'Multivitamin with Ginseng',
      'Ranbaxy Laboratories',
@@ -497,8 +516,9 @@ FROM (VALUES
      'Daily multivitamin with ginseng for women — energy, immunity, and skin health.',
      'Adults: 1 tablet daily after a meal.',
      'false', null,
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
      'Vitamins & Supplements', 'Multivitamin', 'Tablet / Caplet'),
- 
+
     -- SubCat: Vitamins and Minerals (2)
     ('Caltrate 600+D',
      'Calcium Carbonate 600mg + Vitamin D3 400IU',
@@ -507,8 +527,9 @@ FROM (VALUES
      'Calcium and Vitamin D supplement for bone health and calcium deficiency.',
      'Adults: 1 tablet twice daily with meals.',
      'false', null,
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
      'Vitamins & Supplements', 'Vitamins and Minerals', 'Tablet / Caplet'),
- 
+
     ('Biovit B Complex',
      'Vitamin B Complex (B1, B2, B6, B12)',
      'ACI Limited',
@@ -516,8 +537,9 @@ FROM (VALUES
      'B-complex vitamins for nerve health, energy metabolism, and immunity.',
      'Adults: 1 capsule daily after meals.',
      'false', null,
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
      'Vitamins & Supplements', 'Vitamins and Minerals', 'Capsule'),
- 
+
     -- SubCat: Food Supplement (2)
     ('NOW Omega-3 1000mg',
      'Fish Oil 1000mg (Omega-3)',
@@ -526,8 +548,9 @@ FROM (VALUES
      'Omega-3 fish oil supplement for heart, brain, and joint health.',
      'Adults: 1-2 softgels daily with meals.',
      'false', null,
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
      'Vitamins & Supplements', 'Food Supplement', 'Softgel'),
- 
+
     ('Truemed Turmeric',
      'Turmeric Curcumin 500mg',
      'Truemed USA',
@@ -535,8 +558,9 @@ FROM (VALUES
      'Anti-inflammatory turmeric and curcumin supplement for joint and digestive health.',
      'Adults: 1-2 capsules daily with meals.',
      'false', null,
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
      'Vitamins & Supplements', 'Food Supplement', 'Capsule'),
- 
+
     -- SubCat: Herbal (2)
     ('Basak Syrup',
      'Adhatoda Vasica (Vasaka) Extract',
@@ -545,8 +569,9 @@ FROM (VALUES
      'Herbal expectorant syrup for cough, cold, and bronchial congestion.',
      'Adults: 2 teaspoons 3 times daily. Children: 1 teaspoon 3 times daily.',
      'false', null,
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
      'Vitamins & Supplements', 'Herbal', 'Syrup / Suspension'),
- 
+
     ('Gintex 500mg',
      'Ginkgo Biloba Extract 500mg',
      'Drug International Ltd.',
@@ -554,8 +579,9 @@ FROM (VALUES
      'Herbal supplement for memory, concentration, and cerebral circulation.',
      'Adults: 1 capsule twice daily with meals.',
      'false', null,
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
      'Vitamins & Supplements', 'Herbal', 'Capsule'),
- 
+
     -- SubCat: Protein Powder (2)
     ('Protinex Chocolate',
      'High Protein Nutritional Supplement',
@@ -564,8 +590,9 @@ FROM (VALUES
      'High-protein chocolate drink mix for adults — muscle health and energy.',
      'Adults: Mix 2 heaped scoops in 200ml milk or water, twice daily.',
      'false', null,
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
      'Vitamins & Supplements', 'Protein Powder', 'Powder'),
- 
+
     ('Powerlift Weight Gainer',
      'Whey Protein + Multivitamin Complex',
      'Powerlift Nutrition',
@@ -573,12 +600,13 @@ FROM (VALUES
      'Mass gainer protein powder with vitamins and DigeZyme for muscle building.',
      'Adults: Mix 2-3 scoops in 300ml water or milk post-workout.',
      'false', null,
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
      'Vitamins & Supplements', 'Protein Powder', 'Powder'),
- 
+
     -- ==============================================================
     -- CATEGORY: Diabetic Care
     -- ==============================================================
- 
+
     -- SubCat: Glucose Meter (2)
     ('Accu-Chek Active',
      'Blood Glucose Monitor Kit',
@@ -587,8 +615,9 @@ FROM (VALUES
      'Fast and accurate blood glucose monitor — results in 5 seconds. Stores 500 readings.',
      'Insert strip, prick fingertip, apply blood to strip. Read result in 5 seconds.',
      'false', null,
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
      'Diabetic Care', 'Glucose Meter', 'Pen / Device'),
- 
+
     ('GlucoSure Star',
      'Blood Glucose Monitoring System',
      'GlucoSure',
@@ -596,8 +625,9 @@ FROM (VALUES
      'Affordable blood glucose monitoring machine set for home diabetes management.',
      'Insert strip, prick fingertip, apply blood sample, read result in 8 seconds.',
      'false', null,
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
      'Diabetic Care', 'Glucose Meter', 'Pen / Device'),
- 
+
     -- SubCat: Glucose Test Strips (2)
     ('Accu-Chek Strips 50pcs',
      'Blood Glucose Test Strips for Accu-Chek Performa',
@@ -606,8 +636,9 @@ FROM (VALUES
      'Compatible with Accu-Chek Performa glucometers. Fast absorption, no coding required.',
      'Insert strip into Accu-Chek Performa meter. Apply fingertip blood to strip.',
      'false', null,
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
      'Diabetic Care', 'Glucose Test Strips', 'Strip / Test Kit'),
- 
+
     ('OneTouch Verio Strips 50pcs',
      'Blood Glucose Test Strips for OneTouch Verio',
      'LifeScan (Johnson & Johnson)',
@@ -615,8 +646,9 @@ FROM (VALUES
      'Precision strips for OneTouch Verio glucometers. Color-coded range indicator.',
      'Insert into OneTouch Verio meter. Apply blood to yellow area of strip.',
      'false', null,
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
      'Diabetic Care', 'Glucose Test Strips', 'Strip / Test Kit'),
- 
+
     -- SubCat: Insulin Cartridge (2)
     ('NovoRapid Penfill',
      'Insulin Aspart 100IU/ml',
@@ -625,8 +657,9 @@ FROM (VALUES
      'Fast-acting insulin analog for mealtime blood sugar control in diabetes.',
      'Inject subcutaneously 5-10 min before meals as prescribed. Keep refrigerated.',
      'true', null,
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
      'Diabetic Care', 'Insulin Cartridge', 'Injection / Vial'),
- 
+
     ('NovoMix 30 Penfill',
      'Biphasic Insulin Aspart 30% + 70% 100IU/ml',
      'Novo Nordisk',
@@ -634,8 +667,9 @@ FROM (VALUES
      'Biphasic insulin for twice-daily dosing — covers both mealtime and basal needs.',
      'Inject subcutaneously before breakfast and dinner as prescribed. Shake gently.',
      'true', null,
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
      'Diabetic Care', 'Insulin Cartridge', 'Injection / Vial'),
- 
+
     -- SubCat: Insulin Pen (Onetime) (2)
     ('Tresiba FlexTouch',
      'Insulin Degludec 100IU/ml',
@@ -644,8 +678,9 @@ FROM (VALUES
      'Ultra-long-acting basal insulin pen — once daily at any time of day.',
      'Once daily subcutaneous injection at same time each day as prescribed.',
      'true', null,
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
      'Diabetic Care', 'Insulin Pen (Onetime)', 'Pen / Device'),
- 
+
     ('Trulicity 0.75mg',
      'Dulaglutide 0.75mg',
      'Eli Lilly',
@@ -653,8 +688,9 @@ FROM (VALUES
      'GLP-1 receptor agonist pen for Type 2 diabetes — once weekly injection.',
      'Once weekly subcutaneous injection in abdomen, thigh, or upper arm as prescribed.',
      'true', null,
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
      'Diabetic Care', 'Insulin Pen (Onetime)', 'Pen / Device'),
- 
+
     -- SubCat: Lancets (2)
     ('Accu-Chek Softclix Lancets 25pcs',
      'Sterile Lancets 28G',
@@ -663,8 +699,9 @@ FROM (VALUES
      'Ultra-thin 28G lancets for virtually painless fingertip blood sampling.',
      'Load into lancing device. Set depth. Press against fingertip and release.',
      'false', null,
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
      'Diabetic Care', 'Lancets', 'Strip / Test Kit'),
- 
+
     ('BD Ultra-Fine Lancets 100pcs',
      'Sterile Lancets 31G',
      'Becton Dickinson',
@@ -672,8 +709,9 @@ FROM (VALUES
      'Extra-fine 31G lancets compatible with most lancing devices.',
      'Load into compatible lancing device. Single use only.',
      'false', null,
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
      'Diabetic Care', 'Lancets', 'Strip / Test Kit'),
- 
+
     -- SubCat: Diabetes Medicines (2) — one expensive brand
     ('Empa 10mg',
      'Empagliflozin 10mg',
@@ -682,8 +720,9 @@ FROM (VALUES
      'SGLT-2 inhibitor for Type 2 diabetes — also reduces cardiovascular risk.',
      'Adults: 10mg once daily in the morning with or without food.',
      'true', null,
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
      'Diabetic Care', 'Diabetes Medicines', 'Tablet / Caplet'),
- 
+
     ('Jardiance 10mg',
      'Empagliflozin 10mg',
      'Eli Lilly & Boehringer Ingelheim',
@@ -691,12 +730,13 @@ FROM (VALUES
      'Brand-name SGLT-2 inhibitor for blood glucose control and heart protection.',
      'Adults: 10mg once daily. May be increased to 25mg as prescribed.',
      'true', null,
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
      'Diabetic Care', 'Diabetes Medicines', 'Tablet / Caplet'),
- 
+
     -- ==============================================================
     -- CATEGORY: Women's Care
     -- ==============================================================
- 
+
     -- SubCat: Sanitary Pad (2)
     ('Freedom Heavy Flow Wings 16pads',
      'Sanitary Napkin — Heavy Flow',
@@ -705,8 +745,9 @@ FROM (VALUES
      'Heavy flow sanitary napkin with wings for maximum protection.',
      'Change every 4-6 hours or as needed. Dispose hygienically.',
      'false', null,
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
      'Women''s Care', 'Sanitary Pad', 'Sanitary Pad'),
- 
+
     ('Senora Regular Flow 10pads',
      'Sanitary Napkin — Regular Flow',
      'Senora (Bashundhara Group)',
@@ -714,8 +755,9 @@ FROM (VALUES
      'Regular flow sanitary napkin with belt system for everyday comfort.',
      'Change every 4-6 hours. Dispose in dustbin — do not flush.',
      'false', null,
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
      'Women''s Care', 'Sanitary Pad', 'Sanitary Pad'),
- 
+
     -- SubCat: Birth Control Pill (2)
     ('Femicon',
      'Ethinylestradiol 30mcg + Levonorgestrel 150mcg',
@@ -724,8 +766,9 @@ FROM (VALUES
      'Combined oral contraceptive pill for family planning.',
      'Take 1 tablet daily for 21 days starting day 1 of cycle, then 7-day break.',
      'true', null,
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
      'Women''s Care', 'Birth Control Pill', 'Tablet / Caplet'),
- 
+
     ('Marvelon',
      'Ethinylestradiol 30mcg + Desogestrel 150mcg',
      'Organon Bangladesh',
@@ -733,8 +776,9 @@ FROM (VALUES
      'Low-dose combined oral contraceptive with good cycle control.',
      'Take 1 tablet daily at the same time for 21 days, then 7-day break.',
      'true', null,
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
      'Women''s Care', 'Birth Control Pill', 'Tablet / Caplet'),
- 
+
     -- SubCat: Pregnancy Test (2)
     ('Pregna News Cassette',
      'HCG Urine Pregnancy Test',
@@ -743,8 +787,9 @@ FROM (VALUES
      'Sensitive HCG-based pregnancy test cassette — results in 3 minutes.',
      'Collect urine in clean cup. Add 3 drops to cassette well. Read at 3 min.',
      'false', null,
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
      'Women''s Care', 'Pregnancy Test', 'Strip / Test Kit'),
- 
+
     ('Get Sure HCG Test',
      'HCG Urine Pregnancy Test Cassette',
      'Get Sure Diagnostics',
@@ -752,8 +797,9 @@ FROM (VALUES
      'Fast and reliable home pregnancy test cassette with high sensitivity.',
      'Collect morning urine. Dip cassette or add drops. Read result at 5 minutes.',
      'false', null,
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
      'Women''s Care', 'Pregnancy Test', 'Strip / Test Kit'),
- 
+
     -- SubCat: Beauty Care (2)
     ('Bobcare Ointment',
      'Herbal Skin Care Ointment',
@@ -762,8 +808,9 @@ FROM (VALUES
      'Herbal ointment for dry, cracked, or irritated skin — soothing and moisturising.',
      'Apply thin layer to affected area 2-3 times daily or as needed.',
      'false', null,
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
      'Women''s Care', 'Beauty Care', 'Cream / Ointment'),
- 
+
     ('Wonica Hair Removal Cream',
      'Thioglycolate-based Hair Removal Cream',
      'Wonica Cosmetics',
@@ -771,12 +818,13 @@ FROM (VALUES
      'Painless facial and body hair removal cream. Results in 5-8 minutes.',
      'Apply thick layer to dry skin. Leave 5-8 min. Wipe off with damp cloth.',
      'false', null,
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
      'Women''s Care', 'Beauty Care', 'Cream / Ointment')
- 
+
 ) AS m(
     "Name", "GenericName", "Manufacturer",
     "Price", "Unit", "Description", "Dosage",
-    "RequiresPrescription", "SensitivityLevel",
+    "RequiresPrescription", "SensitivityLevel", "ImageUrl",
     "CategoryName", "SubCategoryName", "ProductTypeName"
 )
 JOIN "Categories" cat ON cat."Name" = m."CategoryName"
