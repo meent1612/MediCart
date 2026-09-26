@@ -470,9 +470,6 @@ namespace MediCart.Web.Migrations
                     b.Property<int>("OrderId")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("OrderId1")
-                        .HasColumnType("integer");
-
                     b.Property<DateTime?>("PaidAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -487,8 +484,6 @@ namespace MediCart.Web.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("OrderId");
-
-                    b.HasIndex("OrderId1");
 
                     b.HasIndex("UserId");
 
@@ -840,7 +835,7 @@ namespace MediCart.Web.Migrations
                     b.HasOne("MediCart.Web.Data.ProductType", "ProductType")
                         .WithMany("Medicines")
                         .HasForeignKey("ProductTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("MediCart.Web.Data.SubCategory", "SubCategory")
@@ -904,14 +899,10 @@ namespace MediCart.Web.Migrations
             modelBuilder.Entity("MediCart.Web.Data.Payment", b =>
                 {
                     b.HasOne("MediCart.Web.Data.Order", "Order")
-                        .WithMany()
+                        .WithMany("Payments")
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.HasOne("MediCart.Web.Data.Order", null)
-                        .WithMany("Payments")
-                        .HasForeignKey("OrderId1");
 
                     b.HasOne("MediCart.Web.Data.ApplicationUser", "User")
                         .WithMany()

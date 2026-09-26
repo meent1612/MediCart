@@ -225,6 +225,7 @@ namespace MediCart.Web.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     AdminId = table.Column<string>(type: "text", nullable: false),
                     Action = table.Column<string>(type: "text", nullable: false),
+                    ActionType = table.Column<string>(type: "text", nullable: true),
                     TableName = table.Column<string>(type: "text", nullable: true),
                     RecordId = table.Column<int>(type: "integer", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
@@ -262,28 +263,6 @@ namespace MediCart.Web.Migrations
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Notifications",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    UserId = table.Column<string>(type: "text", nullable: false),
-                    Message = table.Column<string>(type: "text", nullable: false),
-                    IsRead = table.Column<bool>(type: "boolean", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Notifications", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Notifications_AspNetUsers_UserId",
-                        column: x => x.UserId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -364,7 +343,7 @@ namespace MediCart.Web.Migrations
                         column: x => x.ProductTypeId,
                         principalTable: "ProductTypes",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Medicines_SubCategories_SubCategoryId",
                         column: x => x.SubCategoryId,
@@ -395,7 +374,7 @@ namespace MediCart.Web.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Orders", x => x.Id);
-                    table.CheckConstraint("CK_Order_Status", "\"Status\" IN ('Pending','Processing','Shipped','Delivered','Rejected')");
+                    table.CheckConstraint("CK_Order_Status", "\"Status\" IN ('Pending','Processing','Shipped','Delivered','Rejected','Cancelled')");
                     table.ForeignKey(
                         name: "FK_Orders_AspNetUsers_UserId",
                         column: x => x.UserId,
@@ -481,6 +460,7 @@ namespace MediCart.Web.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Stocks", x => x.Id);
+                    table.CheckConstraint("CK_Stock_Quantity", "\"Quantity\" >= 0");
                     table.ForeignKey(
                         name: "FK_Stocks_Medicines_MedicineId",
                         column: x => x.MedicineId,
@@ -529,13 +509,12 @@ namespace MediCart.Web.Migrations
                     Method = table.Column<string>(type: "text", nullable: false),
                     Status = table.Column<string>(type: "text", nullable: false),
                     PaidAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    OrderId1 = table.Column<int>(type: "integer", nullable: true)
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Payments", x => x.Id);
-                    table.CheckConstraint("CK_Payment_Status", "\"Status\" IN ('pending','completed','failed')");
+                    table.CheckConstraint("CK_Payment_Status", "\"Status\" IN ('pending','completed','failed','refunded')");
                     table.ForeignKey(
                         name: "FK_Payments_AspNetUsers_UserId",
                         column: x => x.UserId,
@@ -548,11 +527,6 @@ namespace MediCart.Web.Migrations
                         principalTable: "Orders",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Payments_Orders_OrderId1",
-                        column: x => x.OrderId1,
-                        principalTable: "Orders",
-                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -581,36 +555,6 @@ namespace MediCart.Web.Migrations
                         name: "FK_Prescriptions_Orders_OrderId",
                         column: x => x.OrderId,
                         principalTable: "Orders",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "ExpiryAlerts",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    StockId = table.Column<int>(type: "integer", nullable: false),
-                    MedicineId = table.Column<int>(type: "integer", nullable: false),
-                    AlertLevel = table.Column<string>(type: "text", nullable: false),
-                    AlertDate = table.Column<DateOnly>(type: "date", nullable: false),
-                    IsResolved = table.Column<bool>(type: "boolean", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ExpiryAlerts", x => x.Id);
-                    table.CheckConstraint("CK_ExpiryAlert_AlertLevel", "\"AlertLevel\" IN ('warning','critical')");
-                    table.ForeignKey(
-                        name: "FK_ExpiryAlerts_Medicines_MedicineId",
-                        column: x => x.MedicineId,
-                        principalTable: "Medicines",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_ExpiryAlerts_Stocks_StockId",
-                        column: x => x.StockId,
-                        principalTable: "Stocks",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -680,16 +624,6 @@ namespace MediCart.Web.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ExpiryAlerts_MedicineId",
-                table: "ExpiryAlerts",
-                column: "MedicineId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ExpiryAlerts_StockId",
-                table: "ExpiryAlerts",
-                column: "StockId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Medicines_CategoryId",
                 table: "Medicines",
                 column: "CategoryId");
@@ -703,11 +637,6 @@ namespace MediCart.Web.Migrations
                 name: "IX_Medicines_SubCategoryId",
                 table: "Medicines",
                 column: "SubCategoryId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Notifications_UserId",
-                table: "Notifications",
-                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_OrderItems_MedicineId",
@@ -743,11 +672,6 @@ namespace MediCart.Web.Migrations
                 name: "IX_Payments_OrderId",
                 table: "Payments",
                 column: "OrderId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Payments_OrderId1",
-                table: "Payments",
-                column: "OrderId1");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Payments_UserId",
@@ -810,12 +734,6 @@ namespace MediCart.Web.Migrations
                 name: "ContactMessages");
 
             migrationBuilder.DropTable(
-                name: "ExpiryAlerts");
-
-            migrationBuilder.DropTable(
-                name: "Notifications");
-
-            migrationBuilder.DropTable(
                 name: "OrderItems");
 
             migrationBuilder.DropTable(
@@ -831,10 +749,10 @@ namespace MediCart.Web.Migrations
                 name: "SideEffects");
 
             migrationBuilder.DropTable(
-                name: "AspNetRoles");
+                name: "Stocks");
 
             migrationBuilder.DropTable(
-                name: "Stocks");
+                name: "AspNetRoles");
 
             migrationBuilder.DropTable(
                 name: "Orders");
