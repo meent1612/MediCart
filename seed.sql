@@ -189,7 +189,8 @@ WHERE NOT EXISTS (
 INSERT INTO "SubCategories" ("CategoryId", "Name", "CreatedAt")
 SELECT parent."Id", sc."Name", NOW()
 FROM (VALUES
-    -- Medicine
+
+    -- Medicine (9 — untouched, already in DB)
     ('Medicine', 'Allergies & Asthma'),
     ('Medicine', 'Epilepsy & Neurological'),
     ('Medicine', 'Pain Relief (Analgesics)'),
@@ -200,30 +201,33 @@ FROM (VALUES
     ('Medicine', 'Hormonal & Endocrine'),
     ('Medicine', 'Mental Health'),
 
-    -- Vitamins & Supplements
-    ('Vitamins & Supplements', 'Electrolyte Powder'),
-    ('Vitamins & Supplements', 'Food Supplements'),
-    ('Vitamins & Supplements', 'Multivitamins'),
-    ('Vitamins & Supplements', 'Vitamins & Minerals'),
-    ('Vitamins & Supplements', 'Energy Drinks'),
+    -- Vitamins & Supplements (5)
+    ('Vitamins & Supplements', 'Multivitamin'),
+    ('Vitamins & Supplements', 'Vitamins and Minerals'),
+    ('Vitamins & Supplements', 'Food Supplement'),
     ('Vitamins & Supplements', 'Herbal'),
     ('Vitamins & Supplements', 'Protein Powder'),
 
-    -- Diabetic Care
-    ('Diabetic Care', 'Blood Glucose Monitors (Glucometers)'),
-    ('Diabetic Care', 'Test Strips & Lancets'),
-    ('Diabetic Care', 'Insulin Pens & Syringes'),
-    ('Diabetic Care', 'Diabetic Care Kits'),
+    -- Diabetic Care (6)
+    ('Diabetic Care', 'Glucose Meter'),
+    ('Diabetic Care', 'Glucose Test Strips'),
+    ('Diabetic Care', 'Insulin Cartridge'),
+    ('Diabetic Care', 'Insulin Pen (Onetime)'),
+    ('Diabetic Care', 'Lancets'),
+    ('Diabetic Care', 'Diabetes Medicines'),
 
-    -- Women's Care
-    ('Women''s Care', 'Feminine Hygiene'),
-    ('Women''s Care', 'Mother Care (Prenatal & Postnatal)'),
-    ('Women''s Care', 'Women''s Health Medications')
+    -- Women's Care (4)
+    ('Women''s Care', 'Sanitary Pad'),
+    ('Women''s Care', 'Birth Control Pill'),
+    ('Women''s Care', 'Pregnancy Test'),
+    ('Women''s Care', 'Beauty Care')
+
 ) AS sc("ParentName", "Name")
 JOIN "Categories" parent ON parent."Name" = sc."ParentName"
 WHERE NOT EXISTS (
     SELECT 1 FROM "SubCategories" existing
-    WHERE existing."Name" = sc."Name" AND existing."CategoryId" = parent."Id"
+    WHERE existing."Name" = sc."Name"
+      AND existing."CategoryId" = parent."Id"
 );
 
 -- ============================================================
