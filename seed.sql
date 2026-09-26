@@ -7,7 +7,8 @@
 -- 1. Divisions (8 official divisions of Bangladesh)
 -- ============================================================
 
-INSERT INTO "Divisions" ("Name", "DeliveryCharge") VALUES
+INSERT INTO "Divisions" ("Name", "DeliveryCharge")
+SELECT * FROM (VALUES
     ('Dhaka',       60.00),
     ('Chattogram',  100.00),
     ('Khulna',      110.00),
@@ -16,7 +17,10 @@ INSERT INTO "Divisions" ("Name", "DeliveryCharge") VALUES
     ('Sylhet',      120.00),
     ('Rangpur',     130.00),
     ('Mymensingh',  110.00)
-ON CONFLICT DO NOTHING;
+) AS v("Name", "DeliveryCharge")
+WHERE NOT EXISTS (
+    SELECT 1 FROM "Divisions" WHERE "Name" = v."Name"
+);
 
 -- ============================================================
 -- 2. Cities (mapped to DivisionId by name lookup)
@@ -164,8 +168,10 @@ FROM (VALUES
 
 ) AS c("DivisionName", "Name")
 JOIN "Divisions" d ON d."Name" = c."DivisionName"
-ON CONFLICT DO NOTHING;
-
+WHERE NOT EXISTS (
+    SELECT 1 FROM "Cities"
+    WHERE "DivisionId" = d."Id" AND "Name" = c."Name"
+);
 -- ============================================================
 -- Top-level Categories
 -- ============================================================
