@@ -255,20 +255,22 @@ WHERE NOT EXISTS (
 
 -- ============================================================
 -- PART 3: Medicines, Stocks, SideEffects
--- 24 subcategories × 2+ products = 52 medicines total
+-- 24 subcategories × 2 products = 48 medicines total
 -- Every demo scenario covered — see scenario map below
 --
 -- STOCK SCENARIOS:
 --   Normal (>10, expiry >30 days)        : most medicines
---   Low stock (1-10 units)               : Fexo 120, Basak Syrup, NovoMix 30, Marvelon
---   Out of stock (0 units)               : Gaba 300mg, Emcon 1
+--   Low stock (1-10 units)               : Fexo 120, Basak Syrup, NovoMix 30 Penfill,
+--                                           Marvelon, Powerlift Weight Gainer,
+--                                           Trulicity 0.75mg, Femicon
+--   Out of stock (0 units)               : Gaba 300mg, Cloma 2, Freedom Heavy Flow Wings 16pads
 --   Warning expiry (8-30 days from now)  : Napa Extra, Metform 500mg
---   Critical expiry (0-7 days) BLOCKED   : Augment 500, Freedom Heavy Wings
+--   Critical expiry (0-7 days) BLOCKED   : Augment 500, Freedom Heavy Flow Wings 16pads
 --   Expired (past date) BLOCKED          : Cloma 2 Tablet
 --
 -- PRESCRIPTION SCENARIOS:
---   RequiresPrescription = true          : 14 medicines (marked Rx below)
---   RequiresPrescription = false         : 38 medicines
+--   RequiresPrescription = true          : 22 medicines (marked Rx below)
+--   RequiresPrescription = false         : 26 medicines
 --
 -- SENSITIVITY / AUTO-FLAG SCENARIOS:
 --   high (flag >=5 units)  : Gaba 300mg, Cloma 2
@@ -282,7 +284,7 @@ WHERE NOT EXISTS (
 --   mixed         : most Rx medicines
 --   no side effects: devices, test kits, pads
 -- ============================================================
- 
+
 INSERT INTO "Medicines" (
     "CategoryId", "SubCategoryId", "ProductTypeId",
     "Name", "GenericName", "Manufacturer", "Price", "Unit",
