@@ -22,6 +22,7 @@ namespace MediCart.Web.Data
         public DbSet<AuditLog> AuditLogs { get; set; }
         public DbSet<OtpCode> OtpCodes { get; set; }
         public DbSet<Payment> Payments { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
@@ -49,6 +50,12 @@ namespace MediCart.Web.Data
                 .HasOne(m => m.SubCategory)
                 .WithMany(sc => sc.Medicines)
                 .HasForeignKey(m => m.SubCategoryId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Medicine>()
+                .HasOne(m => m.ProductType)
+                .WithMany(pt => pt.Medicines)
+                .HasForeignKey(m => m.ProductTypeId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // Medicine — decimal column + check constraint
@@ -119,7 +126,7 @@ namespace MediCart.Web.Data
             builder.Entity<OtpCode>()
                 .HasIndex(o => o.Email);
 
-            // Payment — FK to Order and User + check constraint on Status.
+            // Payment — decimal column + check constraint on Status.
             // 'refunded' = bKash/Card money already taken, returned on
             // reject/cancel. 'failed' also covers a COD order closed with
             // no money ever collected (see OrderService.CloseOrderAsync).
@@ -133,7 +140,7 @@ namespace MediCart.Web.Data
 
             builder.Entity<Payment>()
                 .HasOne(p => p.Order)
-                .WithMany()
+                .WithMany(o => o.Payments)
                 .HasForeignKey(p => p.OrderId)
                 .OnDelete(DeleteBehavior.Restrict);
 
