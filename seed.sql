@@ -201,13 +201,13 @@ FROM (VALUES
     ('Medicine', 'Mental Health'),
 
     -- Vitamins & Supplements
+    ('Vitamins & Supplements', 'Electrolyte Powder'),
+    ('Vitamins & Supplements', 'Food Supplements'),
     ('Vitamins & Supplements', 'Multivitamins'),
-    ('Vitamins & Supplements', 'Vitamin D'),
-    ('Vitamins & Supplements', 'Vitamin C & Antioxidants'),
-    ('Vitamins & Supplements', 'Calcium & Bone Health'),
-    ('Vitamins & Supplements', 'Herbal & Natural Supplements'),
-    ('Vitamins & Supplements', 'Protein & Fitness Supplements'),
-    ('Vitamins & Supplements', 'Omega-3 & Fish Oil'),
+    ('Vitamins & Supplements', 'Vitamins & Minerals'),
+    ('Vitamins & Supplements', 'Energy Drinks'),
+    ('Vitamins & Supplements', 'Herbal'),
+    ('Vitamins & Supplements', 'Protein Powder'),
 
     -- Diabetic Care
     ('Diabetic Care', 'Blood Glucose Monitors (Glucometers)'),
@@ -236,10 +236,14 @@ FROM (VALUES
     ('Tablet / Caplet'),
     ('Capsule'),
     ('Syrup / Suspension'),
-    ('Injection'),
-    ('Drops (Pediatric/Children''s)'),
+    ('Injection / Vial'),
+    ('Drops'),
     ('Cream / Ointment'),
-    ('Powder')
+    ('Powder'),
+    ('Softgel'),
+    ('Pen / Device'),
+    ('Strip / Test Kit'),
+    ('Sanitary Pad')
 ) AS v("Name")
 WHERE NOT EXISTS (
     SELECT 1 FROM "ProductTypes" p WHERE p."Name" = v."Name"
