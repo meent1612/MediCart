@@ -617,7 +617,7 @@ FROM (VALUES
      'Fast and accurate blood glucose monitor — results in 5 seconds. Stores 500 readings.',
      'Insert strip, prick fingertip, apply blood to strip. Read result in 5 seconds.',
      'false', null,
-     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1790412843/medicart/medicines/Egvh0JIAL6wPFlf5RgNZ9L1bu4t2clQcl2dexgnY_z59efz.jpg',
      'Diabetic Care', 'Glucose Meter', 'Pen / Device'),
 
     ('GlucoSure Star',
@@ -627,7 +627,7 @@ FROM (VALUES
      'Affordable blood glucose monitoring machine set for home diabetes management.',
      'Insert strip, prick fingertip, apply blood sample, read result in 8 seconds.',
      'false', null,
-     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1790412884/medicart/medicines/main_1_uhskwm.jpg',
      'Diabetic Care', 'Glucose Meter', 'Pen / Device'),
 
     -- SubCat: Glucose Test Strips (2)
@@ -638,7 +638,7 @@ FROM (VALUES
      'Compatible with Accu-Chek Performa glucometers. Fast absorption, no coding required.',
      'Insert strip into Accu-Chek Performa meter. Apply fingertip blood to strip.',
      'false', null,
-     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1790412958/medicart/medicines/bt37PLqkmt1aOa2vdhYG8R5k5USfnYA7X1gC16il_kefgyh.jpg',
      'Diabetic Care', 'Glucose Test Strips', 'Strip / Test Kit'),
 
     ('OneTouch Verio Strips 50pcs',
@@ -648,7 +648,7 @@ FROM (VALUES
      'Precision strips for OneTouch Verio glucometers. Color-coded range indicator.',
      'Insert into OneTouch Verio meter. Apply blood to yellow area of strip.',
      'false', null,
-     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1790413006/medicart/medicines/dJRdaEcY6VEyfGXcFBuLjZQEzmqZpL8eUxMc8rDh_ios49s.webp',
      'Diabetic Care', 'Glucose Test Strips', 'Strip / Test Kit'),
 
     -- SubCat: Insulin Cartridge (2)
@@ -659,7 +659,7 @@ FROM (VALUES
      'Fast-acting insulin analog for mealtime blood sugar control in diabetes.',
      'Inject subcutaneously 5-10 min before meals as prescribed. Keep refrigerated.',
      'true', null,
-     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1790413037/medicart/medicines/novorapid_flexpen_pgasoj.jpg',
      'Diabetic Care', 'Insulin Cartridge', 'Injection / Vial'),
 
     ('NovoMix 30 Penfill',
@@ -669,7 +669,7 @@ FROM (VALUES
      'Biphasic insulin for twice-daily dosing — covers both mealtime and basal needs.',
      'Inject subcutaneously before breakfast and dinner as prescribed. Shake gently.',
      'true', null,
-     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1790413083/medicart/medicines/novomix_pk6snb.jpg',
      'Diabetic Care', 'Insulin Cartridge', 'Injection / Vial'),
 
     -- SubCat: Insulin Pen (Onetime) (2)
@@ -680,7 +680,7 @@ FROM (VALUES
      'Ultra-long-acting basal insulin pen — once daily at any time of day.',
      'Once daily subcutaneous injection at same time each day as prescribed.',
      'true', null,
-     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1790413108/medicart/medicines/Tresiba-2490_sbmelo.jpg',
      'Diabetic Care', 'Insulin Pen (Onetime)', 'Pen / Device'),
 
     ('Trulicity 0.75mg',
@@ -690,7 +690,7 @@ FROM (VALUES
      'GLP-1 receptor agonist pen for Type 2 diabetes — once weekly injection.',
      'Once weekly subcutaneous injection in abdomen, thigh, or upper arm as prescribed.',
      'true', null,
-     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1790413131/medicart/medicines/T37kRbiWZx1p2TdeXotC9uZIZA2A1OulMTreTMMp_o8grhl.png',
      'Diabetic Care', 'Insulin Pen (Onetime)', 'Pen / Device'),
 
     -- SubCat: Lancets (2)
@@ -701,7 +701,7 @@ FROM (VALUES
      'Ultra-thin 28G lancets for virtually painless fingertip blood sampling.',
      'Load into lancing device. Set depth. Press against fingertip and release.',
      'false', null,
-     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1790413236/medicart/medicines/images_wzaiyf.jpg',
      'Diabetic Care', 'Lancets', 'Strip / Test Kit'),
 
     ('BD Ultra-Fine Lancets 100pcs',
@@ -711,7 +711,7 @@ FROM (VALUES
      'Extra-fine 31G lancets compatible with most lancing devices.',
      'Load into compatible lancing device. Single use only.',
      'false', null,
-     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1790413305/medicart/medicines/images_dtdzux.jpg',
      'Diabetic Care', 'Lancets', 'Strip / Test Kit'),
 
     -- SubCat: Diabetes Medicines (2) — one expensive brand
@@ -722,7 +722,7 @@ FROM (VALUES
      'SGLT-2 inhibitor for Type 2 diabetes — also reduces cardiovascular risk.',
      'Adults: 10mg once daily in the morning with or without food.',
      'true', null,
-     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1790413337/medicart/medicines/2QvQcPX6GKJHJjz0AXLKv5IwEknkCyR8ZcGcmzBC_vsiohz.jpg',
      'Diabetic Care', 'Diabetes Medicines', 'Tablet / Caplet'),
 
     ('Jardiance 10mg',
@@ -732,7 +732,7 @@ FROM (VALUES
      'Brand-name SGLT-2 inhibitor for blood glucose control and heart protection.',
      'Adults: 10mg once daily. May be increased to 25mg as prescribed.',
      'true', null,
-     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1790413366/medicart/medicines/yqmyIg86vr0e63O07FY5gvVslp14RtgUZu3OwBCq_lctmbx.png',
      'Diabetic Care', 'Diabetes Medicines', 'Tablet / Caplet'),
 
     -- ==============================================================
