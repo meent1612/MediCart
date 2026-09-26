@@ -508,7 +508,7 @@ FROM (VALUES
      'Complete daily multivitamin and mineral supplement for general health.',
      'Adults: 1 capsule daily after breakfast.',
      'false', null,
-     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1790411975/medicart/medicines/supravits_lvoh4d.jpg',
      'Vitamins & Supplements', 'Multivitamin', 'Capsule'),
 
     ('Revital Woman',
@@ -518,7 +518,7 @@ FROM (VALUES
      'Daily multivitamin with ginseng for women — energy, immunity, and skin health.',
      'Adults: 1 tablet daily after a meal.',
      'false', null,
-     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1790412009/medicart/medicines/revital_t9fpcn.webp',
      'Vitamins & Supplements', 'Multivitamin', 'Tablet / Caplet'),
 
     -- SubCat: Vitamins and Minerals (2)
@@ -529,7 +529,7 @@ FROM (VALUES
      'Calcium and Vitamin D supplement for bone health and calcium deficiency.',
      'Adults: 1 tablet twice daily with meals.',
      'false', null,
-     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1790412047/medicart/medicines/Caltrate600_D_epir6o.jpg',
      'Vitamins & Supplements', 'Vitamins and Minerals', 'Tablet / Caplet'),
 
     ('Biovit B Complex',
@@ -539,7 +539,7 @@ FROM (VALUES
      'B-complex vitamins for nerve health, energy metabolism, and immunity.',
      'Adults: 1 capsule daily after meals.',
      'false', null,
-     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1790412120/medicart/medicines/Biovit_B_Complex_ouxcyf.jpg',
      'Vitamins & Supplements', 'Vitamins and Minerals', 'Capsule'),
 
     -- SubCat: Food Supplement (2)
@@ -550,7 +550,7 @@ FROM (VALUES
      'Omega-3 fish oil supplement for heart, brain, and joint health.',
      'Adults: 1-2 softgels daily with meals.',
      'false', null,
-     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1790412177/medicart/medicines/NOW_Omega-3_gadtvu.jpg',
      'Vitamins & Supplements', 'Food Supplement', 'Softgel'),
 
     ('Truemed Turmeric',
@@ -560,7 +560,7 @@ FROM (VALUES
      'Anti-inflammatory turmeric and curcumin supplement for joint and digestive health.',
      'Adults: 1-2 capsules daily with meals.',
      'false', null,
-     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1790412221/medicart/medicines/Truemed_Turmeric_zvro45.jpg',
      'Vitamins & Supplements', 'Food Supplement', 'Capsule'),
 
     -- SubCat: Herbal (2)
@@ -571,7 +571,7 @@ FROM (VALUES
      'Herbal expectorant syrup for cough, cold, and bronchial congestion.',
      'Adults: 2 teaspoons 3 times daily. Children: 1 teaspoon 3 times daily.',
      'false', null,
-     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1790412295/medicart/medicines/Basak_Syrup_dnnqsh.png',
      'Vitamins & Supplements', 'Herbal', 'Syrup / Suspension'),
 
     ('Gintex 500mg',
@@ -581,7 +581,7 @@ FROM (VALUES
      'Herbal supplement for memory, concentration, and cerebral circulation.',
      'Adults: 1 capsule twice daily with meals.',
      'false', null,
-     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1790412332/medicart/medicines/Gintex500_tqj3rt.jpg',
      'Vitamins & Supplements', 'Herbal', 'Capsule'),
 
     -- SubCat: Protein Powder (2)
@@ -592,7 +592,7 @@ FROM (VALUES
      'High-protein chocolate drink mix for adults — muscle health and energy.',
      'Adults: Mix 2 heaped scoops in 200ml milk or water, twice daily.',
      'false', null,
-     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1790412395/medicart/medicines/Protinex_Chocolate_myu0ma.jpg',
      'Vitamins & Supplements', 'Protein Powder', 'Powder'),
 
     ('Powerlift Weight Gainer',
@@ -602,7 +602,7 @@ FROM (VALUES
      'Mass gainer protein powder with vitamins and DigeZyme for muscle building.',
      'Adults: Mix 2-3 scoops in 300ml water or milk post-workout.',
      'false', null,
-     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1790412431/medicart/medicines/Powerlift_Weight_Gainer_uyxrs3.jpg',
      'Vitamins & Supplements', 'Protein Powder', 'Powder'),
 
     -- ==============================================================
