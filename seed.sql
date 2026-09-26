@@ -315,7 +315,7 @@ FROM (VALUES
      'Antihistamine tablet for seasonal allergies, hay fever, and allergic rhinitis.',
      'Adults: 1 tablet once daily. Not for children under 12.',
      'false', null,
-     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1790409430/medicart/medicines/fexo_120_taotb3.jpg',
      'Medicine', 'Allergies & Asthma', 'Tablet / Caplet'),
 
     ('Montela 10mg',
@@ -325,7 +325,7 @@ FROM (VALUES
      'Leukotriene receptor antagonist for chronic asthma and allergic rhinitis.',
      'Adults 15+: 1 tablet (10mg) once daily in the evening.',
      'false', null,
-     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1790409561/medicart/medicines/montela10_j7tgle.webp',
      'Medicine', 'Allergies & Asthma', 'Tablet / Caplet'),
 
     -- SubCat: Epilepsy & Neurological (2) — sensitivity: high (flag >=5), mid (flag >=15)
@@ -336,7 +336,7 @@ FROM (VALUES
      'Anticonvulsant for epilepsy and neuropathic pain.',
      'Adults: 300mg 3 times daily, adjusted by physician. Do not stop abruptly.',
      'true', 'high',
-     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1790409871/medicart/medicines/gaba300_onkzmq.jpg',
      'Medicine', 'Epilepsy & Neurological', 'Capsule'),
 
     ('Cazep 200mg',
@@ -346,7 +346,7 @@ FROM (VALUES
      'Anticonvulsant for epilepsy, trigeminal neuralgia, and bipolar disorder.',
      'Adults: 200mg twice daily initially; dose adjusted by physician.',
      'true', 'mid',
-     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1790409659/medicart/medicines/cazep200_lv82aw.jpg',
      'Medicine', 'Epilepsy & Neurological', 'Tablet / Caplet'),
 
     -- SubCat: Pain Relief (Analgesics) (2)
@@ -357,7 +357,7 @@ FROM (VALUES
      'Fast-acting pain reliever and fever reducer with caffeine for enhanced effect.',
      'Adults: 1-2 tablets every 4-6 hours. Max 8 tablets in 24 hours.',
      'false', null,
-     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1790410114/medicart/medicines/napaextra_g0iwvb.jpg',
      'Medicine', 'Pain Relief (Analgesics)', 'Tablet / Caplet'),
 
     ('Arlin 600',
@@ -367,7 +367,7 @@ FROM (VALUES
      'NSAID for pain, fever, and inflammation including headache and muscle pain.',
      'Adults: 1 tablet every 6-8 hours after meals. Max 3 tablets/day.',
      'false', null,
-     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1790410138/medicart/medicines/arlin600_rz7y8g.jpg',
      'Medicine', 'Pain Relief (Analgesics)', 'Tablet / Caplet'),
 
     -- SubCat: Gastrointestinal (2)
@@ -378,7 +378,7 @@ FROM (VALUES
      'Proton pump inhibitor for acid reflux, GERD, and stomach ulcers.',
      'Adults: 1 capsule daily before breakfast for 4-8 weeks or as directed.',
      'true', null,
-     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1790410341/medicart/medicines/nexum40_i7rany.webp',
      'Medicine', 'Gastrointestinal', 'Capsule'),
 
     ('Lanso D',
@@ -388,7 +388,7 @@ FROM (VALUES
      'Combination for acid reflux with nausea or bloating.',
      'Adults: 1 capsule once daily before breakfast.',
      'true', null,
-     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1790410367/medicart/medicines/lanso_d_ubapoy.jpg',
      'Medicine', 'Gastrointestinal', 'Capsule'),
 
     -- SubCat: Antibiotics & Anti-infectives (2) — sensitivity: mid (flag >=15)
@@ -409,7 +409,7 @@ FROM (VALUES
      'Macrolide antibiotic for respiratory tract and skin infections.',
      'Adults: 500mg once daily for 3 days, or as prescribed.',
      'true', null,
-     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1790410916/medicart/medicines/zimax500_pk1q5v.jpg',
      'Medicine', 'Antibiotics & Anti-infectives', 'Tablet / Caplet'),
 
     -- SubCat: Cardiac & Blood Pressure (2)
@@ -420,7 +420,7 @@ FROM (VALUES
      'Beta-blocker for hypertension, angina, and heart failure management.',
      'Adults: 5mg once daily in the morning; dose adjusted by physician.',
      'true', null,
-     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1790410974/medicart/medicines/bislol5_tjva48.webp',
      'Medicine', 'Cardiac & Blood Pressure', 'Tablet / Caplet'),
 
     ('Amlor 5mg',
@@ -430,7 +430,7 @@ FROM (VALUES
      'Calcium channel blocker for hypertension and chronic stable angina.',
      'Adults: 5mg once daily. May be increased to 10mg based on response.',
      'true', null,
-     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1790411040/medicart/medicines/amlor5_xfckuy.jpg',
      'Medicine', 'Cardiac & Blood Pressure', 'Tablet / Caplet'),
 
     -- SubCat: Diabetes (Medicine category) (2) — sensitivity: low (flag >=30)
@@ -441,7 +441,7 @@ FROM (VALUES
      'First-line oral antidiabetic for Type 2 diabetes management.',
      'Adults: 1 tablet twice daily with meals. Dose adjusted by physician.',
      'true', 'low',
-     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1790411134/medicart/medicines/metform500_xzmcop.jpg',
      'Medicine', 'Diabetes', 'Tablet / Caplet'),
 
     ('Glucophage 500mg',
@@ -451,7 +451,7 @@ FROM (VALUES
      'Brand-name metformin for blood glucose control in Type 2 diabetes.',
      'Adults: 1 tablet 2-3 times daily with meals as prescribed.',
      'true', 'low',
-     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1790411155/medicart/medicines/glucophage500_wspuvt.jpg',
      'Medicine', 'Diabetes', 'Tablet / Caplet'),
 
     -- SubCat: Hormonal & Endocrine (2)
@@ -462,7 +462,7 @@ FROM (VALUES
      'Thyroid hormone replacement for hypothyroidism.',
      'Adults: As prescribed. Taken on empty stomach 30 min before breakfast.',
      'true', null,
-     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1790411250/medicart/medicines/thyronorm500_aa1jyr.jpg',
      'Medicine', 'Hormonal & Endocrine', 'Tablet / Caplet'),
 
     ('Cloma 2',
@@ -472,7 +472,7 @@ FROM (VALUES
      'Ovulation stimulant used in female infertility treatment.',
      'As prescribed by physician. Not for self-medication.',
      'true', 'high',
-     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1790411292/medicart/medicines/cloma2_sfhytn.webp',
      'Medicine', 'Hormonal & Endocrine', 'Tablet / Caplet'),
 
     -- SubCat: Mental Health (2)
@@ -483,7 +483,7 @@ FROM (VALUES
      'Antipsychotic for schizophrenia, acute psychosis, and severe agitation.',
      'Adults: 5-10mg/day in divided doses as prescribed by psychiatrist.',
      'true', null,
-     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1790411447/medicart/medicines/serenace5_v1uncf.jpg',
      'Medicine', 'Mental Health', 'Tablet / Caplet'),
 
     ('Flunil 20mg',
@@ -493,7 +493,7 @@ FROM (VALUES
      'SSRI antidepressant for depression, OCD, and panic disorder.',
      'Adults: 20mg once daily in the morning. Dose adjusted after 4 weeks.',
      'true', null,
-     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1790411364/medicart/medicines/flunil20_wiz3l1.jpg',
      'Medicine', 'Mental Health', 'Capsule'),
 
     -- ==============================================================
