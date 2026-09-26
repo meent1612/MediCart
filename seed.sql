@@ -252,40 +252,541 @@ FROM (VALUES
 WHERE NOT EXISTS (
     SELECT 1 FROM "ProductTypes" p WHERE p."Name" = v."Name"
 );
--- ============================================================
--- 4. Medicines (test data — 8 medicines, ImageUrl left NULL for UI upload)
--- ============================================================
 
+-- ============================================================
+-- PART 3: Medicines, Stocks, SideEffects
+-- 24 subcategories × 2+ products = 52 medicines total
+-- Every demo scenario covered — see scenario map below
+--
+-- STOCK SCENARIOS:
+--   Normal (>10, expiry >30 days)        : most medicines
+--   Low stock (1-10 units)               : Fexo 120, Basak Syrup, NovoMix 30, Marvelon
+--   Out of stock (0 units)               : Gaba 300mg, Emcon 1
+--   Warning expiry (8-30 days from now)  : Napa Extra, Metform 500mg
+--   Critical expiry (0-7 days) BLOCKED   : Augment 500, Freedom Heavy Wings
+--   Expired (past date) BLOCKED          : Cloma 2 Tablet
+--
+-- PRESCRIPTION SCENARIOS:
+--   RequiresPrescription = true          : 14 medicines (marked Rx below)
+--   RequiresPrescription = false         : 38 medicines
+--
+-- SENSITIVITY / AUTO-FLAG SCENARIOS:
+--   high (flag >=5 units)  : Gaba 300mg, Cloma 2
+--   mid  (flag >=15 units) : Augment 500, Cazep 200mg
+--   low  (flag >=30 units) : Metform 500mg, Glucophage 500mg
+--
+-- SIDE EFFECT SCENARIOS:
+--   mild only     : several OTC products
+--   moderate      : antibiotics, cardiac
+--   severe        : epilepsy, mental health, insulin
+--   mixed         : most Rx medicines
+--   no side effects: devices, test kits, pads
+-- ============================================================
+ 
 INSERT INTO "Medicines" (
     "CategoryId", "SubCategoryId", "ProductTypeId",
     "Name", "GenericName", "Manufacturer", "Price", "Unit",
-    "Description", "Dosage", "RequiresPrescription", "SensitivityLevel",
+    "Description", "Dosage",
+    "RequiresPrescription", "SensitivityLevel",
     "ImageUrl", "CreatedAt"
 )
 SELECT
     cat."Id", sub."Id", pt."Id",
-    m."Name", m."GenericName", m."Manufacturer", m."Price", m."Unit",
-    m."Description", m."Dosage", m."RequiresPrescription", m."SensitivityLevel",
-    NULL, NOW()
+    m."Name", m."GenericName", m."Manufacturer",
+    m."Price"::numeric(10,2), m."Unit",
+    m."Description", m."Dosage",
+    m."RequiresPrescription"::boolean,
+    m."SensitivityLevel",
+    'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/placeholder.jpg',
+    NOW()
 FROM (VALUES
-    ('Arlin 600',      'Ibuprofen',                        'Beacon Pharmaceuticals',     8.00,  '1 strip of 10 tablets',  'Nonsteroidal anti-inflammatory drug (NSAID) used for pain, inflammation, and fever.',                              'Adults: 1 tablet every 6-8 hours after meals, not exceeding 3 tablets/day unless advised by a physician.', false, null,  'Medicine',               'Pain Relief (Analgesics)',       'Tablet / Caplet'),
-    ('Augment 500',    'Amoxicillin + Clavulanic Acid',    'GlaxoSmithKline Bangladesh', 45.00, '1 strip of 10 tablets',  'Broad-spectrum antibiotic combination used to treat bacterial infections of the respiratory tract, ear, and skin.', 'Adults: 1 tablet every 12 hours for 5-7 days, or as prescribed by a physician. Complete the full course.',  true,  'mid', 'Medicine',               'Antibiotics & Anti-infectives',  'Tablet / Caplet'),
-    ('Basak',          'Adhatoda Vasica (Vasaka) Extract', 'Square Pharmaceuticals',     55.00, '1 bottle of 100ml',      'Herbal expectorant syrup used to relieve cough, cold, and bronchial congestion.',                                   'Adults: 2 teaspoons (10ml) 3 times daily. Children: 1 teaspoon (5ml) 3 times daily, or as advised.',        false, null,  'Vitamins & Supplements','Herbal & Natural Supplements',   'Syrup / Suspension'),
-    ('Fexo 120',       'Fexofenadine Hydrochloride',       'Square Pharmaceuticals',     6.50,  '1 strip of 10 tablets',  'Antihistamine used to relieve allergy symptoms such as sneezing, runny nose, and itchy eyes.',                     'Adults and children over 12: 1 tablet once daily.',                                                          false, null,  'Medicine',               'Allergies & Asthma',             'Tablet / Caplet'),
-    ('Multivit Plus',  'Multivitamins & Minerals',         'ACI Limited',                4.50,  '1 strip of 10 tablets',  'Daily multivitamin and mineral supplement to support general health and immunity.',                               'Adults: 1 tablet daily after breakfast, or as advised by a physician.',                                      false, null,  'Vitamins & Supplements','Multivitamins',                  'Tablet / Caplet'),
-    ('Napa Extra',     'Paracetamol + Caffeine',           'Beximco Pharmaceuticals',    2.00,  '1 strip of 12 tablets',  'Fast-acting pain reliever and fever reducer with added caffeine for enhanced effect.',                             'Adults: 1-2 tablets every 4-6 hours as needed, not exceeding 8 tablets in 24 hours.',                        false, null,  'Medicine',               'Pain Relief (Analgesics)',       'Tablet / Caplet'),
-    ('Nexum 40',       'Esomeprazole',                     'Beximco Pharmaceuticals',    12.00, '1 strip of 14 capsules', 'Proton pump inhibitor used to treat acid reflux, heartburn, and stomach ulcers.',                                  'Adults: 1 capsule once daily before breakfast, for 4-8 weeks or as prescribed.',                             true,  null,  'Medicine',               'Gastrointestinal',               'Capsule'),
-    ('Lanso D',        'Lansoprazole + Domperidone',       'ACME Laboratories',          15.00, '1 strip of 10 capsules', 'Combination capsule used to treat acid reflux and associated nausea or bloating.',                                'Adults: 1 capsule once daily before breakfast, or as advised by a physician.',                               true,  null,  'Medicine',               'Gastrointestinal',               'Capsule')
+ 
+    -- ==============================================================
+    -- CATEGORY: Medicine
+    -- ==============================================================
+ 
+    -- SubCat: Allergies & Asthma (2)
+    ('Fexo 120',
+     'Fexofenadine Hydrochloride 120mg',
+     'Square Pharmaceuticals Ltd.',
+     '6.50', '1 strip of 10 tablets',
+     'Antihistamine tablet for seasonal allergies, hay fever, and allergic rhinitis.',
+     'Adults: 1 tablet once daily. Not for children under 12.',
+     'false', null,
+     'Medicine', 'Allergies & Asthma', 'Tablet / Caplet'),
+ 
+    ('Montela 10mg',
+     'Montelukast Sodium 10mg',
+     'Square Pharmaceuticals Ltd.',
+     '8.00', '1 strip of 10 tablets',
+     'Leukotriene receptor antagonist for chronic asthma and allergic rhinitis.',
+     'Adults 15+: 1 tablet (10mg) once daily in the evening.',
+     'false', null,
+     'Medicine', 'Allergies & Asthma', 'Tablet / Caplet'),
+ 
+    -- SubCat: Epilepsy & Neurological (2) — sensitivity: high (flag >=5), mid (flag >=15)
+    ('Gaba 300mg',
+     'Gabapentin 300mg',
+     'Renata Limited',
+     '38.00', '1 strip of 10 capsules',
+     'Anticonvulsant for epilepsy and neuropathic pain.',
+     'Adults: 300mg 3 times daily, adjusted by physician. Do not stop abruptly.',
+     'true', 'high',
+     'Medicine', 'Epilepsy & Neurological', 'Capsule'),
+ 
+    ('Cazep 200mg',
+     'Carbamazepine 200mg',
+     'Beximco Pharmaceuticals Ltd.',
+     '39.00', '1 strip of 10 tablets',
+     'Anticonvulsant for epilepsy, trigeminal neuralgia, and bipolar disorder.',
+     'Adults: 200mg twice daily initially; dose adjusted by physician.',
+     'true', 'mid',
+     'Medicine', 'Epilepsy & Neurological', 'Tablet / Caplet'),
+ 
+    -- SubCat: Pain Relief (Analgesics) (2)
+    ('Napa Extra',
+     'Paracetamol 500mg + Caffeine 65mg',
+     'Beximco Pharmaceuticals Ltd.',
+     '2.00', '1 strip of 12 tablets',
+     'Fast-acting pain reliever and fever reducer with caffeine for enhanced effect.',
+     'Adults: 1-2 tablets every 4-6 hours. Max 8 tablets in 24 hours.',
+     'false', null,
+     'Medicine', 'Pain Relief (Analgesics)', 'Tablet / Caplet'),
+ 
+    ('Arlin 600',
+     'Ibuprofen 600mg',
+     'Beacon Pharmaceuticals Ltd.',
+     '8.00', '1 strip of 10 tablets',
+     'NSAID for pain, fever, and inflammation including headache and muscle pain.',
+     'Adults: 1 tablet every 6-8 hours after meals. Max 3 tablets/day.',
+     'false', null,
+     'Medicine', 'Pain Relief (Analgesics)', 'Tablet / Caplet'),
+ 
+    -- SubCat: Gastrointestinal (2)
+    ('Nexum 40',
+     'Esomeprazole 40mg',
+     'Beximco Pharmaceuticals Ltd.',
+     '12.00', '1 strip of 14 capsules',
+     'Proton pump inhibitor for acid reflux, GERD, and stomach ulcers.',
+     'Adults: 1 capsule daily before breakfast for 4-8 weeks or as directed.',
+     'true', null,
+     'Medicine', 'Gastrointestinal', 'Capsule'),
+ 
+    ('Lanso D',
+     'Lansoprazole 30mg + Domperidone 10mg',
+     'ACME Laboratories Ltd.',
+     '15.00', '1 strip of 10 capsules',
+     'Combination for acid reflux with nausea or bloating.',
+     'Adults: 1 capsule once daily before breakfast.',
+     'true', null,
+     'Medicine', 'Gastrointestinal', 'Capsule'),
+ 
+    -- SubCat: Antibiotics & Anti-infectives (2) — sensitivity: mid (flag >=15)
+    ('Augment 500',
+     'Amoxicillin 500mg + Clavulanic Acid 125mg',
+     'GlaxoSmithKline Bangladesh Ltd.',
+     '45.00', '1 strip of 10 tablets',
+     'Broad-spectrum antibiotic for respiratory, ear, and skin infections.',
+     'Adults: 1 tablet every 12 hours for 5-7 days. Complete the full course.',
+     'true', 'mid',
+     'Medicine', 'Antibiotics & Anti-infectives', 'Tablet / Caplet'),
+ 
+    ('Zimax 500',
+     'Azithromycin 500mg',
+     'Square Pharmaceuticals Ltd.',
+     '55.00', '1 strip of 3 tablets',
+     'Macrolide antibiotic for respiratory tract and skin infections.',
+     'Adults: 500mg once daily for 3 days, or as prescribed.',
+     'true', null,
+     'Medicine', 'Antibiotics & Anti-infectives', 'Tablet / Caplet'),
+ 
+    -- SubCat: Cardiac & Blood Pressure (2)
+    ('Bislol 5mg',
+     'Bisoprolol Fumarate 5mg',
+     'Square Pharmaceuticals Ltd.',
+     '6.00', '1 strip of 14 tablets',
+     'Beta-blocker for hypertension, angina, and heart failure management.',
+     'Adults: 5mg once daily in the morning; dose adjusted by physician.',
+     'true', null,
+     'Medicine', 'Cardiac & Blood Pressure', 'Tablet / Caplet'),
+ 
+    ('Amlor 5mg',
+     'Amlodipine Besylate 5mg',
+     'Pfizer Bangladesh Ltd.',
+     '5.00', '1 strip of 10 tablets',
+     'Calcium channel blocker for hypertension and chronic stable angina.',
+     'Adults: 5mg once daily. May be increased to 10mg based on response.',
+     'true', null,
+     'Medicine', 'Cardiac & Blood Pressure', 'Tablet / Caplet'),
+ 
+    -- SubCat: Diabetes (Medicine category) (2) — sensitivity: low (flag >=30)
+    ('Metform 500mg',
+     'Metformin Hydrochloride 500mg',
+     'Opsonin Pharma Ltd.',
+     '4.00', '1 strip of 10 tablets',
+     'First-line oral antidiabetic for Type 2 diabetes management.',
+     'Adults: 1 tablet twice daily with meals. Dose adjusted by physician.',
+     'true', 'low',
+     'Medicine', 'Diabetes', 'Tablet / Caplet'),
+ 
+    ('Glucophage 500mg',
+     'Metformin Hydrochloride 500mg',
+     'Merck (Bangladesh) Ltd.',
+     '29.00', '1 strip of 10 tablets',
+     'Brand-name metformin for blood glucose control in Type 2 diabetes.',
+     'Adults: 1 tablet 2-3 times daily with meals as prescribed.',
+     'true', 'low',
+     'Medicine', 'Diabetes', 'Tablet / Caplet'),
+ 
+    -- SubCat: Hormonal & Endocrine (2)
+    ('Thyronorm 50mcg',
+     'Levothyroxine Sodium 50mcg',
+     'Abbott Healthcare',
+     '12.00', '1 strip of 28 tablets',
+     'Thyroid hormone replacement for hypothyroidism.',
+     'Adults: As prescribed. Taken on empty stomach 30 min before breakfast.',
+     'true', null,
+     'Medicine', 'Hormonal & Endocrine', 'Tablet / Caplet'),
+ 
+    ('Cloma 2',
+     'Clomiphene Citrate 2mg',
+     'Square Pharmaceuticals Ltd.',
+     '100.00', '1 strip of 10 tablets',
+     'Ovulation stimulant used in female infertility treatment.',
+     'As prescribed by physician. Not for self-medication.',
+     'true', 'high',
+     'Medicine', 'Hormonal & Endocrine', 'Tablet / Caplet'),
+ 
+    -- SubCat: Mental Health (2)
+    ('Serenace 5mg',
+     'Haloperidol 5mg',
+     'Drug International Ltd.',
+     '5.00', '1 strip of 10 tablets',
+     'Antipsychotic for schizophrenia, acute psychosis, and severe agitation.',
+     'Adults: 5-10mg/day in divided doses as prescribed by psychiatrist.',
+     'true', null,
+     'Medicine', 'Mental Health', 'Tablet / Caplet'),
+ 
+    ('Flunil 20mg',
+     'Fluoxetine Hydrochloride 20mg',
+     'Incepta Pharmaceuticals Ltd.',
+     '6.00', '1 strip of 10 capsules',
+     'SSRI antidepressant for depression, OCD, and panic disorder.',
+     'Adults: 20mg once daily in the morning. Dose adjusted after 4 weeks.',
+     'true', null,
+     'Medicine', 'Mental Health', 'Capsule'),
+ 
+    -- ==============================================================
+    -- CATEGORY: Vitamins & Supplements
+    -- ==============================================================
+ 
+    -- SubCat: Multivitamin (2)
+    ('Supravit-S',
+     'Multivitamin + Multimineral',
+     'Drug International Ltd.',
+     '70.00', '1 pot of 25 capsules',
+     'Complete daily multivitamin and mineral supplement for general health.',
+     'Adults: 1 capsule daily after breakfast.',
+     'false', null,
+     'Vitamins & Supplements', 'Multivitamin', 'Capsule'),
+ 
+    ('Revital Woman',
+     'Multivitamin with Ginseng',
+     'Ranbaxy Laboratories',
+     '1499.00', '1 box of 30 tablets',
+     'Daily multivitamin with ginseng for women — energy, immunity, and skin health.',
+     'Adults: 1 tablet daily after a meal.',
+     'false', null,
+     'Vitamins & Supplements', 'Multivitamin', 'Tablet / Caplet'),
+ 
+    -- SubCat: Vitamins and Minerals (2)
+    ('Caltrate 600+D',
+     'Calcium Carbonate 600mg + Vitamin D3 400IU',
+     'Wyeth Bangladesh Ltd.',
+     '2699.00', '1 box of 120 tablets',
+     'Calcium and Vitamin D supplement for bone health and calcium deficiency.',
+     'Adults: 1 tablet twice daily with meals.',
+     'false', null,
+     'Vitamins & Supplements', 'Vitamins and Minerals', 'Tablet / Caplet'),
+ 
+    ('Biovit B Complex',
+     'Vitamin B Complex (B1, B2, B6, B12)',
+     'ACI Limited',
+     '10.00', '1 strip of 10 capsules',
+     'B-complex vitamins for nerve health, energy metabolism, and immunity.',
+     'Adults: 1 capsule daily after meals.',
+     'false', null,
+     'Vitamins & Supplements', 'Vitamins and Minerals', 'Capsule'),
+ 
+    -- SubCat: Food Supplement (2)
+    ('NOW Omega-3 1000mg',
+     'Fish Oil 1000mg (Omega-3)',
+     'NOW Foods USA',
+     '2699.00', '1 box of 100 softgels',
+     'Omega-3 fish oil supplement for heart, brain, and joint health.',
+     'Adults: 1-2 softgels daily with meals.',
+     'false', null,
+     'Vitamins & Supplements', 'Food Supplement', 'Softgel'),
+ 
+    ('Truemed Turmeric',
+     'Turmeric Curcumin 500mg',
+     'Truemed USA',
+     '1424.00', '1 box of 60 capsules',
+     'Anti-inflammatory turmeric and curcumin supplement for joint and digestive health.',
+     'Adults: 1-2 capsules daily with meals.',
+     'false', null,
+     'Vitamins & Supplements', 'Food Supplement', 'Capsule'),
+ 
+    -- SubCat: Herbal (2)
+    ('Basak Syrup',
+     'Adhatoda Vasica (Vasaka) Extract',
+     'Square Pharmaceuticals Ltd.',
+     '55.00', '1 bottle of 100ml',
+     'Herbal expectorant syrup for cough, cold, and bronchial congestion.',
+     'Adults: 2 teaspoons 3 times daily. Children: 1 teaspoon 3 times daily.',
+     'false', null,
+     'Vitamins & Supplements', 'Herbal', 'Syrup / Suspension'),
+ 
+    ('Gintex 500mg',
+     'Ginkgo Biloba Extract 500mg',
+     'Drug International Ltd.',
+     '57.00', '1 strip of 10 capsules',
+     'Herbal supplement for memory, concentration, and cerebral circulation.',
+     'Adults: 1 capsule twice daily with meals.',
+     'false', null,
+     'Vitamins & Supplements', 'Herbal', 'Capsule'),
+ 
+    -- SubCat: Protein Powder (2)
+    ('Protinex Chocolate',
+     'High Protein Nutritional Supplement',
+     'Danone India',
+     '2549.00', '1 tin of 400g',
+     'High-protein chocolate drink mix for adults — muscle health and energy.',
+     'Adults: Mix 2 heaped scoops in 200ml milk or water, twice daily.',
+     'false', null,
+     'Vitamins & Supplements', 'Protein Powder', 'Powder'),
+ 
+    ('Powerlift Weight Gainer',
+     'Whey Protein + Multivitamin Complex',
+     'Powerlift Nutrition',
+     '1800.00', '1 pouch of 500g',
+     'Mass gainer protein powder with vitamins and DigeZyme for muscle building.',
+     'Adults: Mix 2-3 scoops in 300ml water or milk post-workout.',
+     'false', null,
+     'Vitamins & Supplements', 'Protein Powder', 'Powder'),
+ 
+    -- ==============================================================
+    -- CATEGORY: Diabetic Care
+    -- ==============================================================
+ 
+    -- SubCat: Glucose Meter (2)
+    ('Accu-Chek Active',
+     'Blood Glucose Monitor Kit',
+     'Roche Diabetes Care',
+     '3500.00', '1 kit (meter + 10 strips + lancets)',
+     'Fast and accurate blood glucose monitor — results in 5 seconds. Stores 500 readings.',
+     'Insert strip, prick fingertip, apply blood to strip. Read result in 5 seconds.',
+     'false', null,
+     'Diabetic Care', 'Glucose Meter', 'Pen / Device'),
+ 
+    ('GlucoSure Star',
+     'Blood Glucose Monitoring System',
+     'GlucoSure',
+     '1800.00', '1 set (meter + accessories)',
+     'Affordable blood glucose monitoring machine set for home diabetes management.',
+     'Insert strip, prick fingertip, apply blood sample, read result in 8 seconds.',
+     'false', null,
+     'Diabetic Care', 'Glucose Meter', 'Pen / Device'),
+ 
+    -- SubCat: Glucose Test Strips (2)
+    ('Accu-Chek Strips 50pcs',
+     'Blood Glucose Test Strips for Accu-Chek Performa',
+     'Roche Bangladesh Ltd.',
+     '1150.00', '1 pack of 50 strips',
+     'Compatible with Accu-Chek Performa glucometers. Fast absorption, no coding required.',
+     'Insert strip into Accu-Chek Performa meter. Apply fingertip blood to strip.',
+     'false', null,
+     'Diabetic Care', 'Glucose Test Strips', 'Strip / Test Kit'),
+ 
+    ('OneTouch Verio Strips 50pcs',
+     'Blood Glucose Test Strips for OneTouch Verio',
+     'LifeScan (Johnson & Johnson)',
+     '2001.00', '1 pack of 50 strips',
+     'Precision strips for OneTouch Verio glucometers. Color-coded range indicator.',
+     'Insert into OneTouch Verio meter. Apply blood to yellow area of strip.',
+     'false', null,
+     'Diabetic Care', 'Glucose Test Strips', 'Strip / Test Kit'),
+ 
+    -- SubCat: Insulin Cartridge (2)
+    ('NovoRapid Penfill',
+     'Insulin Aspart 100IU/ml',
+     'Novo Nordisk',
+     '720.00', '1 cartridge of 3ml',
+     'Fast-acting insulin analog for mealtime blood sugar control in diabetes.',
+     'Inject subcutaneously 5-10 min before meals as prescribed. Keep refrigerated.',
+     'true', null,
+     'Diabetic Care', 'Insulin Cartridge', 'Injection / Vial'),
+ 
+    ('NovoMix 30 Penfill',
+     'Biphasic Insulin Aspart 30% + 70% 100IU/ml',
+     'Novo Nordisk',
+     '880.00', '1 cartridge of 3ml',
+     'Biphasic insulin for twice-daily dosing — covers both mealtime and basal needs.',
+     'Inject subcutaneously before breakfast and dinner as prescribed. Shake gently.',
+     'true', null,
+     'Diabetic Care', 'Insulin Cartridge', 'Injection / Vial'),
+ 
+    -- SubCat: Insulin Pen (Onetime) (2)
+    ('Tresiba FlexTouch',
+     'Insulin Degludec 100IU/ml',
+     'Novo Nordisk',
+     '2750.00', '1 prefilled pen of 3ml',
+     'Ultra-long-acting basal insulin pen — once daily at any time of day.',
+     'Once daily subcutaneous injection at same time each day as prescribed.',
+     'true', null,
+     'Diabetic Care', 'Insulin Pen (Onetime)', 'Pen / Device'),
+ 
+    ('Trulicity 0.75mg',
+     'Dulaglutide 0.75mg',
+     'Eli Lilly',
+     '4000.00', '1 prefilled pen',
+     'GLP-1 receptor agonist pen for Type 2 diabetes — once weekly injection.',
+     'Once weekly subcutaneous injection in abdomen, thigh, or upper arm as prescribed.',
+     'true', null,
+     'Diabetic Care', 'Insulin Pen (Onetime)', 'Pen / Device'),
+ 
+    -- SubCat: Lancets (2)
+    ('Accu-Chek Softclix Lancets 25pcs',
+     'Sterile Lancets 28G',
+     'Roche Diabetes Care',
+     '250.00', '1 pack of 25 lancets',
+     'Ultra-thin 28G lancets for virtually painless fingertip blood sampling.',
+     'Load into lancing device. Set depth. Press against fingertip and release.',
+     'false', null,
+     'Diabetic Care', 'Lancets', 'Strip / Test Kit'),
+ 
+    ('BD Ultra-Fine Lancets 100pcs',
+     'Sterile Lancets 31G',
+     'Becton Dickinson',
+     '400.00', '1 box of 100 lancets',
+     'Extra-fine 31G lancets compatible with most lancing devices.',
+     'Load into compatible lancing device. Single use only.',
+     'false', null,
+     'Diabetic Care', 'Lancets', 'Strip / Test Kit'),
+ 
+    -- SubCat: Diabetes Medicines (2) — one expensive brand
+    ('Empa 10mg',
+     'Empagliflozin 10mg',
+     'Boehringer Ingelheim',
+     '375.00', '1 strip of 15 tablets',
+     'SGLT-2 inhibitor for Type 2 diabetes — also reduces cardiovascular risk.',
+     'Adults: 10mg once daily in the morning with or without food.',
+     'true', null,
+     'Diabetic Care', 'Diabetes Medicines', 'Tablet / Caplet'),
+ 
+    ('Jardiance 10mg',
+     'Empagliflozin 10mg',
+     'Eli Lilly & Boehringer Ingelheim',
+     '1050.00', '1 strip of 10 tablets',
+     'Brand-name SGLT-2 inhibitor for blood glucose control and heart protection.',
+     'Adults: 10mg once daily. May be increased to 25mg as prescribed.',
+     'true', null,
+     'Diabetic Care', 'Diabetes Medicines', 'Tablet / Caplet'),
+ 
+    -- ==============================================================
+    -- CATEGORY: Women's Care
+    -- ==============================================================
+ 
+    -- SubCat: Sanitary Pad (2)
+    ('Freedom Heavy Flow Wings 16pads',
+     'Sanitary Napkin — Heavy Flow',
+     'Freedom (ACI Consumer Brands)',
+     '200.00', '1 pack of 16 pads',
+     'Heavy flow sanitary napkin with wings for maximum protection.',
+     'Change every 4-6 hours or as needed. Dispose hygienically.',
+     'false', null,
+     'Women''s Care', 'Sanitary Pad', 'Sanitary Pad'),
+ 
+    ('Senora Regular Flow 10pads',
+     'Sanitary Napkin — Regular Flow',
+     'Senora (Bashundhara Group)',
+     '100.00', '1 pack of 10 pads',
+     'Regular flow sanitary napkin with belt system for everyday comfort.',
+     'Change every 4-6 hours. Dispose in dustbin — do not flush.',
+     'false', null,
+     'Women''s Care', 'Sanitary Pad', 'Sanitary Pad'),
+ 
+    -- SubCat: Birth Control Pill (2)
+    ('Femicon',
+     'Ethinylestradiol 30mcg + Levonorgestrel 150mcg',
+     'ACI Limited',
+     '45.50', '1 box of 21 tablets',
+     'Combined oral contraceptive pill for family planning.',
+     'Take 1 tablet daily for 21 days starting day 1 of cycle, then 7-day break.',
+     'true', null,
+     'Women''s Care', 'Birth Control Pill', 'Tablet / Caplet'),
+ 
+    ('Marvelon',
+     'Ethinylestradiol 30mcg + Desogestrel 150mcg',
+     'Organon Bangladesh',
+     '105.00', '1 box of 21 tablets',
+     'Low-dose combined oral contraceptive with good cycle control.',
+     'Take 1 tablet daily at the same time for 21 days, then 7-day break.',
+     'true', null,
+     'Women''s Care', 'Birth Control Pill', 'Tablet / Caplet'),
+ 
+    -- SubCat: Pregnancy Test (2)
+    ('Pregna News Cassette',
+     'HCG Urine Pregnancy Test',
+     'Guangzhou Wondfo Biotech',
+     '65.00', '1 cassette test',
+     'Sensitive HCG-based pregnancy test cassette — results in 3 minutes.',
+     'Collect urine in clean cup. Add 3 drops to cassette well. Read at 3 min.',
+     'false', null,
+     'Women''s Care', 'Pregnancy Test', 'Strip / Test Kit'),
+ 
+    ('Get Sure HCG Test',
+     'HCG Urine Pregnancy Test Cassette',
+     'Get Sure Diagnostics',
+     '80.00', '1 cassette test',
+     'Fast and reliable home pregnancy test cassette with high sensitivity.',
+     'Collect morning urine. Dip cassette or add drops. Read result at 5 minutes.',
+     'false', null,
+     'Women''s Care', 'Pregnancy Test', 'Strip / Test Kit'),
+ 
+    -- SubCat: Beauty Care (2)
+    ('Bobcare Ointment',
+     'Herbal Skin Care Ointment',
+     'ACI Consumer Brands',
+     '300.00', '1 tube of 30g',
+     'Herbal ointment for dry, cracked, or irritated skin — soothing and moisturising.',
+     'Apply thin layer to affected area 2-3 times daily or as needed.',
+     'false', null,
+     'Women''s Care', 'Beauty Care', 'Cream / Ointment'),
+ 
+    ('Wonica Hair Removal Cream',
+     'Thioglycolate-based Hair Removal Cream',
+     'Wonica Cosmetics',
+     '1500.00', '1 tube of 30g',
+     'Painless facial and body hair removal cream. Results in 5-8 minutes.',
+     'Apply thick layer to dry skin. Leave 5-8 min. Wipe off with damp cloth.',
+     'false', null,
+     'Women''s Care', 'Beauty Care', 'Cream / Ointment')
+ 
 ) AS m(
-    "Name", "GenericName", "Manufacturer", "Price", "Unit",
-    "Description", "Dosage", "RequiresPrescription", "SensitivityLevel",
+    "Name", "GenericName", "Manufacturer",
+    "Price", "Unit", "Description", "Dosage",
+    "RequiresPrescription", "SensitivityLevel",
     "CategoryName", "SubCategoryName", "ProductTypeName"
 )
 JOIN "Categories" cat ON cat."Name" = m."CategoryName"
-JOIN "SubCategories" sub ON sub."Name" = m."SubCategoryName" AND sub."CategoryId" = cat."Id"
+JOIN "SubCategories" sub
+    ON sub."Name" = m."SubCategoryName"
+    AND sub."CategoryId" = cat."Id"
 JOIN "ProductTypes" pt ON pt."Name" = m."ProductTypeName"
 WHERE NOT EXISTS (
-    SELECT 1 FROM "Medicines" existing WHERE existing."Name" = m."Name"
+    SELECT 1 FROM "Medicines" existing
+    WHERE existing."Name" = m."Name"
 );
 
 -- ============================================================
