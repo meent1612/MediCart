@@ -747,7 +747,7 @@ FROM (VALUES
      'Heavy flow sanitary napkin with wings for maximum protection.',
      'Change every 4-6 hours or as needed. Dispose hygienically.',
      'false', null,
-     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1790413758/medicart/medicines/s2KtMZyjoCiaPlSlvjKYKP1qkt0UpsoiQ0tAHvz2_uvhauo.jpg',
      'Women''s Care', 'Sanitary Pad', 'Sanitary Pad'),
 
     ('Senora Regular Flow 10pads',
@@ -757,18 +757,18 @@ FROM (VALUES
      'Regular flow sanitary napkin with belt system for everyday comfort.',
      'Change every 4-6 hours. Dispose in dustbin — do not flush.',
      'false', null,
-     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1790413800/medicart/medicines/4aDdyBZpLfa91srZSUk1t0Rci8iZQN6cx4tgzcvG_oiryma.webp',
      'Women''s Care', 'Sanitary Pad', 'Sanitary Pad'),
 
     -- SubCat: Birth Control Pill (2)
     ('Femicon',
      'Ethinylestradiol 30mcg + Levonorgestrel 150mcg',
      'ACI Limited',
-     '45.50', '1 box of 21 tablets',
+     '45.50', '1 box of 28 tablets',
      'Combined oral contraceptive pill for family planning.',
      'Take 1 tablet daily for 21 days starting day 1 of cycle, then 7-day break.',
      'true', null,
-     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1790413870/medicart/medicines/images_utry9a.jpg',
      'Women''s Care', 'Birth Control Pill', 'Tablet / Caplet'),
 
     ('Marvelon',
@@ -778,7 +778,7 @@ FROM (VALUES
      'Low-dose combined oral contraceptive with good cycle control.',
      'Take 1 tablet daily at the same time for 21 days, then 7-day break.',
      'true', null,
-     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1790413957/medicart/medicines/images_y8luub.jpg',
      'Women''s Care', 'Birth Control Pill', 'Tablet / Caplet'),
 
     -- SubCat: Pregnancy Test (2)
@@ -789,7 +789,7 @@ FROM (VALUES
      'Sensitive HCG-based pregnancy test cassette — results in 3 minutes.',
      'Collect urine in clean cup. Add 3 drops to cassette well. Read at 3 min.',
      'false', null,
-     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1790414383/medicart/medicines/images_ajkahb.jpg',
      'Women''s Care', 'Pregnancy Test', 'Strip / Test Kit'),
 
     ('Get Sure HCG Test',
@@ -799,7 +799,7 @@ FROM (VALUES
      'Fast and reliable home pregnancy test cassette with high sensitivity.',
      'Collect morning urine. Dip cassette or add drops. Read result at 5 minutes.',
      'false', null,
-     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1790414432/medicart/medicines/sEykoDEOyvuvAMN02kXLZMYUueX2iNWnuDjMO9ZA_jrmknf.jpg',
      'Women''s Care', 'Pregnancy Test', 'Strip / Test Kit'),
 
     -- SubCat: Beauty Care (2)
@@ -810,7 +810,7 @@ FROM (VALUES
      'Herbal ointment for dry, cracked, or irritated skin — soothing and moisturising.',
      'Apply thin layer to affected area 2-3 times daily or as needed.',
      'false', null,
-     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1790414469/medicart/medicines/images_kg3mib.jpg',
      'Women''s Care', 'Beauty Care', 'Cream / Ointment'),
 
     ('Wonica Hair Removal Cream',
@@ -820,7 +820,7 @@ FROM (VALUES
      'Painless facial and body hair removal cream. Results in 5-8 minutes.',
      'Apply thick layer to dry skin. Leave 5-8 min. Wipe off with damp cloth.',
      'false', null,
-     'https://res.cloudinary.com/tjgtsydz/image/upload/v1788420004/medicart/medicines/augment_msiopf.jpg',
+     'https://res.cloudinary.com/tjgtsydz/image/upload/v1790414507/medicart/medicines/images_ovaobm.jpg',
      'Women''s Care', 'Beauty Care', 'Cream / Ointment')
 
 ) AS m(
