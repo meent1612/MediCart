@@ -847,98 +847,79 @@ WHERE NOT EXISTS (
 
 
 -- ============================================================
--- STOCKS
--- Expiry dates are relative to today (2026-09-26):
---   Normal           : 2027-06-30 onwards
---   Warning (8-30d)  : 2026-10-10 (Napa Extra), 2026-10-20 (Metform 500mg)
---   Critical (0-7d)  : 2026-09-30 (Augment 500), 2026-10-02 (Freedom Heavy)
---   Expired          : 2026-09-01 (Cloma 2)
---
--- Qty:
---   Normal    : 30-120
---   Low stock : 4-8
---   Out stock : 0
+-- STOCKS — built for demo date 2026-10-01 (also valid on 2026-09-30)
+-- Healthy: 28 | Out: 4 | Low: 6 | Warning: 5 | Critical: 3 | Expired: 3
+-- (Femicon is both Low and Warning)
 -- ============================================================
- 
 INSERT INTO "Stocks" ("MedicineId", "Quantity", "ExpiryDate", "UpdatedAt")
 SELECT med."Id", s."Quantity"::int, s."ExpiryDate"::date, NOW()
 FROM (VALUES
     -- Allergies & Asthma
-    ('Fexo 120',                    8,   '2027-12-31'),  -- LOW STOCK
-    ('Montela 10mg',               60,   '2027-11-30'),  -- Normal
- 
+    ('Fexo 120',                    8,   '2027-12-31'),  -- LOW
+    ('Montela 10mg',               60,   '2027-11-30'),
     -- Epilepsy & Neurological
-    ('Gaba 300mg',                  0,   '2027-08-31'),  -- OUT OF STOCK + high sensitivity
-    ('Cazep 200mg',                45,   '2027-09-30'),  -- Normal + mid sensitivity
- 
+    ('Gaba 300mg',                 60,   '2027-08-31'),  -- high sensitivity
+    ('Cazep 200mg',                60,   '2027-09-30'),  -- mid sensitivity
     -- Pain Relief
-    ('Napa Extra',                 80,   '2026-10-10'),  -- WARNING EXPIRY (14 days)
-    ('Arlin 600',                  50,   '2027-06-30'),  -- Normal
- 
+    ('Napa Extra',                 80,   '2026-10-20'),  -- WARNING
+    ('Arlin 600',                  50,   '2027-06-30'),
     -- Gastrointestinal
-    ('Nexum 40',                   35,   '2027-05-31'),  -- Normal
-    ('Lanso D',                    30,   '2027-04-30'),  -- Normal
- 
+    ('Nexum 40',                   40,   '2026-10-15'),  -- WARNING
+    ('Lanso D',                     0,   '2027-04-30'),  -- OUT
     -- Antibiotics
-    ('Augment 500',                25,   '2026-09-30'),  -- CRITICAL EXPIRY (4 days) BLOCKED
-    ('Zimax 500',                  40,   '2027-07-31'),  -- Normal
- 
+    ('Augment 500',                25,   '2026-10-05'),  -- CRITICAL (blocked)
+    ('Zimax 500',                  40,   '2027-07-31'),
     -- Cardiac & Blood Pressure
-    ('Bislol 5mg',                 55,   '2027-10-31'),  -- Normal
-    ('Amlor 5mg',                  70,   '2027-12-31'),  -- Normal
- 
-    -- Diabetes (Medicine cat)
-    ('Metform 500mg',             120,   '2026-10-20'),  -- WARNING EXPIRY (24 days) + low sens
-    ('Glucophage 500mg',           90,   '2027-08-31'),  -- Normal + low sensitivity
- 
+    ('Bislol 5mg',                 55,   '2027-10-31'),
+    ('Amlor 5mg',                  70,   '2027-12-31'),
+    -- Diabetes (Medicine)
+    ('Metform 500mg',             120,   '2026-10-25'),  -- WARNING, low sensitivity
+    ('Glucophage 500mg',           90,   '2027-08-31'),  -- low sensitivity
     -- Hormonal & Endocrine
-    ('Thyronorm 50mcg',            50,   '2027-11-30'),  -- Normal
-    ('Cloma 2',                     0,   '2026-09-01'),  -- OUT OF STOCK + EXPIRED + high sens
- 
+    ('Thyronorm 50mcg',            50,   '2027-11-30'),
+    ('Cloma 2',                    12,   '2026-09-01'),  -- EXPIRED (blocked), high sensitivity
     -- Mental Health
-    ('Serenace 5mg',               30,   '2027-06-30'),  -- Normal
-    ('Flunil 20mg',                40,   '2027-09-30'),  -- Normal
- 
+    ('Serenace 5mg',               30,   '2027-06-30'),
+    ('Flunil 20mg',                40,   '2027-09-30'),
     -- Vitamins & Supplements
-    ('Supravit-S',                 80,   '2028-01-31'),  -- Normal
-    ('Revital Woman',              20,   '2027-12-31'),  -- Normal
-    ('Caltrate 600+D',             15,   '2027-10-31'),  -- Normal
-    ('Biovit B Complex',          100,   '2028-03-31'),  -- Normal
-    ('NOW Omega-3 1000mg',         25,   '2027-08-31'),  -- Normal
-    ('Truemed Turmeric',           18,   '2027-11-30'),  -- Normal
-    ('Basak Syrup',                 5,   '2027-06-30'),  -- LOW STOCK
-    ('Gintex 500mg',               45,   '2027-09-30'),  -- Normal
-    ('Protinex Chocolate',         12,   '2027-07-31'),  -- Normal
-    ('Powerlift Weight Gainer',     7,   '2027-05-31'),  -- LOW STOCK
- 
+    ('Supravit-S',                 80,   '2028-01-31'),
+    ('Revital Woman',               0,   '2027-12-31'),  -- OUT
+    ('Caltrate 600+D',             40,   '2027-10-31'),
+    ('Biovit B Complex',           30,   '2026-08-20'),  -- EXPIRED (blocked)
+    ('NOW Omega-3 1000mg',         25,   '2027-08-31'),
+    ('Truemed Turmeric',           30,   '2027-11-30'),
+    ('Basak Syrup',                 5,   '2027-06-30'),  -- LOW (sells out in plan)
+    ('Gintex 500mg',               45,   '2027-09-30'),
+    ('Protinex Chocolate',         11,   '2027-07-31'),  -- normal now, turns LOW after orders
+    ('Powerlift Weight Gainer',     7,   '2027-05-31'),  -- LOW
     -- Diabetic Care
-    ('Accu-Chek Active',           15,   '2028-04-30'),  -- Normal (device)
-    ('GlucoSure Star',             10,   '2028-06-30'),  -- Normal
-    ('Accu-Chek Strips 50pcs',     30,   '2027-08-31'),  -- Normal
-    ('OneTouch Verio Strips 50pcs', 20,  '2027-10-31'),  -- Normal
-    ('NovoRapid Penfill',          18,   '2027-04-30'),  -- Normal
-    ('NovoMix 30 Penfill',          4,   '2027-03-31'),  -- LOW STOCK
-    ('Tresiba FlexTouch',          12,   '2027-06-30'),  -- Normal
-    ('Trulicity 0.75mg',            8,   '2027-05-31'),  -- LOW STOCK
-    ('Accu-Chek Softclix Lancets 25pcs', 50, '2028-01-31'), -- Normal
-    ('BD Ultra-Fine Lancets 100pcs',     35, '2028-03-31'), -- Normal
-    ('Empa 10mg',                  45,   '2027-11-30'),  -- Normal
-    ('Jardiance 10mg',             20,   '2027-09-30'),  -- Normal
- 
+    ('Accu-Chek Active',           15,   '2028-04-30'),
+    ('GlucoSure Star',             20,   '2028-06-30'),
+    ('Accu-Chek Strips 50pcs',     50,   '2027-08-31'),
+    ('OneTouch Verio Strips 50pcs',30,   '2027-10-31'),
+    ('NovoRapid Penfill',          30,   '2027-04-30'),
+    ('NovoMix 30 Penfill',          0,   '2027-03-31'),  -- OUT
+    ('Tresiba FlexTouch',          20,   '2027-06-30'),
+    ('Trulicity 0.75mg',            3,   '2027-05-31'),  -- LOW (sells out in plan)
+    ('Accu-Chek Softclix Lancets 25pcs', 60, '2028-01-31'),
+    ('BD Ultra-Fine Lancets 100pcs',     50, '2028-03-31'),
+    ('Empa 10mg',                  45,   '2027-11-30'),
+    ('Jardiance 10mg',             25,   '2027-09-30'),
     -- Women's Care
-    ('Freedom Heavy Flow Wings 16pads',  0, '2026-10-02'),  -- OUT OF STOCK + CRITICAL EXPIRY
-    ('Senora Regular Flow 10pads',      60, '2027-12-31'),  -- Normal
-    ('Femicon',                    6,   '2027-08-31'),  -- LOW STOCK
-    ('Marvelon',                   4,   '2027-07-31'),  -- LOW STOCK
-    ('Pregna News Cassette',       50,   '2027-06-30'),  -- Normal
-    ('Get Sure HCG Test',          45,   '2027-05-31'),  -- Normal
-    ('Bobcare Ointment',           25,   '2027-10-31'),  -- Normal
-    ('Wonica Hair Removal Cream',  15,   '2027-08-31')   -- Normal
- 
+    ('Freedom Heavy Flow Wings 16pads', 20, '2026-10-02'), -- CRITICAL (1 day left on demo day)
+    ('Senora Regular Flow 10pads', 60,   '2027-12-31'),
+    ('Femicon',                     9,   '2026-10-28'),  -- LOW + WARNING (two badges)
+    ('Marvelon',                    1,   '2027-07-31'),  -- LOW (sells out in plan)
+    ('Pregna News Cassette',       30,   '2026-10-22'),  -- WARNING
+    ('Get Sure HCG Test',          30,   '2026-10-06'),  -- CRITICAL (blocked)
+    ('Bobcare Ointment',           15,   '2026-09-15'),  -- EXPIRED (blocked)
+    ('Wonica Hair Removal Cream',   0,   '2027-08-31')   -- OUT
 ) AS s("MedicineName", "Quantity", "ExpiryDate")
 JOIN "Medicines" med ON med."Name" = s."MedicineName"
-ON CONFLICT ("MedicineId") DO NOTHING;
- 
+ON CONFLICT ("MedicineId") DO UPDATE
+SET "Quantity"   = EXCLUDED."Quantity",
+    "ExpiryDate" = EXCLUDED."ExpiryDate",
+    "UpdatedAt"  = NOW();
 
 -- ============================================================
 -- SIDE EFFECTS
