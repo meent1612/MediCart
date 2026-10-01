@@ -1,0 +1,93 @@
+@using Microsoft.AspNetCore.Identity
+@{
+    var isAdmin = User.IsInRole("Admin");
+    var isAuthenticated = User.Identity?.IsAuthenticated == true;
+    var userRole = isAdmin ? "Admin" : (isAuthenticated ? "Customer" : "Guest");
+    var userName = User.Identity?.Name ?? (isAuthenticated ? "Customer" : "Guest");
+}
+
+<div id="baymaxChatWidget" class="baymax-widget" data-role="@userRole" data-user="@userName">
+    <!-- Floating Circular Launcher Button -->
+    <button type="button" 
+            id="baymaxLauncher" 
+            class="baymax-launcher" 
+            aria-label="Open Baymax assistant" 
+            aria-haspopup="dialog" 
+            aria-expanded="false" 
+            aria-controls="baymaxChatPanel"
+            title="Chat with Baymax">
+        <img src="~/images/baymax-launcher.png" asp-append-version="true" alt="Baymax Assistant" class="baymax-launcher__img" width="62" height="62" />
+        <span id="baymaxUnreadBadge" class="baymax-launcher__badge" aria-label="New notification from Baymax" style="display: none;"></span>
+    </button>
+
+    <!-- Chat Panel anchored to bottom-right corner -->
+    <div id="baymaxChatPanel" 
+         class="baymax-panel" 
+         role="dialog" 
+         aria-modal="false"
+         aria-label="Baymax MediCart Assistant" 
+         aria-hidden="true">
+        
+        <!-- Header -->
+        <div class="baymax-panel__header">
+            <div class="baymax-panel__identity">
+                <div class="baymax-panel__avatar" aria-hidden="true">
+                    <img src="~/images/baymax-launcher.png" asp-append-version="true" alt="Baymax" class="baymax-avatar-img" width="38" height="38" />
+                    <span class="baymax-status-dot" title="Baymax is online"></span>
+                </div>
+                <div class="baymax-panel__titles">
+                    <span class="baymax-panel__name">Baymax</span>
+                    <span class="baymax-panel__subtitle">Your MediCart assistant</span>
+                </div>
+            </div>
+            <div class="baymax-panel__header-actions">
+                <button type="button" 
+                        id="baymaxCloseBtn" 
+                        class="baymax-panel__close" 
+                        aria-label="Close Baymax assistant"
+                        title="Close chat">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Scrollable Messages Area -->
+        <div id="baymaxMessages" class="baymax-panel__messages" tabindex="0" role="log" aria-live="polite" aria-label="Conversation with Baymax">
+            <!-- Messages are rendered dynamically based on role -->
+            <div id="baymaxTyping" class="baymax-typing" style="display: none;" aria-label="Baymax is typing">
+                <span class="baymax-typing__dot"></span>
+                <span class="baymax-typing__dot"></span>
+                <span class="baymax-typing__dot"></span>
+            </div>
+        </div>
+
+        <!-- Quick Reply Chips -->
+        <div id="baymaxChips" class="baymax-panel__chips" role="group" aria-label="Suggested quick replies">
+            <!-- Populated dynamically according to user role -->
+        </div>
+
+        <!-- Fixed Input Row -->
+        <form id="baymaxForm" class="baymax-panel__form" onsubmit="return false;">
+            <input type="text" 
+                   id="baymaxInput" 
+                   class="baymax-panel__input" 
+                   placeholder="Ask Baymax anything..." 
+                   autocomplete="off" 
+                   maxlength="500" 
+                   aria-label="Type your message to Baymax" />
+            <button type="submit" 
+                    id="baymaxSendBtn" 
+                    class="baymax-panel__send" 
+                    aria-label="Send message" 
+                    title="Send message">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+            </button>
+        </form>
+    </div>
+</div>
