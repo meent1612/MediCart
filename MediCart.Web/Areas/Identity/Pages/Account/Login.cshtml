@@ -16,6 +16,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
 
     <link rel="stylesheet" href="~/css/login.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/chatbot.css" asp-append-version="true" />
 </head>
 <body class="login-body">
 
@@ -102,7 +103,10 @@
         </main>
     </div>
 
+    <partial name="_ChatbotPartial" />
+    <script src="~/lib/lottie/lottie.min.js" asp-append-version="true"></script>
     <script src="~/js/login.js" asp-append-version="true"></script>
+    <script src="~/js/chatbot.js" asp-append-version="true"></script>
     @await Html.PartialAsync("_ValidationScriptsPartial")
 </body>
 </html>
