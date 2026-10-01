@@ -46,6 +46,7 @@
 
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/loader.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/chatbot.css" asp-append-version="true" />
     @await RenderSectionAsync("Styles", required: false)
 </head>
 <body data-is-admin="@(isAdmin ? "true" : "false")"
@@ -223,12 +224,14 @@
     </div>
 
     <partial name="_LoaderPartial" />
+    <partial name="_ChatbotPartial" />
 
     @Html.AntiForgeryToken()
     <script src="~/lib/lottie/lottie.min.js" asp-append-version="true"></script>
     <script src="~/js/cart-handler.js" asp-append-version="true"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/js/loader.js" asp-append-version="true"></script>
+    <script src="~/js/chatbot.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
