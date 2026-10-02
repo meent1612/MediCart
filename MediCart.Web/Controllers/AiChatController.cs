@@ -19,10 +19,14 @@ namespace MediCart.Web.Controllers
             };
 
         private readonly IAiChatService _chat;
+        private readonly ILogger<AiChatController> _logger;
 
-        public AiChatController(IAiChatService chat)
+        public AiChatController(
+            IAiChatService chat,
+            ILogger<AiChatController> logger)
         {
             _chat = chat;
+            _logger = logger;
         }
 
         [HttpPost("message")]
@@ -95,9 +99,13 @@ namespace MediCart.Web.Controllers
             }
             catch (GroqApiException ex)
             {
+                // Full detail goes to the server log only (missing key, 429, timeout...).
+                // The browser gets a generic message and never sees config hints.
+                _logger.LogError(ex, "AI chat failed for role {Role}.", role);
+
                 return StatusCode(StatusCodes.Status502BadGateway, new
                 {
-                    error = ex.Message
+                    error = "The assistant is unavailable right now. Please try again in a moment."
                 });
             }
         }
