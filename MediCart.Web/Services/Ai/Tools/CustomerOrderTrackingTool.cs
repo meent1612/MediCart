@@ -92,19 +92,18 @@ namespace MediCart.Web.Services.Ai.Tools
             int limit = GetInt(arguments, "limit") ?? 5;
             limit = Math.Clamp(limit, 1, 10);
 
+            // Ownership is enforced here, from the login cookie — never from the model.
             IQueryable<Order> query = _db.Orders
                 .AsNoTracking()
-                .Where(o => o.UserId == context.UserId)
-                .Include(o => o.OrderItems)
-                    .ThenInclude(oi => oi.Medicine)
-                .Include(o => o.Division)
-                .Include(o => o.City);
+                .Where(o => o.UserId == context.UserId);
 
             if (orderId.HasValue)
             {
                 query = query.Where(o => o.Id == orderId.Value);
             }
 
+            // Deliberately NOT sent to the AI provider: delivery address, phone number,
+            // and the internal IsFlagged review signal.
             var orders = await query
                 .OrderByDescending(o => o.CreatedAt)
                 .Take(latestOnly ? 1 : limit)
@@ -116,10 +115,7 @@ namespace MediCart.Web.Services.Ai.Tools
                     createdAt = o.CreatedAt,
                     totalAmount = o.TotalAmount,
                     deliveryCharge = o.DeliveryCharge,
-                    address = o.AddressLine,
-                    phone = o.Phone,
                     paymentMethod = o.PaymentMethod,
-                    isFlagged = o.IsFlagged,
                     rejectionReason = o.RejectionReason,
                     division = o.Division.Name,
                     city = o.City.Name,
