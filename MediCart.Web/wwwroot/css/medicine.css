@@ -54,17 +54,46 @@
     align-items: start;
 }
 
-/* ----- Filters sidebar ----- */
+/* ----- Filters sidebar -----
+   Pinned below the sticky navbar and scrolls on its own. The medicines
+   side scrolls with the page, so each side scrolls independently. */
 .filters {
     position: sticky;
-    top: 24px;
+    top: calc(var(--navbar-height, 108px) + 24px);
+    max-height: calc(100vh - var(--navbar-height, 108px) - 48px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-right: 10px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(21, 46, 25, 0.25) transparent;
+}
+
+.filters::-webkit-scrollbar {
+    width: 6px;
+}
+
+.filters::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.filters::-webkit-scrollbar-thumb {
+    background: rgba(21, 46, 25, 0.22);
+    border-radius: 999px;
+}
+
+.filters::-webkit-scrollbar-thumb:hover {
+    background: rgba(21, 46, 25, 0.38);
 }
 
 .filters__header {
+    position: sticky;
+    top: 0;
+    z-index: 2;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 12px;
+    padding: 4px 0 12px;
+    background: var(--color-bg);
 }
 
 .filters__header h2 {
@@ -770,8 +799,18 @@
         grid-template-columns: 1fr;
     }
 
+    /* On small screens the filters sit above the results in normal flow. */
     .filters {
         position: static;
+        max-height: none;
+        overflow: visible;
+        padding-right: 0;
+    }
+
+    .filters__header {
+        position: static;
+        padding-bottom: 0;
+        margin-bottom: 12px;
     }
 
     .product-grid {
