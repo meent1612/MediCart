@@ -169,37 +169,89 @@
         cardFields.hidden  = selectedMethod !== "Card";
     });
 
-    // ── bKash number — digits only ───────────────────────────────────────────
+    // ── bKash step management & elements ─────────────────────────────────────
+    var BKASH_STEPS = {
+        SEND_OTP:   "SEND_OTP",
+        VERIFY_OTP: "VERIFY_OTP",
+        ENTER_PIN:  "ENTER_PIN",
+        VERIFIED:   "VERIFIED"
+    };
+
+    var currentBkashStep = BKASH_STEPS.SEND_OTP;
+    var otpVerified      = false;
+    var pinVerified      = false;
+    var otpCountdown     = null;
+
     var bkashNumber      = document.getElementById("bkashNumber");
     var bkashNumberError = document.getElementById("bkashNumberError");
+    var otpSendRow       = document.getElementById("otpSendRow");
+    var sendOtpBtn       = document.getElementById("sendOtpBtn");
+    var otpVerifySection = document.getElementById("otpVerifySection");
+    var otpInput         = document.getElementById("otpInput");
+    var otpError         = document.getElementById("otpError");
+    var verifyOtpBtn     = document.getElementById("verifyOtpBtn");
+    var resendOtpBtn     = document.getElementById("resendOtpBtn");
+    var otpTimerDisplay  = document.getElementById("otpTimerDisplay");
+    var pinSection       = document.getElementById("pinSection");
+    var pinActionRow     = document.getElementById("pinActionRow");
+    var bkashPin         = document.getElementById("bkashPin");
+    var verifyPinBtn     = document.getElementById("verifyPinBtn");
+    var pinError         = document.getElementById("pinError");
+    var bkashVerified    = document.getElementById("bkashVerified");
+    var bkashError       = document.getElementById("bkashError");
 
+    function setBkashStep(step) {
+        currentBkashStep = step;
+
+        // Mutual exclusivity: only elements for current step are visible
+        if (otpSendRow) {
+            otpSendRow.hidden = (step !== BKASH_STEPS.SEND_OTP);
+        }
+        if (otpVerifySection) {
+            otpVerifySection.hidden = (step !== BKASH_STEPS.VERIFY_OTP);
+        }
+        if (pinSection) {
+            pinSection.hidden = (step !== BKASH_STEPS.ENTER_PIN && step !== BKASH_STEPS.VERIFIED);
+        }
+        if (pinActionRow) {
+            pinActionRow.hidden = (step !== BKASH_STEPS.ENTER_PIN);
+        }
+        if (bkashVerified) {
+            bkashVerified.hidden = (step !== BKASH_STEPS.VERIFIED);
+        }
+        if (bkashPin) {
+            bkashPin.disabled = (step === BKASH_STEPS.VERIFIED);
+        }
+        if (step === BKASH_STEPS.SEND_OTP || step === BKASH_STEPS.VERIFY_OTP) {
+            if (pinError) pinError.hidden = true;
+        }
+        if (step === BKASH_STEPS.SEND_OTP) {
+            if (otpError) otpError.hidden = true;
+        }
+    }
+
+    // Initial state
+    setBkashStep(BKASH_STEPS.SEND_OTP);
+
+    // bKash number — digits only
     if (bkashNumber) {
         bkashNumber.addEventListener("input", function () {
             bkashNumber.value = bkashNumber.value.replace(/\D/g, "").slice(0, 11);
-            if (bkashNumber.value.length === 11) bkashNumberError.hidden = true;
+            if (bkashNumber.value.length === 11) {
+                bkashNumberError.hidden = true;
+            }
+            if (currentBkashStep !== BKASH_STEPS.SEND_OTP) {
+                otpVerified = false;
+                pinVerified = false;
+                clearInterval(otpCountdown);
+                setBkashStep(BKASH_STEPS.SEND_OTP);
+            }
         });
         bkashNumber.addEventListener("keydown", function (e) {
             var allowed = ["Backspace","Delete","ArrowLeft","ArrowRight","Tab"];
             if (allowed.indexOf(e.key) === -1 && !/^\d$/.test(e.key)) e.preventDefault();
         });
     }
-
-    // ── OTP flow ─────────────────────────────────────────────────────────────
-    var sendOtpBtn       = document.getElementById("sendOtpBtn");
-    var otpVerifySection = document.getElementById("otpVerifySection");
-    var pinSection       = document.getElementById("pinSection");
-    var otpInput         = document.getElementById("otpInput");
-    var otpError         = document.getElementById("otpError");
-    var verifyOtpBtn     = document.getElementById("verifyOtpBtn");
-    var resendOtpBtn     = document.getElementById("resendOtpBtn");
-    var otpTimerDisplay  = document.getElementById("otpTimerDisplay");
-    var bkashPin         = document.getElementById("bkashPin");
-    var pinError         = document.getElementById("pinError");
-    var bkashVerified    = document.getElementById("bkashVerified");
-    var bkashError       = document.getElementById("bkashError");
-
-    var otpVerified  = false;
-    var otpCountdown = null;
 
     // OTP input — digits only
     if (otpInput) {
@@ -260,11 +312,15 @@
                         showToast(d.error || "Could not send OTP.");
                     });
                 }
-                otpVerifySection.hidden = false;
-                otpInput.value = "";
-                otpError.hidden = true;
+                otpVerified = false;
+                pinVerified = false;
+                if (otpInput) otpInput.value = "";
+                if (otpError) otpError.hidden = true;
+                if (bkashError) bkashError.hidden = true;
+                setBkashStep(BKASH_STEPS.VERIFY_OTP);
                 startOtpCountdown();
                 showToast("OTP sent to your email.");
+                if (otpInput) otpInput.focus();
             }).catch(function () {
                 sendOtpBtn.textContent = "Send OTP";
                 sendOtpBtn.disabled = false;
@@ -275,18 +331,28 @@
 
     if (resendOtpBtn) {
         resendOtpBtn.addEventListener("click", function () {
+            resendOtpBtn.disabled = true;
+            resendOtpBtn.textContent = "Resending…";
+
             postForm("/Checkout/SendOtp", {})
             .then(function (res) {
+                resendOtpBtn.textContent = "Resend OTP";
                 if (!res.ok) {
+                    resendOtpBtn.disabled = false;
                     return res.json().then(function (d) {
                         showToast(d.error || "Could not resend OTP.");
                     });
                 }
-                otpInput.value = "";
-                otpError.hidden = true;
+                setBkashStep(BKASH_STEPS.VERIFY_OTP);
+                if (otpInput) otpInput.value = "";
+                if (otpError) otpError.hidden = true;
+                if (bkashError) bkashError.hidden = true;
                 startOtpCountdown();
                 showToast("New OTP sent to your email.");
+                if (otpInput) otpInput.focus();
             }).catch(function () {
+                resendOtpBtn.textContent = "Resend OTP";
+                resendOtpBtn.disabled = false;
                 showToast("Could not resend OTP. Please try again.");
             });
         });
@@ -312,10 +378,15 @@
                 }
                 otpError.hidden = true;
                 otpVerified = true;
+                if (bkashError) bkashError.hidden = true;
                 clearInterval(otpCountdown);
-                otpVerifySection.hidden = true;
-                pinSection.hidden = false;
-                if (bkashVerified) bkashVerified.hidden = false;
+                setBkashStep(BKASH_STEPS.ENTER_PIN);
+                if (bkashPin) {
+                    bkashPin.value = "";
+                    bkashPin.focus();
+                }
+                if (pinError) pinError.hidden = true;
+                showToast("OTP verified. Please enter your bKash PIN.");
             }).catch(function () {
                 verifyOtpBtn.textContent = "Verify OTP";
                 verifyOtpBtn.disabled = false;
