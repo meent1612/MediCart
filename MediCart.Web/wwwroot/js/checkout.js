@@ -257,8 +257,16 @@
     if (otpInput) {
         otpInput.addEventListener("input", function () {
             otpInput.value = otpInput.value.replace(/\D/g, "").slice(0, 5);
+            if (otpInput.value.length === 5 && otpError) {
+                otpError.hidden = true;
+            }
         });
         otpInput.addEventListener("keydown", function (e) {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                if (verifyOtpBtn) verifyOtpBtn.click();
+                return;
+            }
             var allowed = ["Backspace","Delete","ArrowLeft","ArrowRight","Tab"];
             if (allowed.indexOf(e.key) === -1 && !/^\d$/.test(e.key)) e.preventDefault();
         });
@@ -268,9 +276,20 @@
     if (bkashPin) {
         bkashPin.addEventListener("input", function () {
             bkashPin.value = bkashPin.value.replace(/\D/g, "").slice(0, 6);
-            if (bkashPin.value.length === 6) pinError.hidden = true;
+            if (pinVerified) {
+                pinVerified = false;
+                setBkashStep(BKASH_STEPS.ENTER_PIN);
+            }
+            if (bkashPin.value.length === 6 && pinError) {
+                pinError.hidden = true;
+            }
         });
         bkashPin.addEventListener("keydown", function (e) {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                if (verifyPinBtn) verifyPinBtn.click();
+                return;
+            }
             var allowed = ["Backspace","Delete","ArrowLeft","ArrowRight","Tab"];
             if (allowed.indexOf(e.key) === -1 && !/^\d$/.test(e.key)) e.preventDefault();
         });
@@ -395,6 +414,23 @@
         });
     }
 
+    if (verifyPinBtn) {
+        verifyPinBtn.addEventListener("click", function () {
+            if (!bkashPin || bkashPin.value.length !== 6) {
+                if (pinError) {
+                    pinError.textContent = "PIN must be exactly 6 digits.";
+                    pinError.hidden = false;
+                }
+                return;
+            }
+            if (pinError) pinError.hidden = true;
+            if (bkashError) bkashError.hidden = true;
+            pinVerified = true;
+            setBkashStep(BKASH_STEPS.VERIFIED);
+            showToast("bKash PIN verified successfully.");
+        });
+    }
+
     // ── Card fields — digits only ────────────────────────────────────────────
     var cardName   = document.getElementById("cardName");
     var cardNumber = document.getElementById("cardNumber");
@@ -504,18 +540,28 @@
                 if (bkashNumber.value.length !== 11) {
                     bkashNumberError.hidden = false;
                     valid = false;
+                } else {
+                    bkashNumberError.hidden = true;
                 }
+
                 if (!otpVerified) {
                     bkashError.hidden = false;
+                    if (pinError) pinError.hidden = true;
                     valid = false;
                 } else {
                     bkashError.hidden = true;
-                }
-                if (bkashPin && bkashPin.value.length !== 6) {
-                    pinError.hidden = false;
-                    valid = false;
-                } else if (pinError) {
-                    pinError.hidden = true;
+
+                    if (!pinVerified) {
+                        if (pinError) {
+                            pinError.textContent = (bkashPin && bkashPin.value.length === 6)
+                                ? "Please verify your PIN before placing order."
+                                : "PIN must be exactly 6 digits.";
+                            pinError.hidden = false;
+                        }
+                        valid = false;
+                    } else if (pinError) {
+                        pinError.hidden = true;
+                    }
                 }
             }
 
