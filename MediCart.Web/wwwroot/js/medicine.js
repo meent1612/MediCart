@@ -16,15 +16,55 @@
     var browseSearchClear = document.getElementById("browseSearchClear");
     var medicineData = JSON.parse(document.getElementById("medicineData").textContent);
 
+    // ── Filter helpers ──────────────────────────────────────────────────────
+    // Subcategory checkboxes are nested inside the category group in the
+    // markup, so a plain "all checked inputs inside the group" lookup would
+    // also return ticked subcategories. Always resolve an input's OWN group
+    // using the closest [data-filter-group] ancestor.
+    function getFilterGroupName(input) {
+        var group = input.closest("[data-filter-group]");
+        return group ? group.dataset.filterGroup : "";
+    }
+
     function getChecked(groupName) {
-        var groups = document.querySelectorAll('[data-filter-group="' + groupName + '"]');
         var values = [];
-        groups.forEach(function (group) {
-            Array.prototype.slice.call(group.querySelectorAll("input:checked")).forEach(function (i) {
-                values.push(i.value);
-            });
+        document.querySelectorAll(".filter-check input:checked").forEach(function (input) {
+            if (getFilterGroupName(input) === groupName) {
+                values.push(input.value);
+            }
         });
         return values;
+    }
+
+    // Maps each subcategory id to its parent category id, read once from the
+    // markup (each subcategory list is rendered right after its category label).
+    var subParentById = {};
+    document.querySelectorAll('[data-filter-group="subCategory"] input').forEach(function (input) {
+        var subGroup = input.closest(".filter-options--sub");
+        var parentLabel = subGroup ? subGroup.previousElementSibling : null;
+        var parentInput = parentLabel ? parentLabel.querySelector("input") : null;
+        subParentById[input.value] = parentInput ? parentInput.value : "";
+    });
+
+    // Category + subcategory rules:
+    //  - nothing ticked                        -> everything matches
+    //  - card's category ticked                -> matches, unless subcategories of
+    //                                             THAT category are ticked, in which
+    //                                             case the card must be in one of them
+    //  - card's category not ticked            -> matches only if its own
+    //                                             subcategory is ticked
+    function matchesCategoryFilters(categoryIds, subCategoryIds, cardCategoryId, cardSubCategoryId) {
+        if (categoryIds.length === 0 && subCategoryIds.length === 0) return true;
+
+        if (categoryIds.indexOf(cardCategoryId) !== -1) {
+            var narrowingSubs = subCategoryIds.filter(function (subId) {
+                return subParentById[subId] === cardCategoryId;
+            });
+            if (narrowingSubs.length === 0) return true;
+            return cardSubCategoryId !== "" && narrowingSubs.indexOf(cardSubCategoryId) !== -1;
+        }
+
+        return cardSubCategoryId !== "" && subCategoryIds.indexOf(cardSubCategoryId) !== -1;
     }
 
     function applyFilters() {
@@ -43,13 +83,11 @@
             var cardPrice = parseFloat(card.dataset.price);
 
             var matchesProductType = productTypeIds.length === 0 || productTypeIds.indexOf(cardProductTypeId) !== -1;
-            var matchesCategory = categoryIds.length === 0 || categoryIds.indexOf(cardCategoryId) !== -1;
-            var matchesSubCategory = subCategoryIds.length === 0 ||
-                (cardSubCategoryId !== "" && subCategoryIds.indexOf(cardSubCategoryId) !== -1);
+            var matchesCategory = matchesCategoryFilters(categoryIds, subCategoryIds, cardCategoryId, cardSubCategoryId);
             var matchesPrice = cardPrice <= maxPrice;
             var matchesSearch = !searchTerm || cardName.indexOf(searchTerm) !== -1;
 
-            var visible = matchesProductType && matchesCategory && matchesSubCategory && matchesPrice && matchesSearch;
+            var visible = matchesProductType && matchesCategory && matchesPrice && matchesSearch;
             card.style.display = visible ? "" : "none";
             if (visible) visibleCount++;
         });
@@ -483,9 +521,17 @@
 
     if (categoryParam || categoryIdParam) {
         document.querySelectorAll('[data-filter-group="category"] input, [data-filter-group="subCategory"] input').forEach(function (input) {
+            var isCategoryInput = getFilterGroupName(input) === "category";
             var name = (input.dataset.name || "").toLowerCase().trim();
             var val = (input.value || "").trim();
-            if ((categoryParam && name === categoryParam) || (categoryIdParam && val === categoryIdParam)) {
+
+            // ?category=<name> may match a category OR a subcategory name.
+            // ?categoryId=<id> only ever matches a category id, never a
+            // subcategory that happens to share the same number.
+            var nameMatches = categoryParam && name === categoryParam;
+            var idMatches = isCategoryInput && categoryIdParam && val === categoryIdParam;
+
+            if (nameMatches || idMatches) {
                 input.checked = true;
             }
         });
