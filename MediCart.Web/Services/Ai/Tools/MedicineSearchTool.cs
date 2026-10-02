@@ -7,7 +7,9 @@ namespace MediCart.Web.Services.Ai.Tools
 {
     public class MedicineSearchTool : IAiTool
     {
-        private const int MaxResults = 20;
+        // Kept small so the reply never hits the token limit in GroqClient
+        // and gets cut off in the middle of a list item.
+        private const int MaxResults = 8;
 
         private readonly ApplicationDbContext _db;
 
@@ -23,6 +25,8 @@ namespace MediCart.Web.Services.Ai.Tools
             "Use this when a customer asks to find medicines by name, generic name, " +
             "category, subcategory, product type, price, stock availability, " +
             "prescription requirement, or expiry period. " +
+            "The tool returns at most 8 medicines plus totalMatches, the total number " +
+            "of medicines that matched. " +
             "Never invent medicine names, prices, stock quantities, categories, or expiry dates.";
 
         public JsonObject ParametersSchema => new()
@@ -117,12 +121,9 @@ namespace MediCart.Web.Services.Ai.Tools
             var subCategory = GetString(arguments, "subCategory");
             var expiryWithinDays = GetInt(arguments, "expiryWithinDays");
 
+            // No .Include() needed: the Select(...) below reads only what it needs.
             var query = _db.Medicines
                 .AsNoTracking()
-                .Include(m => m.Category)
-                .Include(m => m.SubCategory)
-                .Include(m => m.ProductType)
-                .Include(m => m.Stock)
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(search))
@@ -196,6 +197,9 @@ namespace MediCart.Web.Services.Ai.Tools
                     m.Stock.ExpiryDate <= expiryLimit);
             }
 
+            // Count ALL matches first, then fetch only the first MaxResults.
+            var totalMatches = await query.CountAsync(ct);
+
             var medicines = await query
                 .OrderBy(m => m.Name)
                 .Take(MaxResults)
@@ -222,10 +226,20 @@ namespace MediCart.Web.Services.Ai.Tools
                 })
                 .ToListAsync(ct);
 
+            var truncated = totalMatches > medicines.Count;
+
+            var note = truncated
+                ? $"Only the first {medicines.Count} of {totalMatches} matching medicines are shown (sorted by name). " +
+                  "Tell the customer how many matched in total and suggest narrowing the search."
+                : null;
+
             return JsonSerializer.Serialize(new
             {
                 success = true,
-                count = medicines.Count,
+                totalMatches,
+                shownCount = medicines.Count,
+                truncated,
+                note,
                 results = medicines
             });
         }
