@@ -1,74 +1,105 @@
 using System.Security.Claims;
-using MediCart.Web.Models;
-using MediCart.Web.Services.Ai;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using MediCart.Web.Models;
+using MediCart.Web.Services.Ai;
 
 namespace MediCart.Web.Controllers
 {
-    // Endpoint used by the Baymax widget (wwwroot/js/chatbot.js).
-    // Open to everyone, but what each role can do is decided server-side.
     [ApiController]
     [Route("api/chat")]
     public class AiChatController : ControllerBase
     {
-        // Roles that have AI tools wired up. Add "Customer" / "Guest" here
-        // once their tools exist. Others get 501 and the widget keeps
-        // using its scripted replies.
-        private static readonly HashSet<string> AiEnabledRoles = new() { "Admin" };
+        private static readonly HashSet<string> AiEnabledRoles =
+            new(StringComparer.OrdinalIgnoreCase)
+            {
+                "Admin",
+                "Customer",
+                "Guest"
+            };
 
         private readonly IAiChatService _chat;
-        private readonly ILogger<AiChatController> _logger;
 
-        public AiChatController(IAiChatService chat, ILogger<AiChatController> logger)
+        public AiChatController(IAiChatService chat)
         {
             _chat = chat;
-            _logger = logger;
         }
 
         [HttpPost("message")]
         [EnableRateLimiting("ai-chat")]
-        public async Task<IActionResult> Message([FromBody] ChatMessageRequest request, CancellationToken ct)
+        public async Task<IActionResult> Message(
+            [FromBody] ChatMessageRequest request,
+            CancellationToken ct)
         {
-            // CSRF guard: a cross-site page cannot set this header without a CORS
-            // preflight, which this app does not allow. chatbot.js sends it.
-            if (!string.Equals(Request.Headers["X-Requested-With"], "XMLHttpRequest", StringComparison.Ordinal))
+            if (!Request.Headers.TryGetValue("X-Requested-With", out var requestedWith)
+                || !string.Equals(
+                    requestedWith.ToString(),
+                    "XMLHttpRequest",
+                    StringComparison.OrdinalIgnoreCase))
             {
-                return BadRequest(new { error = "Missing required header." });
+                return BadRequest(new
+                {
+                    error = "Invalid chat request."
+                });
             }
 
-            var role = ResolveRole();
+            if (request == null || string.IsNullOrWhiteSpace(request.Message))
+            {
+                return BadRequest(new
+                {
+                    error = "Message is required."
+                });
+            }
+
+            var role =
+                User.IsInRole("Admin")
+                    ? "Admin"
+                    : User.IsInRole("Customer")
+                        ? "Customer"
+                        : "Guest";
 
             if (!AiEnabledRoles.Contains(role))
             {
-                return StatusCode(StatusCodes.Status501NotImplemented,
-                    new { error = "AI assistant is not enabled for this account type yet." });
+                return StatusCode(StatusCodes.Status403Forbidden, new
+                {
+                    error = "This assistant is not available for your account."
+                });
             }
 
-            var history = (request.History ?? new List<ChatHistoryItem>())
-                .Select(h => new AiHistoryTurn(h.Sender ?? string.Empty, h.Text ?? string.Empty))
-                .ToList();
+            var history = request.History?
+                .Where(h => h != null && !string.IsNullOrWhiteSpace(h.Text))
+                .Select(h => new AiHistoryTurn(
+                    h.Sender,
+                    h.Text))
+                .ToList()
+                ?? new List<AiHistoryTurn>();
 
-            var context = new AiCallContext(role, User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var context = new AiCallContext(
+                role,
+                userId);
 
             try
             {
-                var reply = await _chat.ReplyAsync(request.Message, history, context, ct);
-                return Ok(new { reply });
+                var reply = await _chat.ReplyAsync(
+                    request.Message,
+                    history,
+                    context,
+                    ct);
+
+                return Ok(new
+                {
+                    reply
+                });
             }
             catch (GroqApiException ex)
             {
-                _logger.LogError(ex, "Groq call failed for role {Role}.", role);
-                return StatusCode(StatusCodes.Status502BadGateway,
-                    new { error = "The AI service is unavailable right now." });
+                return StatusCode(StatusCodes.Status502BadGateway, new
+                {
+                    error = ex.Message
+                });
             }
-        }
-
-        private string ResolveRole()
-        {
-            if (User.IsInRole("Admin")) return "Admin";
-            if (User.IsInRole("Customer")) return "Customer";
-            return "Guest";
         }
     }
 }
