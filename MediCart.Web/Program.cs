@@ -1,6 +1,10 @@
+using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using MediCart.Web.Data;
+using MediCart.Web.Services.Ai;
+using MediCart.Web.Services.Ai.Tools;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,6 +31,31 @@ builder.Services.AddScoped<MediCart.Web.Services.ICartService, MediCart.Web.Serv
 builder.Services.AddScoped<MediCart.Web.Services.IOrderService, MediCart.Web.Services.OrderService>();
 builder.Services.AddScoped<MediCart.Web.Services.IEmailService, MediCart.Web.Services.EmailService>();
 builder.Services.AddHostedService<MediCart.Web.Services.CartExpiryBackgroundService>();
+
+// AI assistant (Groq) — key comes from user-secrets: Groq:ApiKey
+builder.Services.Configure<GroqOptions>(builder.Configuration.GetSection(GroqOptions.SectionName));
+builder.Services.AddHttpClient<IGroqClient, GroqClient>();
+builder.Services.AddScoped<IAiChatService, AiChatService>();
+// One line per AI tool. Each tool declares which roles may use it.
+builder.Services.AddScoped<IAiTool, AdminAttentionSummaryTool>();
+
+// Rate limit for the chat endpoint so nobody can burn the Groq quota.
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    options.AddPolicy("ai-chat", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.User.Identity?.IsAuthenticated == true
+                ? $"user:{httpContext.User.Identity.Name}"
+                : $"ip:{httpContext.Connection.RemoteIpAddress}",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 15,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            }));
+});
 
 var app = builder.Build();
 
@@ -95,7 +124,7 @@ using (var scope = app.Services.CreateScope())
 
         new { FullName = "Farzana Mim", PhoneNumber = "01761666732", Email = "farzanamim2535@gmail.com" },
         new { FullName = "Farzana Aust", PhoneNumber = "01761666732", Email = "farzana.cse.20230104032@aust.edu" },
-        
+
         new { FullName = "Shayma Sharmeen", PhoneNumber = "01798221612", Email = "sshayma1612@gmail.com" },
         new { FullName = "Shayma Aust", PhoneNumber = "01798221612", Email = "shayma.cse.20230104043@aust.edu" },
 
@@ -139,6 +168,8 @@ else
 
 app.UseHttpsRedirection();
 app.UseRouting();
+
+app.UseRateLimiter();
 
 app.UseAuthorization();
 
