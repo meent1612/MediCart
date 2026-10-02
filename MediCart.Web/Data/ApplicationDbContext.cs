@@ -1,10 +1,11 @@
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace MediCart.Web.Data
 {
     public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-        : IdentityDbContext<ApplicationUser>(options)
+        : IdentityDbContext<ApplicationUser>(options), IDataProtectionKeyContext
     {
         public DbSet<Division> Divisions { get; set; }
         public DbSet<City> Cities { get; set; }
@@ -22,6 +23,10 @@ namespace MediCart.Web.Data
         public DbSet<AuditLog> AuditLogs { get; set; }
         public DbSet<OtpCode> OtpCodes { get; set; }
         public DbSet<Payment> Payments { get; set; }
+
+        // ASP.NET stores the keys that protect login cookies and antiforgery
+        // tokens here, so they survive restarts on a host with a temporary disk.
+        public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
