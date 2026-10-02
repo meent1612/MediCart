@@ -58,6 +58,7 @@ builder.Services.AddScoped<IAiChatService, AiChatService>();
 // Each tool declares which roles may use it.
 builder.Services.AddScoped<IAiTool, AdminAttentionSummaryTool>();
 builder.Services.AddScoped<IAiTool, MedicineSearchTool>();
+builder.Services.AddScoped<IAiTool, CustomerOrderTrackingTool>();
 
 // Rate limit for the chat endpoint so nobody can burn the Groq quota.
 builder.Services.AddRateLimiter(options =>
