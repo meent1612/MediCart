@@ -1,4 +1,6 @@
 using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
@@ -16,6 +18,26 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+
+// Hosting behind a proxy (Render): read the real visitor IP and the original
+// https scheme from the X-Forwarded-* headers the proxy adds.
+// The rate limiter below needs the real IP, otherwise all guests share one bucket.
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders =
+        ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+
+    // Render's proxy addresses are not fixed, so trust the proxy in front of us.
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
+// Keep the keys that protect login cookies and antiforgery tokens in the
+// database. On Render the disk is wiped on every restart, which would
+// otherwise log everyone out each time.
+builder.Services.AddDataProtection()
+    .SetApplicationName("MediCart")
+    .PersistKeysToDbContext<ApplicationDbContext>();
 
 // Identity — roles enabled, no email confirmation required
 builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
@@ -80,177 +102,18 @@ builder.Services.AddRateLimiter(options =>
 
 var app = builder.Build();
 
-// Seed roles
+// Seed roles and starter accounts.
+// Account passwords come from configuration (Seed:AdminPassword and
+// Seed:CustomerPassword), never from the code. See Data/SeedData.cs.
 using (var scope = app.Services.CreateScope())
 {
-    var roleManager =
-        scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-
-    foreach (var role in new[] { "Admin", "Customer" })
-    {
-        if (!await roleManager.RoleExistsAsync(role))
-        {
-            await roleManager.CreateAsync(new IdentityRole(role));
-        }
-    }
-}
-
-// Seed admin accounts
-using (var scope = app.Services.CreateScope())
-{
-    var userManager =
-        scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-
-    var admins = new[]
-    {
-        new
-        {
-            FullName = "Rahnuma Azra Mahjabin",
-            Email = "rahnuma.medicart@gmail.com"
-        },
-        new
-        {
-            FullName = "Farzana Mim",
-            Email = "farzana.medicart@gmail.com"
-        },
-        new
-        {
-            FullName = "Shayma Sharmeen",
-            Email = "shayma.medicart@gmail.com"
-        },
-        new
-        {
-            FullName = "Zumaina Tahsin",
-            Email = "zumaina.medicart@gmail.com"
-        },
-    };
-
-    foreach (var a in admins)
-    {
-        if (await userManager.FindByEmailAsync(a.Email) == null)
-        {
-            var user = new ApplicationUser
-            {
-                FullName = a.FullName,
-                UserName = a.Email,
-                Email = a.Email,
-                EmailConfirmed = true
-            };
-
-            var result = await userManager.CreateAsync(user, "Admin@1234");
-
-            if (result.Succeeded)
-            {
-                await userManager.AddToRoleAsync(user, "Admin");
-            }
-        }
-    }
-}
-
-// Seed normal customer accounts
-using (var scope = app.Services.CreateScope())
-{
-    var userManager =
-        scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-
-    var customers = new[]
-    {
-        new
-        {
-            FullName = "Zumaina Tahsin",
-            PhoneNumber = "01836329304",
-            Email = "zumainatahsincat@gmail.com"
-        },
-        new
-        {
-            FullName = "Zumaina Aust",
-            PhoneNumber = "01836329304",
-            Email = "zumaina.cse.20220204020@aust.edu"
-        },
-        new
-        {
-            FullName = "Zumaina T",
-            PhoneNumber = "01836329304",
-            Email = "zumaina.t.22@gmail.com"
-        },
-
-        new
-        {
-            FullName = "Rahnuma Azra Mahjabin",
-            PhoneNumber = "01909023568",
-            Email = "mahjabin3619@gmail.com"
-        },
-        new
-        {
-            FullName = "Rahnuma Aust",
-            PhoneNumber = "01909023568",
-            Email = "rahnuma.cse.20230104028@aust.edu"
-        },
-
-        new
-        {
-            FullName = "Farzana Mim",
-            PhoneNumber = "01761666732",
-            Email = "farzanamim2535@gmail.com"
-        },
-        new
-        {
-            FullName = "Farzana Aust",
-            PhoneNumber = "01761666732",
-            Email = "farzana.cse.20230104032@aust.edu"
-        },
-
-        new
-        {
-            FullName = "Shayma Sharmeen",
-            PhoneNumber = "01798221612",
-            Email = "sshayma1612@gmail.com"
-        },
-        new
-        {
-            FullName = "Shayma Aust",
-            PhoneNumber = "01798221612",
-            Email = "shayma.cse.20230104043@aust.edu"
-        },
-
-        new
-        {
-            FullName = "Sakina Anwar",
-            PhoneNumber = "01716367488",
-            Email = "sakinaanwar667@gmail.com"
-        },
-        new
-        {
-            FullName = "Farhad Panna",
-            PhoneNumber = "01791719326",
-            Email = "farhadpannadadijan@gmail.com"
-        },
-    };
-
-    foreach (var c in customers)
-    {
-        if (await userManager.FindByEmailAsync(c.Email) == null)
-        {
-            var user = new ApplicationUser
-            {
-                FullName = c.FullName,
-                PhoneNumber = c.PhoneNumber,
-                UserName = c.Email,
-                Email = c.Email,
-                EmailConfirmed = true
-            };
-
-            var result = await userManager.CreateAsync(user, "User@1234");
-
-            if (result.Succeeded)
-            {
-                await userManager.AddToRoleAsync(user, "Customer");
-            }
-        }
-    }
+    await SeedData.SeedAsync(scope.ServiceProvider, app.Configuration, app.Logger);
 }
 
 // HTTP pipeline
+// Must come first so every later step sees the real client IP and scheme.
+app.UseForwardedHeaders();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseMigrationsEndPoint();
