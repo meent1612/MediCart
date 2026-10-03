@@ -8,3 +8,7 @@ The search suggestion component follows the W3C WAI-ARIA Combobox design pattern
 - Suggestions container has `role="listbox"`.
 - Each suggestion item has `role="option"` with dynamic `aria-selected="true"`.
 
+## 3. Screen Reader Testing Notes
+- Tested with NVDA and Narrator on Windows 11.
+- Active suggestion announcement verified via live regions.
+
