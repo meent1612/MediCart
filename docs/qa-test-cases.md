@@ -23,3 +23,8 @@ This document outlines manual and automated verification procedures for the sear
 - **Expected**: 'Rx Required' or 'Out of Stock' badges render clearly with appropriate contrast.
 - **Status**: PASSED.
 
+## TC-05: Network Latency and Rapid Typing
+- **Action**: Rapidly type and backspace queries.
+- **Expected**: Old responses aborted; UI never shows stale suggestions.
+- **Status**: PASSED.
+
