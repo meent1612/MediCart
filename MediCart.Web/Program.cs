@@ -49,6 +49,9 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
 
 builder.Services.AddControllersWithViews();
 
+// Lets services (EmailService -> Brevo API) create HttpClient objects.
+builder.Services.AddHttpClient();
+
 builder.Services.AddScoped<
     MediCart.Web.Services.IImageUploadService,
     MediCart.Web.Services.CloudinaryImageService>();
@@ -140,5 +143,8 @@ app.MapControllerRoute(
 
 app.MapRazorPages()
    .WithStaticAssets();
+
+// Render calls this to check the app is alive. No database call, so it stays fast.
+app.MapGet("/healthz", () => Results.Ok("healthy"));
 
 app.Run();
