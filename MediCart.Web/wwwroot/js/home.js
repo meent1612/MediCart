@@ -497,3 +497,8 @@
  * highlightMatch: Escapes regex special characters and wraps matching substrings in <mark>.
  */
 
+/**
+ * Keyboard Navigation Handler:
+ * Supports ArrowUp, ArrowDown, Enter, Escape for full WCAG combobox pattern compliance.
+ */
+
