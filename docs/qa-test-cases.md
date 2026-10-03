@@ -13,3 +13,8 @@ This document outlines manual and automated verification procedures for the sear
 - **Expected**: URL navigates to `/Medicines/Browse?openDetails={id}`.
 - **Status**: PASSED.
 
+## TC-03: Clear Button & Click Outside Dismissal
+- **Action**: Click `✕` clear button.
+- **Expected**: Input clears, suggestions close, focus remains on input.
+- **Status**: PASSED.
+
