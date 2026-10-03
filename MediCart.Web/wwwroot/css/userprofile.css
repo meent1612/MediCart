@@ -254,6 +254,14 @@
     outline: none;
     border-color: var(--pine-800);
 }
+.up-field input[readonly] {
+    cursor: default;
+    user-select: all;
+}
+.up-field input[readonly]:focus {
+    border-color: var(--line);
+    outline: none;
+}
 
 .up-field__error {
     color: var(--danger-700);
