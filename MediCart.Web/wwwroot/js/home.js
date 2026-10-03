@@ -493,3 +493,7 @@
  * Maintains debounce timers, active index tracking, and cache maps.
  */
 
+/**
+ * highlightMatch: Escapes regex special characters and wraps matching substrings in <mark>.
+ */
+
