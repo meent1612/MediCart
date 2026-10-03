@@ -19,3 +19,7 @@ Users receive instant suggestions for brand names, generic names, and manufactur
 The query uses PostgreSQL `EF.Functions.ILike` on `Name`, `GenericName`, and `Manufacturer`.
 Matches starting with the search prefix are weighted first, followed by substring matches.
 
+## 5. Client-Side Cache Strategy
+- A LRU-like Map cache `suggestionCache` is held in JavaScript memory.
+- Repeated keystrokes or backspaces serve suggestions instantly with 0ms network latency.
+
