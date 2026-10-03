@@ -65,6 +65,49 @@ namespace MediCart.Web.Controllers
         }
 
         [HttpGet]
+        [Route("Medicines/Suggestions")]
+        public async Task<IActionResult> Suggestions([FromQuery] string? search)
+        {
+            if (string.IsNullOrWhiteSpace(search))
+            {
+                return Json(Array.Empty<object>());
+            }
+
+            var term = search.Trim();
+
+            var matches = await _context.Medicines
+                .Include(m => m.ProductType)
+                .Include(m => m.Stock)
+                .Where(m => EF.Functions.ILike(m.Name, $"%{term}%") ||
+                            (m.GenericName != null && EF.Functions.ILike(m.GenericName, $"%{term}%")) ||
+                            (m.Manufacturer != null && EF.Functions.ILike(m.Manufacturer, $"%{term}%")))
+                .Take(6)
+                .Select(m => new
+                {
+                    id = m.Id,
+                    name = m.Name,
+                    genericName = m.GenericName ?? "",
+                    dosage = m.Dosage ?? "",
+                    manufacturer = m.Manufacturer ?? "",
+                    productType = m.ProductType != null ? m.ProductType.Name : "",
+                    price = m.Price,
+                    inStock = m.Stock != null && m.Stock.Quantity > 0,
+                    stockQuantity = m.Stock != null ? m.Stock.Quantity : 0,
+                    requiresRx = m.RequiresPrescription,
+                    imageUrl = m.ImageUrl ?? ""
+                })
+                .ToListAsync();
+
+            var ordered = matches
+                .OrderByDescending(m => m.name.StartsWith(term, StringComparison.OrdinalIgnoreCase))
+                .ThenByDescending(m => m.genericName.StartsWith(term, StringComparison.OrdinalIgnoreCase))
+                .ThenBy(m => m.name)
+                .ToList();
+
+            return Json(ordered);
+        }
+
+        [HttpGet]
         [Route("Medicines")]
         [Route("Medicines/Index")]
         [Route("Medicines/Browse")]
