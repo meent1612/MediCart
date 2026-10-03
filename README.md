@@ -82,7 +82,7 @@ Existing online pharmacy platforms in Bangladesh handle catalogue browsing, sear
 | Presentation | Razor Views, Bootstrap 5 |
 | Application | ASP.NET Core MVC (C#) — role-based authentication & authorization via ASP.NET Core Identity |
 | Data / Database | Entity Framework Core (Code-First) → PostgreSQL |
-| Database Hosting | Supabase (managed PostgreSQL) |
+| Database Hosting | Neon |
 | Web Hosting | Azure App Service |
 | IDE | Visual Studio Code |
 
