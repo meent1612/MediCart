@@ -73,8 +73,15 @@
 
                 <form id="heroSearchForm" class="hero__search" method="get" action="~/Medicines/Find" role="search">
                     <label for="heroSearchInput" class="visually-hidden">Search for a medicine</label>
-                    <input type="search" id="heroSearchInput" name="search" class="hero__search-input" placeholder="Search for a medicine" autocomplete="off" />
+                    <div class="hero__search-field">
+                        <input type="search" id="heroSearchInput" name="search" class="hero__search-input" placeholder="Search for a medicine" autocomplete="off" aria-autocomplete="list" aria-controls="heroSearchSuggestions" aria-expanded="false" />
+                        <button type="button" id="heroSearchClear" class="hero__search-clear" aria-label="Clear search input" hidden title="Clear search">✕</button>
+                        <span id="heroSearchSpinner" class="hero__search-spinner" hidden aria-hidden="true"></span>
+                    </div>
                     <button type="submit" class="btn btn--search-hero">Search</button>
+
+                    <!-- Real-time Autocomplete Suggestions Dropdown -->
+                    <div id="heroSearchSuggestions" class="hero__suggestions" role="listbox" aria-label="Search suggestions" hidden></div>
                 </form>
 
                 <div class="hero__chips" aria-label="Popular searches">
