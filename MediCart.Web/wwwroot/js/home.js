@@ -79,16 +79,288 @@
         }
     }
 
-    /* ---- Hero search: friendly no-op guard until Browse page exists ----- */
+    /* ---- Hero search: Real-time search suggestions controller ---------- */
     const searchForm = document.getElementById("heroSearchForm");
-    searchForm?.addEventListener("submit", (e) => {
-        const input = document.getElementById("heroSearchInput");
-        if (!input?.value.trim()) {
-            e.preventDefault();
-            input?.focus();
+    const searchInput = document.getElementById("heroSearchInput");
+    const searchClear = document.getElementById("heroSearchClear");
+    const searchSpinner = document.getElementById("heroSearchSpinner");
+    const suggestionsBox = document.getElementById("heroSearchSuggestions");
+
+    if (searchForm && searchInput && suggestionsBox) {
+        let activeIndex = -1;
+        let debounceTimer = null;
+        let currentAbort = null;
+        const suggestionCache = new Map();
+
+        const escapeHtml = (str) => {
+            if (!str) return "";
+            return str
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        };
+
+        const escapeRegExp = (str) => {
+            return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        };
+
+        const highlightMatch = (text, query) => {
+            if (!text) return "";
+            if (!query) return escapeHtml(text);
+            const escapedText = escapeHtml(text);
+            const escapedQuery = escapeRegExp(escapeHtml(query));
+            try {
+                const regex = new RegExp("(" + escapedQuery + ")", "gi");
+                return escapedText.replace(regex, '<mark class="hero__search-match">$1</mark>');
+            } catch (e) {
+                return escapedText;
+            }
+        };
+
+        const formatPrice = (val) => {
+            const num = Number(val);
+            if (isNaN(num)) return "৳0";
+            return "৳" + (num % 1 === 0 ? num.toLocaleString() : num.toFixed(2));
+        };
+
+        const hideSuggestions = () => {
+            suggestionsBox.hidden = true;
+            suggestionsBox.innerHTML = "";
+            searchInput.setAttribute("aria-expanded", "false");
+            activeIndex = -1;
+        };
+
+        const showLoading = (loading) => {
+            if (searchSpinner) searchSpinner.hidden = !loading;
+            if (searchClear) searchClear.hidden = loading || !searchInput.value.trim();
+        };
+
+        const updateActiveItem = (newIndex) => {
+            const items = suggestionsBox.querySelectorAll(".hero__suggestion-item, .hero__suggestions-footer");
+            if (!items.length) return;
+
+            items.forEach((item) => item.classList.remove("is-active"));
+
+            if (newIndex >= items.length) newIndex = 0;
+            if (newIndex < 0) newIndex = items.length - 1;
+
+            activeIndex = newIndex;
+            const current = items[activeIndex];
+            if (current) {
+                current.classList.add("is-active");
+                current.scrollIntoView({ block: "nearest" });
+            }
+        };
+
+        const renderSuggestions = (query, list) => {
+            if (!list || !list.length) {
+                suggestionsBox.innerHTML = `
+                    <div class="hero__suggestions-empty">
+                        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                        <p>No medicines found for &ldquo;${escapeHtml(query)}&rdquo;</p>
+                        <span>Press Enter to search catalogue or try a different term</span>
+                    </div>
+                `;
+                suggestionsBox.hidden = false;
+                searchInput.setAttribute("aria-expanded", "true");
+                activeIndex = -1;
+                return;
+            }
+
+            const headerHtml = `
+                <div class="hero__suggestions-header">
+                    <span>Medicines Matching &ldquo;${escapeHtml(query)}&rdquo;</span>
+                    <span>${list.length} result${list.length !== 1 ? "s" : ""}</span>
+                </div>
+            `;
+
+            const itemsHtml = list.map((item, idx) => {
+                const highlightedName = highlightMatch(item.name, query);
+                const highlightedGeneric = highlightMatch(item.genericName, query);
+                const dosage = item.dosage ? ` &middot; ${escapeHtml(item.dosage)}` : "";
+                const metaLine = `${highlightedGeneric}${dosage}`;
+
+                const thumb = item.imageUrl
+                    ? `<img src="${escapeHtml(item.imageUrl)}" alt="${escapeHtml(item.name)}" class="hero__suggestion-thumb" loading="lazy" />`
+                    : `<div class="hero__suggestion-fallback" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"></path>
+                            <path d="m8.5 8.5 7 7"></path>
+                        </svg>
+                       </div>`;
+
+                const rxBadge = item.requiresRx ? `<span class="hero__suggestion-rx" title="Prescription Required">Rx</span>` : "";
+                const stockBadge = item.inStock
+                    ? `<span class="hero__suggestion-stock hero__suggestion-stock--in">In stock</span>`
+                    : `<span class="hero__suggestion-stock hero__suggestion-stock--out">Out of stock</span>`;
+
+                return `
+                    <li>
+                        <a href="/Medicines/Browse?openDetails=${item.id}" class="hero__suggestion-item" role="option" data-index="${idx}">
+                            ${thumb}
+                            <div class="hero__suggestion-body">
+                                <div class="hero__suggestion-name">
+                                    <span>${highlightedName}</span>
+                                    ${rxBadge}
+                                </div>
+                                <div class="hero__suggestion-meta">${metaLine}</div>
+                                <div class="hero__suggestion-sub">${escapeHtml(item.manufacturer)} ${item.productType ? `&middot; ${escapeHtml(item.productType)}` : ""}</div>
+                            </div>
+                            <div class="hero__suggestion-right">
+                                <span class="hero__suggestion-price">${formatPrice(item.price)}</span>
+                                ${stockBadge}
+                            </div>
+                        </a>
+                    </li>
+                `;
+            }).join("");
+
+            const footerHtml = `
+                <a href="/Medicines/Find?search=${encodeURIComponent(query)}" class="hero__suggestions-footer">
+                    <span>Search full catalogue for &ldquo;${escapeHtml(query)}&rdquo;</span>
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </a>
+            `;
+
+            suggestionsBox.innerHTML = `
+                ${headerHtml}
+                <ul class="hero__suggestions-list" role="presentation">${itemsHtml}</ul>
+                ${footerHtml}
+            `;
+
+            suggestionsBox.hidden = false;
+            searchInput.setAttribute("aria-expanded", "true");
+            activeIndex = -1;
+        };
+
+        const fetchSuggestions = (query) => {
+            const trimmed = query.trim();
+            if (!trimmed) {
+                hideSuggestions();
+                showLoading(false);
+                return;
+            }
+
+            if (suggestionCache.has(trimmed.toLowerCase())) {
+                showLoading(false);
+                renderSuggestions(trimmed, suggestionCache.get(trimmed.toLowerCase()));
+                return;
+            }
+
+            if (currentAbort) {
+                currentAbort.abort();
+            }
+            currentAbort = new AbortController();
+
+            showLoading(true);
+
+            fetch(`/Medicines/Suggestions?search=${encodeURIComponent(trimmed)}`, {
+                signal: currentAbort.signal,
+                headers: { "Accept": "application/json" }
+            })
+                .then((res) => {
+                    if (!res.ok) throw new Error("Network error");
+                    return res.json();
+                })
+                .then((data) => {
+                    suggestionCache.set(trimmed.toLowerCase(), data);
+                    // Only render if input value still matches
+                    if (searchInput.value.trim().toLowerCase() === trimmed.toLowerCase()) {
+                        renderSuggestions(trimmed, data);
+                    }
+                })
+                .catch((err) => {
+                    if (err.name !== "AbortError") {
+                        hideSuggestions();
+                    }
+                })
+                .finally(() => {
+                    showLoading(false);
+                });
+        };
+
+        // Input event listener with debounce
+        searchInput.addEventListener("input", () => {
+            const query = searchInput.value;
+            if (searchClear) searchClear.hidden = !query.trim();
+
+            clearTimeout(debounceTimer);
+            if (!query.trim()) {
+                hideSuggestions();
+                showLoading(false);
+                return;
+            }
+
+            debounceTimer = setTimeout(() => {
+                fetchSuggestions(query);
+            }, 180);
+        });
+
+        // Re-open on focus if text present
+        searchInput.addEventListener("focus", () => {
+            const query = searchInput.value.trim();
+            if (query && suggestionsBox.hidden) {
+                fetchSuggestions(query);
+            }
+        });
+
+        // Clear button click
+        if (searchClear) {
+            searchClear.addEventListener("click", () => {
+                searchInput.value = "";
+                searchClear.hidden = true;
+                hideSuggestions();
+                searchInput.focus();
+            });
         }
-        // otherwise lets the GET submit through to the Browse route
-    });
+
+        // Keyboard navigation (ArrowDown, ArrowUp, Enter, Escape)
+        searchInput.addEventListener("keydown", (e) => {
+            if (suggestionsBox.hidden) return;
+
+            const items = suggestionsBox.querySelectorAll(".hero__suggestion-item, .hero__suggestions-footer");
+            if (!items.length) return;
+
+            if (e.key === "ArrowDown") {
+                e.preventDefault();
+                updateActiveItem(activeIndex + 1);
+            } else if (e.key === "ArrowUp") {
+                e.preventDefault();
+                updateActiveItem(activeIndex - 1);
+            } else if (e.key === "Enter") {
+                if (activeIndex >= 0 && items[activeIndex]) {
+                    e.preventDefault();
+                    items[activeIndex].click();
+                }
+            } else if (e.key === "Escape") {
+                e.preventDefault();
+                hideSuggestions();
+            }
+        });
+
+        // Close when clicking outside
+        document.addEventListener("click", (e) => {
+            if (!searchForm.contains(e.target)) {
+                hideSuggestions();
+            }
+        });
+
+        // Form submit safety
+        searchForm.addEventListener("submit", (e) => {
+            if (!searchInput.value.trim()) {
+                e.preventDefault();
+                searchInput.focus();
+            }
+        });
+    }
 
     /* ---- Stats strip: count up when scrolled into view ------------------- */
     const statEls = document.querySelectorAll("[data-count-to]");
