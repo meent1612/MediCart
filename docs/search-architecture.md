@@ -15,3 +15,7 @@ Users receive instant suggestions for brand names, generic names, and manufactur
 - `Enter`: Navigates directly to the highlighted medicine details modal or triggers general search.
 - `Escape`: Closes the suggestions dropdown and keeps current text.
 
+## 4. EF Core ILike Case-Insensitive Matching
+The query uses PostgreSQL `EF.Functions.ILike` on `Name`, `GenericName`, and `Manufacturer`.
+Matches starting with the search prefix are weighted first, followed by substring matches.
+
