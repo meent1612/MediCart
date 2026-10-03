@@ -9,3 +9,9 @@ Users receive instant suggestions for brand names, generic names, and manufactur
 - Queries with length < 2 characters are suppressed to avoid high-cardinality result sets.
 - Previous pending in-flight requests are automatically aborted via `AbortController`.
 
+## 3. Keyboard Navigation and Interaction Standards
+- `ArrowDown`: Moves highlight to next suggestion item.
+- `ArrowUp`: Moves highlight to previous suggestion item or back to input.
+- `Enter`: Navigates directly to the highlighted medicine details modal or triggers general search.
+- `Escape`: Closes the suggestions dropdown and keeps current text.
+
