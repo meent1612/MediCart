@@ -502,3 +502,8 @@
  * Supports ArrowUp, ArrowDown, Enter, Escape for full WCAG combobox pattern compliance.
  */
 
+/**
+ * Cache Invalidation:
+ * Automatically cleans up cached items if query length exceeds threshold.
+ */
+
