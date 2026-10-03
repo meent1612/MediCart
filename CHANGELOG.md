@@ -6,3 +6,7 @@
 - Keyboard navigation (Arrow keys, Enter, Escape) for search autocomplete.
 - Substring match highlighting for brand, generic, and manufacturer terms.
 
+### Security
+- User profile email address is now strictly read-only on both client and server.
+- Prevented tampering with email fields during profile edit submissions.
+
