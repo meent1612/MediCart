@@ -27,3 +27,8 @@ Returns an array of JSON objects matching the schema:
 ]
 ```
 
+### Error Handling & Edge Cases
+- Empty or whitespace query returns empty array `[]` with status `200 OK`.
+- Unmatched query returns empty array `[]` with status `200 OK`.
+- Database failure returns standard ASP.NET Core 500 error handled gracefully on client.
+
