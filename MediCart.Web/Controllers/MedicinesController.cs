@@ -194,3 +194,5 @@ namespace MediCart.Web.Controllers
     }
 }// Architecture note: /Medicines/Suggestions is optimized for sub-50ms execution times.
 
+// Note: EF.Functions.ILike prevents SQL injection through EF Core parameterization.
+
