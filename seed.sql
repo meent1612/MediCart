@@ -847,73 +847,74 @@ WHERE NOT EXISTS (
 
 
 -- ============================================================
--- STOCKS — built for demo date 2026-10-01 (also valid on 2026-09-30)
--- Healthy: 28 | Out: 4 | Low: 6 | Warning: 5 | Critical: 3 | Expired: 3
--- (Femicon is both Low and Warning)
+-- STOCKS — built for demo date 2026-10-04 (also valid on 2026-10-03)
+-- Healthy 23 | Low only 5 | Out only 2 | Warning only 4 | Critical only 4 | Expired only 2
+-- Overlaps: Low+Warning 3 | Low+Critical 1 | Low+Expired 1 | Out+Warning 1 | Out+Critical 1 | Out+Expired 1
+-- Buckets: Expired < today | Critical 0-7 days | Warning 8-30 days | Low = qty 1-10
 -- ============================================================
 INSERT INTO "Stocks" ("MedicineId", "Quantity", "ExpiryDate", "UpdatedAt")
 SELECT med."Id", s."Quantity"::int, s."ExpiryDate"::date, NOW()
 FROM (VALUES
     -- Allergies & Asthma
     ('Fexo 120',                    8,   '2027-12-31'),  -- LOW
-    ('Montela 10mg',               60,   '2027-11-30'),
+    ('Montela 10mg',               60,   '2027-11-30'),  -- healthy
     -- Epilepsy & Neurological
-    ('Gaba 300mg',                 60,   '2027-08-31'),  -- high sensitivity
-    ('Cazep 200mg',                60,   '2027-09-30'),  -- mid sensitivity
+    ('Gaba 300mg',                 60,   '2027-08-31'),  -- healthy (high sensitivity)
+    ('Cazep 200mg',                60,   '2027-09-30'),  -- healthy (mid sensitivity)
     -- Pain Relief
     ('Napa Extra',                 80,   '2026-10-20'),  -- WARNING
-    ('Arlin 600',                  50,   '2027-06-30'),
+    ('Arlin 600',                   6,   '2026-10-18'),  -- LOW + WARNING
     -- Gastrointestinal
     ('Nexum 40',                   40,   '2026-10-15'),  -- WARNING
     ('Lanso D',                     0,   '2027-04-30'),  -- OUT
     -- Antibiotics
     ('Augment 500',                25,   '2026-10-05'),  -- CRITICAL (blocked)
-    ('Zimax 500',                  40,   '2027-07-31'),
+    ('Zimax 500',                   4,   '2026-10-09'),  -- LOW + CRITICAL (blocked)
     -- Cardiac & Blood Pressure
-    ('Bislol 5mg',                 55,   '2027-10-31'),
-    ('Amlor 5mg',                  70,   '2027-12-31'),
+    ('Bislol 5mg',                 55,   '2027-10-31'),  -- healthy
+    ('Amlor 5mg',                  70,   '2027-12-31'),  -- healthy
     -- Diabetes (Medicine)
-    ('Metform 500mg',             120,   '2026-10-25'),  -- WARNING, low sensitivity
-    ('Glucophage 500mg',           90,   '2027-08-31'),  -- low sensitivity
+    ('Metform 500mg',             120,   '2026-10-25'),  -- WARNING (low sensitivity)
+    ('Glucophage 500mg',           90,   '2027-08-31'),  -- healthy (low sensitivity)
     -- Hormonal & Endocrine
-    ('Thyronorm 50mcg',            50,   '2027-11-30'),
-    ('Cloma 2',                    12,   '2026-09-01'),  -- EXPIRED (blocked), high sensitivity
+    ('Thyronorm 50mcg',            50,   '2027-11-30'),  -- healthy
+    ('Cloma 2',                     6,   '2026-09-01'),  -- LOW + EXPIRED (blocked, high sensitivity)
     -- Mental Health
-    ('Serenace 5mg',               30,   '2027-06-30'),
-    ('Flunil 20mg',                40,   '2027-09-30'),
+    ('Serenace 5mg',               30,   '2027-06-30'),  -- healthy
+    ('Flunil 20mg',                 0,   '2026-10-14'),  -- OUT + WARNING
     -- Vitamins & Supplements
-    ('Supravit-S',                 80,   '2028-01-31'),
+    ('Supravit-S',                 80,   '2028-01-31'),  -- healthy
     ('Revital Woman',               0,   '2027-12-31'),  -- OUT
-    ('Caltrate 600+D',             40,   '2027-10-31'),
+    ('Caltrate 600+D',             40,   '2027-10-31'),  -- healthy
     ('Biovit B Complex',           30,   '2026-08-20'),  -- EXPIRED (blocked)
-    ('NOW Omega-3 1000mg',         25,   '2027-08-31'),
-    ('Truemed Turmeric',           30,   '2027-11-30'),
-    ('Basak Syrup',                 5,   '2027-06-30'),  -- LOW (sells out in plan)
-    ('Gintex 500mg',               45,   '2027-09-30'),
-    ('Protinex Chocolate',         11,   '2027-07-31'),  -- normal now, turns LOW after orders
+    ('NOW Omega-3 1000mg',         25,   '2027-08-31'),  -- healthy
+    ('Truemed Turmeric',            3,   '2026-11-01'),  -- LOW + WARNING
+    ('Basak Syrup',                 5,   '2027-06-30'),  -- LOW
+    ('Gintex 500mg',               45,   '2027-09-30'),  -- healthy
+    ('Protinex Chocolate',         30,   '2027-07-31'),  -- healthy
     ('Powerlift Weight Gainer',     7,   '2027-05-31'),  -- LOW
     -- Diabetic Care
-    ('Accu-Chek Active',           15,   '2028-04-30'),
-    ('GlucoSure Star',             20,   '2028-06-30'),
-    ('Accu-Chek Strips 50pcs',     50,   '2027-08-31'),
-    ('OneTouch Verio Strips 50pcs',30,   '2027-10-31'),
-    ('NovoRapid Penfill',          30,   '2027-04-30'),
-    ('NovoMix 30 Penfill',          0,   '2027-03-31'),  -- OUT
-    ('Tresiba FlexTouch',          20,   '2027-06-30'),
-    ('Trulicity 0.75mg',            3,   '2027-05-31'),  -- LOW (sells out in plan)
-    ('Accu-Chek Softclix Lancets 25pcs', 60, '2028-01-31'),
-    ('BD Ultra-Fine Lancets 100pcs',     50, '2028-03-31'),
-    ('Empa 10mg',                  45,   '2027-11-30'),
-    ('Jardiance 10mg',             25,   '2027-09-30'),
+    ('Accu-Chek Active',           15,   '2028-04-30'),  -- healthy
+    ('GlucoSure Star',             20,   '2028-06-30'),  -- healthy
+    ('Accu-Chek Strips 50pcs',     50,   '2027-08-31'),  -- healthy
+    ('OneTouch Verio Strips 50pcs',30,   '2026-10-07'),  -- CRITICAL (blocked)
+    ('NovoRapid Penfill',          30,   '2027-04-30'),  -- healthy
+    ('NovoMix 30 Penfill',          0,   '2026-10-06'),  -- OUT + CRITICAL
+    ('Tresiba FlexTouch',          20,   '2027-06-30'),  -- healthy
+    ('Trulicity 0.75mg',            3,   '2027-05-31'),  -- LOW
+    ('Accu-Chek Softclix Lancets 25pcs', 60, '2028-01-31'), -- healthy
+    ('BD Ultra-Fine Lancets 100pcs',     50, '2028-03-31'), -- healthy
+    ('Empa 10mg',                  45,   '2027-11-30'),  -- healthy
+    ('Jardiance 10mg',             25,   '2027-09-30'),  -- healthy
     -- Women's Care
-    ('Freedom Heavy Flow Wings 16pads', 20, '2026-10-02'), -- CRITICAL (1 day left on demo day)
-    ('Senora Regular Flow 10pads', 60,   '2027-12-31'),
-    ('Femicon',                     9,   '2026-10-28'),  -- LOW + WARNING (two badges)
-    ('Marvelon',                    1,   '2027-07-31'),  -- LOW (sells out in plan)
+    ('Freedom Heavy Flow Wings 16pads', 20, '2026-10-08'), -- CRITICAL (blocked)
+    ('Senora Regular Flow 10pads', 60,   '2027-12-31'),  -- healthy
+    ('Femicon',                     9,   '2026-10-28'),  -- LOW + WARNING
+    ('Marvelon',                    1,   '2027-07-31'),  -- LOW (1 unit)
     ('Pregna News Cassette',       30,   '2026-10-22'),  -- WARNING
     ('Get Sure HCG Test',          30,   '2026-10-06'),  -- CRITICAL (blocked)
     ('Bobcare Ointment',           15,   '2026-09-15'),  -- EXPIRED (blocked)
-    ('Wonica Hair Removal Cream',   0,   '2027-08-31')   -- OUT
+    ('Wonica Hair Removal Cream',   0,   '2026-09-20')   -- OUT + EXPIRED
 ) AS s("MedicineName", "Quantity", "ExpiryDate")
 JOIN "Medicines" med ON med."Name" = s."MedicineName"
 ON CONFLICT ("MedicineId") DO UPDATE
