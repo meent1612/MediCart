@@ -1,0 +1,30 @@
+# QA Test Cases - Real-Time Search Suggestions
+
+## Test Matrix Overview
+This document outlines manual and automated verification procedures for the search feature.
+
+## TC-01: Partial Query Matching
+- **Action**: Type 'nap' in `#heroSearchInput`.
+- **Expected**: Suggestions contain 'Napa', 'Napa Extra', 'Napa Extend'.
+- **Status**: PASSED.
+
+## TC-02: Keyboard Navigation & Enter Selection
+- **Action**: Press `ArrowDown` once, verify first result highlighted. Press `Enter`.
+- **Expected**: URL navigates to `/Medicines/Browse?openDetails={id}`.
+- **Status**: PASSED.
+
+## TC-03: Clear Button & Click Outside Dismissal
+- **Action**: Click `✕` clear button.
+- **Expected**: Input clears, suggestions close, focus remains on input.
+- **Status**: PASSED.
+
+## TC-04: Badges for Out of Stock and Prescription Required
+- **Action**: Search for prescription medicine or out of stock medicine.
+- **Expected**: 'Rx Required' or 'Out of Stock' badges render clearly with appropriate contrast.
+- **Status**: PASSED.
+
+## TC-05: Network Latency and Rapid Typing
+- **Action**: Rapidly type and backspace queries.
+- **Expected**: Old responses aborted; UI never shows stale suggestions.
+- **Status**: PASSED.
+

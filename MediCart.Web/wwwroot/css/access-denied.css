@@ -1,0 +1,451 @@
+/* ==========================================================================
+   MediCart — Access Denied Page
+   Baymax friendly 403 authorization screen with speech bubble & Lottie anim
+   ========================================================================== */
+
+/* Fill available viewport height so footer sits at bottom without gap */
+body:has(.access-denied-page) {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+body:has(.access-denied-page) main {
+    flex: 1 0 auto;
+    display: flex;
+    flex-direction: column;
+}
+
+body:has(.access-denied-page) .site-footer {
+    margin-top: auto;
+}
+
+/* Page container */
+.access-denied-page {
+    flex: 1 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 0 64px;
+    background: var(--color-bg);
+}
+
+.access-denied-container {
+    display: grid;
+    grid-template-columns: minmax(320px, 46%) 1fr;
+    gap: 56px;
+    align-items: center;
+    max-width: 1100px;
+    margin-inline: auto;
+    padding-inline: 24px;
+}
+
+/* ----- Left Column: Baymax Character ----- */
+.access-denied__character {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.access-denied__lottie-frame {
+    width: 100%;
+    max-width: 440px;
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    background: radial-gradient(circle at 50% 55%, rgba(133, 155, 119, 0.22) 0%, rgba(236, 203, 217, 0.15) 45%, rgba(251, 245, 247, 0) 72%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 16px 48px rgba(21, 46, 25, 0.05);
+    transition: transform 0.35s var(--ease), box-shadow 0.35s var(--ease);
+}
+
+.access-denied__character:hover .access-denied__lottie-frame {
+    transform: scale(1.025);
+    box-shadow: 0 20px 56px rgba(21, 46, 25, 0.09);
+}
+
+.access-denied__character:active .access-denied__lottie-frame {
+    transform: scale(0.985);
+}
+
+/* Baymax Lottie element inside frame.
+   The original 1920x1080 canvas has Baymax in center. We scale to frame him prominently. */
+.access-denied__lottie {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    outline: none;
+}
+
+.access-denied__lottie svg {
+    width: 165% !important;
+    height: 165% !important;
+    max-width: none !important;
+    transform: translateY(4%);
+    transform-origin: center center;
+    display: block;
+}
+
+/* Accessible focus ring on Baymax container when tabbed */
+.access-denied__lottie:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 4px;
+    border-radius: 50%;
+}
+
+.access-denied__pulse-hint {
+    margin-top: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--slate-500);
+    opacity: 0.85;
+    transition: opacity 0.2s var(--ease), color 0.2s var(--ease);
+}
+
+.access-denied__character:hover .access-denied__pulse-hint {
+    opacity: 1;
+    color: var(--pine-700);
+}
+
+.access-denied__pulse-hint::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--color-primary);
+    animation: hint-pulse 2s infinite ease-in-out;
+}
+
+@keyframes hint-pulse {
+    0%, 100% { opacity: 0.4; transform: scale(0.85); }
+    50% { opacity: 1; transform: scale(1.25); }
+}
+
+/* ----- Right Column: Content & Bubble ----- */
+.access-denied__content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+/* Speech Bubble */
+.access-denied__bubble {
+    position: relative;
+    background: var(--white);
+    border: 1.5px solid var(--sage-300);
+    border-radius: 24px;
+    padding: 32px 38px 28px;
+    box-shadow: 0 16px 40px rgba(21, 46, 25, 0.08);
+    width: 100%;
+    animation: bubble-entrance 0.5s var(--ease) forwards;
+    transform-origin: left center;
+}
+
+@keyframes bubble-entrance {
+    0% {
+        opacity: 0;
+        transform: translateY(12px) scale(0.96);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Speech Bubble Tail pointing left toward Baymax */
+.access-denied__bubble-tail {
+    position: absolute;
+    top: 50%;
+    left: -16px;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-top: 14px solid transparent;
+    border-bottom: 14px solid transparent;
+    border-right: 16px solid var(--sage-300);
+    pointer-events: none;
+}
+
+.access-denied__bubble-tail::after {
+    content: "";
+    position: absolute;
+    top: -12px;
+    left: 2.5px;
+    width: 0;
+    height: 0;
+    border-top: 12px solid transparent;
+    border-bottom: 12px solid transparent;
+    border-right: 15px solid var(--white);
+}
+
+/* Small medical alert pill inside bubble */
+.access-denied__bubble-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--color-dark);
+    background: var(--sage-100);
+    border: 1px solid var(--sage-200);
+    padding: 4px 10px;
+    border-radius: var(--radius-pill);
+    margin-bottom: 14px;
+}
+
+.access-denied__bubble-badge svg {
+    color: var(--color-primary);
+}
+
+/* Heading in Fraunces */
+.access-denied__heading {
+    font-family: var(--font-heading);
+    font-optical-sizing: auto;
+    font-weight: 700;
+    font-size: clamp(2.2rem, 3.8vw, 3rem);
+    line-height: 1.1;
+    color: var(--color-dark);
+    margin: 0;
+    letter-spacing: -0.02em;
+    min-height: 1.2em; /* prevent layout shift while typing */
+    display: inline-block;
+}
+
+/* Typewriter Cursor */
+.access-denied__cursor {
+    display: inline-block;
+    margin-left: 2px;
+    font-family: var(--font-heading);
+    font-size: clamp(2.2rem, 3.8vw, 3rem);
+    font-weight: 300;
+    color: var(--color-primary);
+    animation: cursor-blink 0.75s step-start infinite;
+    vertical-align: baseline;
+}
+
+@keyframes cursor-blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+/* Speech bubble bounce animation on hover/click */
+.access-denied__bubble.is-bouncing {
+    animation: bubble-bounce 0.65s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes bubble-bounce {
+    0%, 100% { transform: scale(1); }
+    30% { transform: scale(1.035) translateY(-5px); }
+    60% { transform: scale(0.985) translateY(2px); }
+}
+
+/* Message section under bubble */
+.access-denied__message {
+    margin-top: 24px;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.4s var(--ease), transform 0.4s var(--ease);
+}
+
+.access-denied__message.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.access-denied__desc {
+    font-family: var(--font-body);
+    font-size: 1.08rem;
+    line-height: 1.62;
+    color: var(--color-text);
+    margin: 0 0 12px;
+    max-width: 48ch;
+}
+
+.access-denied__meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.access-denied__code {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--slate-500);
+    background: var(--platinum-100);
+    border: 1px solid var(--line);
+    padding: 3px 10px;
+    border-radius: var(--radius-pill);
+}
+
+/* Action Buttons */
+.access-denied__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px;
+    margin-top: 26px;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.4s var(--ease) 0.1s, transform 0.4s var(--ease) 0.1s;
+}
+
+.access-denied__actions.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.access-denied__actions .btn {
+    padding: 12px 24px;
+    font-size: 15px;
+    border-radius: var(--radius-pill);
+}
+
+.access-denied__actions .btn svg {
+    flex-shrink: 0;
+}
+
+.access-denied-back-btn {
+    background: transparent;
+    cursor: pointer;
+}
+
+/* Fallback SVG if Lottie is unavailable */
+.access-denied__fallback {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+.access-denied__fallback-svg {
+    width: 80%;
+    height: 80%;
+    filter: drop-shadow(0 10px 24px rgba(21, 46, 25, 0.08));
+}
+
+/* ==========================================================================
+   Responsive Breakpoints
+   ========================================================================== */
+@media (max-width: 900px) {
+    .access-denied-container {
+        grid-template-columns: 42% 1fr;
+        gap: 36px;
+    }
+}
+
+@media (max-width: 768px) {
+    .access-denied-page {
+        padding: 24px 0 48px;
+    }
+
+    .access-denied-container {
+        grid-template-columns: 1fr;
+        gap: 28px;
+        text-align: center;
+    }
+
+    .access-denied__character {
+        max-height: 280px;
+        margin: 0 auto;
+    }
+
+    .access-denied__lottie-frame {
+        max-width: 260px;
+        max-height: 260px;
+    }
+
+    .access-denied__content {
+        align-items: center;
+    }
+
+    .access-denied__bubble {
+        padding: 24px 22px 20px;
+        transform-origin: top center;
+    }
+
+    /* Bubble tail points UP toward Baymax */
+    .access-denied__bubble-tail {
+        top: -16px;
+        left: 50%;
+        transform: translateX(-50%);
+        border-left: 14px solid transparent;
+        border-right: 14px solid transparent;
+        border-bottom: 16px solid var(--sage-300);
+        border-top: none;
+    }
+
+    .access-denied__bubble-tail::after {
+        top: 2.5px;
+        left: -12px;
+        border-left: 12px solid transparent;
+        border-right: 12px solid transparent;
+        border-bottom: 15px solid var(--white);
+        border-top: none;
+    }
+
+    .access-denied__desc {
+        max-width: 100%;
+        font-size: 1rem;
+    }
+
+    .access-denied__meta {
+        justify-content: center;
+    }
+
+    .access-denied__actions {
+        flex-direction: column;
+        width: 100%;
+        gap: 12px;
+    }
+
+    .access-denied__actions .btn {
+        width: 100%;
+    }
+}
+
+/* ==========================================================================
+   Prefers-Reduced-Motion Accessibility
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+    .access-denied__bubble,
+    .access-denied__message,
+    .access-denied__actions,
+    .access-denied__lottie-frame,
+    .access-denied__cursor {
+        animation: none !important;
+        transition: none !important;
+        opacity: 1 !important;
+        transform: none !important;
+    }
+
+    .access-denied__bubble.is-bouncing {
+        animation: none !important;
+    }
+
+    .access-denied__pulse-hint::before {
+        animation: none !important;
+    }
+}

@@ -43,6 +43,10 @@ namespace MediCart.Web.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return Challenge();
 
+            // The email field is read-only and must never be updated from this form.
+            // Always preserve the user's actual email from the database.
+            model.Email = user.Email ?? string.Empty;
+
             if (!ModelState.IsValid)
             {
                 model.Orders = await GetOrdersForUser(user.Id);

@@ -1,0 +1,98 @@
+@page
+@{
+    ViewData["Title"] = "Access denied";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/access-denied.css" asp-append-version="true" />
+}
+
+<div class="access-denied-page">
+    <div class="container access-denied-container">
+
+        <!-- Left Column: Baymax Character Animation -->
+        <div class="access-denied__character" id="baymaxCharacterWrapper">
+            <div class="access-denied__lottie-frame">
+                <div id="baymaxLottie"
+                     class="access-denied__lottie"
+                     role="img"
+                     aria-label="Baymax the health companion saying access denied"
+                     tabindex="0"
+                     title="Click or hover on Baymax"
+                     data-lottie-path="@Url.Content("~/animations/baymax-robo-medic.json")">
+                    <noscript>
+                        <div class="access-denied__fallback">
+                            <svg viewBox="0 0 200 200" fill="none" class="access-denied__fallback-svg" aria-label="Baymax care companion">
+                                <circle cx="100" cy="100" r="76" fill="#FFFFFF" stroke="#859B77" stroke-width="5" />
+                                <ellipse cx="100" cy="88" rx="44" ry="28" fill="#FFFFFF" stroke="#152E19" stroke-width="3.5" />
+                                <circle cx="82" cy="88" r="5" fill="#152E19" />
+                                <circle cx="118" cy="88" r="5" fill="#152E19" />
+                                <line x1="82" y1="88" x2="118" y2="88" stroke="#152E19" stroke-width="2.5" />
+                                <circle cx="132" cy="132" r="11" fill="#ECCBD9" stroke="#152E19" stroke-width="2" />
+                                <path d="M127 132h10M132 127v10" stroke="#152E19" stroke-width="2" stroke-linecap="round" />
+                            </svg>
+                        </div>
+                    </noscript>
+                </div>
+            </div>
+            <div class="access-denied__pulse-hint" aria-hidden="true">
+                <span>Say hello to Baymax</span>
+            </div>
+        </div>
+
+        <!-- Right Column: Speech Bubble & Action Controls -->
+        <div class="access-denied__content">
+            <!-- Speech Bubble -->
+            <div class="access-denied__bubble" id="speechBubble" role="region" aria-label="Baymax notification">
+                <div class="access-denied__bubble-tail" aria-hidden="true"></div>
+                <div class="access-denied__bubble-badge" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14" /></svg>
+                    <span>Care Alert</span>
+                </div>
+                <h1 class="access-denied__heading" id="bubbleHeading">Access denied</h1>
+            </div>
+
+            <!-- Friendly Supporting Copy -->
+            <div class="access-denied__message" id="messageSection">
+                <p class="access-denied__desc">
+                    Looks like this area is for authorized users only. Your health is safe with us, though!
+                </p>
+                <div class="access-denied__meta">
+                    <span class="access-denied__code">Error 403 &middot; Restricted Area</span>
+                </div>
+            </div>
+
+            <!-- Navigation Actions -->
+            <div class="access-denied__actions" id="actionSection">
+                <a asp-controller="Home" asp-action="Index" class="btn btn--pine">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                    Back to home
+                </a>
+                <a asp-controller="Medicines" asp-action="Index" class="btn btn--outline">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></svg>
+                    Browse medicines
+                </a>
+                @if (User.Identity != null && User.Identity.IsAuthenticated)
+                {
+                    <button type="button" class="btn btn--ghost access-denied-back-btn" onclick="if (window.history.length > 1) { window.history.back(); } else { window.location.href = '/'; }">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                        Go back
+                    </button>
+                }
+                else
+                {
+                    <a asp-area="Identity" asp-page="/Account/Login" class="btn btn--amber">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+                        Log in
+                    </a>
+                }
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
+    <script src="~/js/access-denied.js" asp-append-version="true" data-animation-path="@Url.Content("~/animations/baymax-robo-medic.json")"></script>
+}
