@@ -18,3 +18,8 @@ This document outlines manual and automated verification procedures for the sear
 - **Expected**: Input clears, suggestions close, focus remains on input.
 - **Status**: PASSED.
 
+## TC-04: Badges for Out of Stock and Prescription Required
+- **Action**: Search for prescription medicine or out of stock medicine.
+- **Expected**: 'Rx Required' or 'Out of Stock' badges render clearly with appropriate contrast.
+- **Status**: PASSED.
+
