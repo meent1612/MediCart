@@ -38,7 +38,7 @@ namespace MediCart.Web.Services
                         <h2 style='color:#1a3a2a;margin:0 0 8px;'>MediCart payment OTP</h2>
                         <p style='color:#64748b;margin:0 0 24px;font-size:14px;'>
                             Use this code to confirm your bKash payment.
-                            It expires in <strong>30 seconds</strong>.
+                            It expires in <strong>5 minutes</strong>.
                         </p>
                         <div style='background:#f0fdf4;border:1px solid #86efac;border-radius:8px;
                                     padding:20px;text-align:center;margin-bottom:24px;'>

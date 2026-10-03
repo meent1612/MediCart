@@ -296,7 +296,7 @@
     }
 
     function startOtpCountdown() {
-        var seconds = 30;
+        var seconds = 300;
         if (otpTimerDisplay) otpTimerDisplay.textContent = "(" + seconds + "s)";
         if (resendOtpBtn) resendOtpBtn.disabled = true;
 
