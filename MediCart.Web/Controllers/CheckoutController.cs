@@ -129,7 +129,7 @@ namespace MediCart.Web.Controllers
             {
                 Email = email,
                 Code = code,
-                ExpiresAt = DateTime.UtcNow.AddSeconds(30),
+                ExpiresAt = DateTime.UtcNow.AddMinutes(5),
                 IsUsed = false,
                 CreatedAt = DateTime.UtcNow
             });
