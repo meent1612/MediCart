@@ -40,8 +40,12 @@ public class HomeController : Controller
             .Select(pt => new ProductTypeFilterOption { Id = pt.Id, Name = pt.Name })
             .ToListAsync();
 
-        // Frequently ordered / Best selling medicines (same ranked query as Admin Dashboard)
+        // Frequently ordered / Best selling medicines.
+        // Same ranking as the Admin Dashboard "Best selling" card:
+        // only DELIVERED orders count (Pending, Rejected and Cancelled orders
+        // never completed, so they must not boost a medicine's rank).
         var bestSellingGroup = await _context.OrderItems
+            .Where(oi => oi.Order.Status == "Delivered")
             .GroupBy(oi => oi.MedicineId)
             .Select(g => new
             {
@@ -61,7 +65,8 @@ public class HomeController : Controller
             .Where(m => rankedMedicineIds.Contains(m.Id))
             .ToListAsync();
 
-        // In-stock medicines matching the admin best-selling rank order, capped at 4
+        // In-stock medicines in the admin best-selling rank order, capped at 4.
+        // The home page skips out-of-stock items because customers can't buy them.
         var frequentlyOrdered = rankedMedicineIds
             .Select(id => medicines.FirstOrDefault(m => m.Id == id))
             .Where(m => m != null && m.Stock != null && m.Stock.Quantity > 0)
