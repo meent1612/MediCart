@@ -488,3 +488,8 @@
         initHeroBaymax();
     }
 })();
+/**
+ * Home Search Module - State Management and Options
+ * Maintains debounce timers, active index tracking, and cache maps.
+ */
+
