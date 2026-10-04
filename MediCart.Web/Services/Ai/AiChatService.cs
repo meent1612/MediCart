@@ -17,9 +17,9 @@ namespace MediCart.Web.Services.Ai
 
     public class AiChatService : IAiChatService
     {
-        private const int MaxToolRounds = 3;
-        private const int MaxHistoryTurns = 8;
-        private const int MaxTurnChars = 500;
+        private const int MaxToolRounds = 2;
+        private const int MaxHistoryTurns = 4;
+        private const int MaxTurnChars = 300;
 
         private const string FallbackReply =
             "Sorry, I couldn't put an answer together. Please try again.";
@@ -47,22 +47,21 @@ namespace MediCart.Web.Services.Ai
                 .Where(t => t.AllowedRoles.Contains(context.Role))
                 .ToList();
 
-            
-var toolDefinitions = new JsonArray();
+            var toolDefinitions = new JsonArray();
 
-foreach (var tool in allowedTools)
-{
-    toolDefinitions.Add(new JsonObject
-    {
-        ["type"] = "function",
-        ["function"] = new JsonObject
-        {
-            ["name"] = tool.Name,
-            ["description"] = tool.Description,
-            ["parameters"] = tool.ParametersSchema.DeepClone()
-        }
-    });
-}
+            foreach (var tool in allowedTools)
+            {
+                toolDefinitions.Add(new JsonObject
+                {
+                    ["type"] = "function",
+                    ["function"] = new JsonObject
+                    {
+                        ["name"] = tool.Name,
+                        ["description"] = tool.Description,
+                        ["parameters"] = tool.ParametersSchema.DeepClone()
+                    }
+                });
+            }
 
             var messages = new JsonArray
             {

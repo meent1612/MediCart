@@ -97,6 +97,15 @@ namespace MediCart.Web.Controllers
                     reply
                 });
             }
+            catch (GroqRateLimitException ex)
+            {
+                _logger.LogWarning(ex, "AI chat rate limited for role {Role}.", role);
+
+                return Ok(new
+                {
+                    reply = "Baymax is busy right now. Please try again in a minute."
+                });
+            }
             catch (GroqApiException ex)
             {
                 // Full detail goes to the server log only (missing key, 429, timeout...).

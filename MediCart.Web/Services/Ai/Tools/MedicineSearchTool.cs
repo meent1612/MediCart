@@ -21,13 +21,7 @@ namespace MediCart.Web.Services.Ai.Tools
         public string Name => "search_medicines";
 
         public string Description =>
-            "Search the MediCart medicine catalogue using real database data. " +
-            "Use this when a customer asks to find medicines by name, generic name, " +
-            "category, subcategory, product type, price, stock availability, " +
-            "prescription requirement, or expiry period. " +
-            "The tool returns at most 8 medicines plus totalMatches, the total number " +
-            "of medicines that matched. " +
-            "Never invent medicine names, prices, stock quantities, categories, or expiry dates.";
+            "Search medicines by name, generic name, category, subcategory, product type, price, stock, Rx requirement, or expiry.";
 
         public JsonObject ParametersSchema => new()
         {
@@ -37,66 +31,55 @@ namespace MediCart.Web.Services.Ai.Tools
                 ["search"] = new JsonObject
                 {
                     ["type"] = "string",
-                    ["description"] =
-                        "Medicine name or generic name to search for. " +
-                        "Use a concise search term, not the whole customer message."
+                    ["description"] = "Medicine or generic name."
                 },
 
                 ["maxPrice"] = new JsonObject
                 {
                     ["type"] = "number",
-                    ["description"] =
-                        "Maximum medicine price in Bangladeshi taka."
+                    ["description"] = "Max price in BDT."
                 },
 
                 ["minPrice"] = new JsonObject
                 {
                     ["type"] = "number",
-                    ["description"] =
-                        "Minimum medicine price in Bangladeshi taka."
+                    ["description"] = "Min price in BDT."
                 },
 
                 ["inStock"] = new JsonObject
                 {
                     ["type"] = "boolean",
-                    ["description"] =
-                        "Set true when the customer specifically asks for medicines currently in stock."
+                    ["description"] = "True to filter for medicines in stock."
                 },
 
                 ["requiresPrescription"] = new JsonObject
                 {
                     ["type"] = "boolean",
-                    ["description"] =
-                        "Set true for prescription-required medicines or false for medicines that do not require a prescription."
+                    ["description"] = "True for Rx required, false for OTC."
                 },
 
                 ["productType"] = new JsonObject
                 {
                     ["type"] = "string",
-                    ["description"] =
-                        "Product type such as Tablet, Syrup, Injection, Ointment, or Drops."
+                    ["description"] = "Product type (e.g. Tablet, Syrup)."
                 },
 
                 ["category"] = new JsonObject
                 {
                     ["type"] = "string",
-                    ["description"] =
-                        "Medicine category name."
+                    ["description"] = "Category name."
                 },
 
                 ["subCategory"] = new JsonObject
                 {
                     ["type"] = "string",
-                    ["description"] =
-                        "Medicine subcategory name."
+                    ["description"] = "Subcategory name."
                 },
 
                 ["expiryWithinDays"] = new JsonObject
                 {
                     ["type"] = "integer",
-                    ["description"] =
-                        "Return medicines whose stock expiry date is within this many days from today. " +
-                        "Use only when the customer explicitly asks about expiry or medicines expiring soon."
+                    ["description"] = "Max days until stock expiry."
                 }
             },
 

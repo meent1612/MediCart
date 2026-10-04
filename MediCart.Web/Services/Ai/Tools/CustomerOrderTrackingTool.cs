@@ -17,27 +17,7 @@ namespace MediCart.Web.Services.Ai.Tools
         public string Name => "search_customer_orders";
 
         public string Description =>
-            """
-            Searches the authenticated customer's own MediCart orders.
-
-            Use this tool when the customer asks about:
-            - their order status
-            - where their order is
-            - their latest order
-            - a specific order number
-            - their order history
-            - whether an order was rejected
-            - why an order is currently rejected, when a rejection reason exists
-
-            IMPORTANT:
-            The tool automatically restricts results to the authenticated customer.
-            Never ask the model to provide a user ID.
-            Never return another customer's order.
-
-            Order status is the current status stored in the database.
-            The database stores the order creation time, but it does not store
-            individual timestamps for every status transition.
-            """;
+            "Search the customer's own orders by order ID, latest order, or recent order history.";
 
         public JsonObject ParametersSchema =>
             new()
@@ -48,22 +28,19 @@ namespace MediCart.Web.Services.Ai.Tools
                     ["orderId"] = new JsonObject
                     {
                         ["type"] = "integer",
-                        ["description"] =
-                            "Specific order ID if the customer mentions an order number. Omit this when asking for the latest or recent orders."
+                        ["description"] = "Specific order ID if mentioned."
                     },
 
                     ["latestOnly"] = new JsonObject
                     {
                         ["type"] = "boolean",
-                        ["description"] =
-                            "Set to true when the customer asks about their latest or most recent order."
+                        ["description"] = "True for only the latest order."
                     },
 
                     ["limit"] = new JsonObject
                     {
                         ["type"] = "integer",
-                        ["description"] =
-                            "Maximum number of recent orders to return. Use a small value such as 5."
+                        ["description"] = "Max recent orders to return (default 5)."
                     }
                 },
                 ["additionalProperties"] = false

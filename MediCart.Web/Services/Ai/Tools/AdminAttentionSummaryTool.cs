@@ -19,10 +19,7 @@ namespace MediCart.Web.Services.Ai.Tools
         public string Name => "get_admin_attention_summary";
 
         public string Description =>
-            "Returns what currently needs admin attention in the pharmacy: orders awaiting review, " +
-            "flagged pending orders, out-of-stock and low-stock medicines, and medicines that are " +
-            "expired or close to expiry. Use it for questions about what needs attention today, " +
-            "flagged orders, low stock, or expiry.";
+            "Summary of pending and flagged orders, low and out-of-stock items, and expiring medicines.";
 
         public JsonObject ParametersSchema => new()
         {
